@@ -1,0 +1,4 @@
+BINDING_HEADER_ITEMDB_STRING_BINDING_HEADER = "Elkano's ItemDB"
+BINDING_NAME_ITEMDB_STRING_BINDING_TOGGLE = "Toggle Frame"
+ITEMDB_STRING_TITLE = "Elkano's ItemDB - "..GetAddOnMetadata("ItemDB", "Version")
+ITEMDB_STRING_VALUE = "sell value"

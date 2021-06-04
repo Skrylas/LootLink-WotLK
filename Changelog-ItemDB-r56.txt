@@ -1,0 +1,21 @@
+------------------------------------------------------------------------
+r56 | elkano | 2014-07-13 18:51:06 +0000 (Sun, 13 Jul 2014) | 2 lines
+Changed paths:
+   M /trunk/ItemDB.lua
+   M /trunk/ItemDB.toc
+   M /trunk/ItemDB_Browser.xml
+   M /trunk/LDB_ItemDB.lua
+
+- added iLevel filter
+- refactored search; slower but less blocking and crashing...
+------------------------------------------------------------------------
+r55 | elkano | 2012-09-05 11:30:53 +0000 (Wed, 05 Sep 2012) | 1 line
+Changed paths:
+   M /trunk/ItemDB.lua
+   M /trunk/ItemDB.toc
+   M /trunk/ItemDB_Browser.xml
+   M /trunk/LDB_ItemDB.lua
+   M /trunk/items/Items_PeriodicTable.lua
+
+next iteration of tweaks...
+------------------------------------------------------------------------
