@@ -14,6 +14,7 @@ local tonumber			= _G.tonumber
 local type				= _G.type
 
 local string_find		= _G.string.find
+local string_gmatch		= _G.string.gmatch
 local string_gsub		= _G.string.gsub
 local string_lower		= _G.string.lower
 local string_match		= _G.string.match
@@ -54,7 +55,9 @@ local Script_AdvancedFilters_OnMouseWheel
 local Script_AdvancedFilterButton_OnClick
 local Script_AdvancedFiltersSlider_OnValueChanged
 local Script_Browser_OnShow
+local Script_Filter_RarityDropDown_IsChecked
 local Script_Filter_RarityDropDown_OnClick
+local Script_Filter_RarityDropDown_OnClickAll
 local Script_Filter_RarityDropDown_OnShow
 local Script_Filter_RarityDropDown_Initialize
 local Script_FilterButton_OnClick
@@ -69,7 +72,8 @@ local Script_ItemProviderTab_OnClick
 local Script_ItemScrollFrame_OnVerticalScroll
 local Script_ResetButton_OnClick
 local Script_SearchButton_OnClick
-local Script_ToggleFilter_OnClick
+local Script_ShowCSVListButton_OnClick
+local Script_ToggleFilterButton_OnClick
 
 local frames_filterlist = {}
 local frames_advancedfilterlist = {}
@@ -126,17 +130,22 @@ function ItemDB:OnInitialize()
 	ItemDB_Browser:SetScript("OnMouseDown", Script_Browser_OnMouseDown)
 	ItemDB_Browser:SetScript("OnMouseUp", Script_Browser_OnMouseUp)
 	ItemDB_Browser_AdvancedFilters:SetScript("OnShow", Script_AdvancedFilters_OnShow)
-	ItemDB_Browser_AdvancedFiltersCloseButton:SetScript("OnClick", Script_ToggleFilter_OnClick)
+	ItemDB_Browser_AdvancedFiltersCloseButton:SetScript("OnClick", Script_ToggleFilterButton_OnClick)
 	ItemDB_Browser_FilterDropDown:SetScript("OnShow", Script_FilterDropDown_OnShow)
 	ItemDB_Browser_Filter_RarityDropDown:SetScript("OnShow", Script_Filter_RarityDropDown_OnShow)
 	ItemDB_Browser_FilterScrollFrame:SetScript("OnVerticalScroll", Script_FilterScrollFrame_OnVerticalScroll)
 	ItemDB_Browser_ItemScrollFrame:SetScript("OnVerticalScroll", Script_ItemScrollFrame_OnVerticalScroll)
+	ItemDB_Browser_Sort_Id:SetScript("OnClick", function() ItemDB:SetSorting("id") end)
 	ItemDB_Browser_Sort_Rarity:SetScript("OnClick", function() ItemDB:SetSorting("rarity") end)
 	ItemDB_Browser_Sort_Name:SetScript("OnClick", function() ItemDB:SetSorting("name") end)
 	ItemDB_Browser_Sort_MinLevel:SetScript("OnClick", function() ItemDB:SetSorting("minlevel") end)
 	ItemDB_Browser_Sort_ItemLevel:SetScript("OnClick", function() ItemDB:SetSorting("itemlevel") end)
 	ItemDB_Browser_Sort_Value:SetScript("OnClick", function() ItemDB:SetSorting("value") end)
-	ItemDB_Browser_ToggleFilterButton:SetScript("OnClick", Script_ToggleFilter_OnClick)
+	ItemDB_Browser_ShowCSVListButton:SetScript("OnClick", Script_ShowCSVListButton_OnClick)
+	ItemDB_Browser_ToggleFilterButton:SetScript("OnClick", Script_ToggleFilterButton_OnClick)
+	
+	ItemDB_CSVList.TitleText:SetText("CSV Import / Export")
+	
 	table_insert(UISpecialFrames, "ItemDB_Browser")
 
 	-- set localized strings
@@ -382,8 +391,8 @@ local advanced_filters = {
 	"ITEM_MOD_INTELLECT_SHORT",
 	"ITEM_MOD_SPIRIT_SHORT",
 	"ITEM_MOD_DAMAGE_PER_SECOND_SHORT",
--- 	"ITEM_MOD_ATTACK_POWER_SHORT",
-	"ITEM_MOD_MELEE_ATTACK_POWER_SHORT",
+ 	"ITEM_MOD_ATTACK_POWER_SHORT",
+--	"ITEM_MOD_MELEE_ATTACK_POWER_SHORT", -- missing in 6.0
 	"ITEM_MOD_RANGED_ATTACK_POWER_SHORT",
 	"ITEM_MOD_SPELL_POWER_SHORT",
 	"ITEM_MOD_SPELL_DAMAGE_DONE_SHORT",
@@ -391,11 +400,23 @@ local advanced_filters = {
 	"ITEM_MOD_PVP_POWER_SHORT",
 	"ITEM_MOD_CRIT_RATING_SHORT",
 	"ITEM_MOD_CRIT_RANGED_RATING_SHORT",
-	"ITEM_MOD_EXPERTISE_RATING_SHORT",
+--	"ITEM_MOD_EXPERTISE_RATING_SHORT", -- missing in 6.0
 	"ITEM_MOD_HASTE_RATING_SHORT",
 	"ITEM_MOD_HIT_RATING_SHORT",
+	"ITEM_MOD_HIT_SPELL_RATING_SHORT",
 	"ITEM_MOD_MASTERY_RATING_SHORT",
 --	"ITEM_MOD_SPELL_PENETRATION_SHORT", -- missing in 5.4
+	"ITEM_MOD_CR_AMPLIFY_SHORT",
+	"ITEM_MOD_CR_AVOIDANCE_SHORT",
+	"ITEM_MOD_CR_CLEAVE_SHORT",
+	"ITEM_MOD_CR_LIFESTEAL_SHORT",
+	"ITEM_MOD_CR_MULTISTRIKE_SHORT",
+	"ITEM_MOD_CR_READINESS_SHORT",
+	"ITEM_MOD_CR_SPEED_SHORT",
+	"ITEM_MOD_CR_STURDINESS_SHORT",
+--	"ITEM_MOD_CR_UNUSED_7_SHORT",
+--	"ITEM_MOD_CR_UNUSED_9_SHORT",
+	"ITEM_MOD_VERSATILITY",
 	"ITEM_MOD_DODGE_RATING_SHORT",
 	"ITEM_MOD_PARRY_RATING_SHORT",
 	"ITEM_MOD_RESILIENCE_RATING_SHORT",
@@ -420,11 +441,11 @@ local advanced_filters = {
 	"EMPTY_SOCKET_PRISMATIC",
 	"EMPTY_SOCKET_COGWHEEL",
 	"EMPTY_SOCKET_HYDRAULIC",
--- 	"_SHORT",
+-- 	"_SHORT", -- missing in 6.0
 }
 
 local filter_conversion = {
-	["ITEM_MOD_ATTACK_POWER_SHORT"] = {"ITEM_MOD_MELEE_ATTACK_POWER_SHORT", "ITEM_MOD_RANGED_ATTACK_POWER_SHORT"},
+--	["ITEM_MOD_ATTACK_POWER_SHORT"] = {"ITEM_MOD_MELEE_ATTACK_POWER_SHORT", "ITEM_MOD_RANGED_ATTACK_POWER_SHORT"},
 	["ITEM_MOD_ARCANE_RESISTANCE_SHORT"] = "RESISTANCE6_NAME",
 	["ITEM_MOD_FIRE_RESISTANCE_SHORT"] = "RESISTANCE2_NAME",
 	["ITEM_MOD_FROST_RESISTANCE_SHORT"] = "RESISTANCE4_NAME",
@@ -536,6 +557,7 @@ local sort_settings = {
 }
 
 local sort_primarydir = {
+	id = "asc",
 	rarity = "desc",
 	name = "asc",
 	minlevel = "asc",
@@ -544,6 +566,7 @@ local sort_primarydir = {
 }
 
 local sort_arrows = {
+	id = ItemDB_Browser_Sort_Id_Arrow,
 	rarity = ItemDB_Browser_Sort_Rarity_Arrow,
 	name = ItemDB_Browser_Sort_Name_Arrow,
 	minlevel = ItemDB_Browser_Sort_MinLevel_Arrow,
@@ -553,26 +576,32 @@ local sort_arrows = {
 
 local sort_strings = {
 	sort_initial = [[
-		if a.rarity == -1 and b.rarity ~= -1 then	return false	end
-		if a.rarity ~= -1 and b.rarity == -1 then	return true		end
-		if a.rarity == -1 and b.rarity == -1 then
+		local a_val = a.rarity
+		local b_val = b.rarity
+		if a_val == -1 and b_val ~= -1 then return false end
+		if a_val ~= -1 and b_val == -1 then return true end
+		if a_val == -1 and b_val == -1 then
 			return a.id < b.id	-- id can't be equal
 		end
 	]],
 	sort_generic_asc = [[
-		if a["$1"] and not b["$1"] then		return false	end
-		if not a["$1"] and b["$1"] then		return true		end
-		if a["$1"] and b["$1"] then
-			if a["$1"] < b["$1"] then		return true		end
-			if a["$1"] > b["$1"] then		return false	end
+		a_val = a["$1"]
+		b_val = b["$1"]
+		if a_val and not b_val then return false end
+		if not a_val and b_val then return true end
+		if a_val and b_val then
+			if a_val < b_val then return true end
+			if a_val > b_val then return false end
 		end
 	]],
 	sort_generic_desc = [[
-		if a["$1"] and not b["$1"] then		return true		end
-		if not a["$1"] and b["$1"] then		return false	end
-		if a["$1"] and b["$1"] then
-			if a["$1"] < b["$1"] then		return false	end
-			if a["$1"] > b["$1"] then		return true		end
+		a_val = a["$1"]
+		b_val = b["$1"]
+		if a_val and not b_val then return true end
+		if not a_val and b_val then return false end
+		if a_val and b_val then
+			if a_val < b_val then return false end
+			if a_val > b_val then return true end
 		end
 	]],
 	sort_fallback = [[
@@ -770,6 +799,7 @@ function ItemDB:Search()
 	self:ItemList_Update()
 
 	searchFilterName = string_lower(ItemDB_Browser_Filter_Name:GetText())
+	searchItemListDone = nil
 
 	-- check if they are looking up an item/spell by ID
 	searchId = string_match(searchFilterName, "^item:(%-?%d+)")
@@ -896,7 +926,7 @@ function ItemDB:SearchStep()
 		end
 
 		searchCountStep = searchCountStep + 1
-		if searchCountStep > 100 then
+		if searchCountStep > 2500 then
 			searchItemListDone = searchItemListDone + searchCountStep - 1
 			ItemDB_Browser_ItemCount:SetFormattedText("searching... %0.1d%%", min(searchItemListDone / searchItemListSize * 100, 100))
 			return
@@ -912,7 +942,9 @@ end
 
 function ItemDB:SearchDone()
 	table_sort(itemlist_filtered, sort_sortfunction)
-	ItemDB_Browser_ItemCount:SetFormattedText("%d / %d items", #itemlist_filtered, max(searchItemListDone, searchItemListSize))
+	if searchItemListDone then
+		ItemDB_Browser_ItemCount:SetFormattedText("%d / %d items", #itemlist_filtered, max(searchItemListDone, searchItemListSize))
+	end
 	ItemDB_Browser_SearchButton:Enable()
 	ItemDB_Browser_ResetButton:Enable()
 
@@ -980,7 +1012,61 @@ function ItemDB:ResetItemList()
 	collectgarbage("collect")
 end
 
+function ItemDB:ExportItemList()
+	local t = {}
+	for i = 1, min(#itemlist_filtered, 2500) do
+		table_insert(t, itemlist_filtered[i].id)
+	end
+	table_sort(t)
+	if #itemlist_filtered > 2500 then
+		table_insert(t, "...")
+	end
+	return table.concat(t, ",")
+end
 
+function ItemDB:ImportItemList(csvString)
+	table_wipe(itemlist_filtered)
+
+	for v in string_gmatch(csvString, "([^,]+)") do
+		local id = tonumber(string_match(v, "(%-?%d+)"))
+		if id then
+			if id < 0 then -- spell
+				id = - id
+				local spellName, spellRank, spellTexture = GetSpellInfo(id)
+				local itemtable = {
+					["id"]			= id,
+					["type"]		= "spell",
+					["name"]		= spellName or "spell:"..id,
+					["rarity"]		= nil,
+					["itemlevel"]	= nil,
+					["minlevel"]	= nil,
+					["stack"]		= nil,
+					["value"]		= nil,
+				}
+				table_insert(itemlist_filtered, itemtable)
+			else -- item
+				local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice = GetItemInfo(id)
+				local itemtable = {
+					["id"]			= id,
+					["type"]		= "item",
+					["name"]		= itemName or "item:"..id,
+					["rarity"]		= itemRarity or -1,
+					["itemlevel"]	= itemLevel,
+					["minlevel"]	= itemMinLevel,
+					["stack"]		= itemStackCount,
+					["value"]		= itemSellPrice,
+				}
+				table_insert(itemlist_filtered, itemtable)
+			end
+		end
+	end
+	
+	table_sort(itemlist_filtered, sort_sortfunction)
+	ItemDB_Browser_ItemCount:SetFormattedText("%d (imported list)", #itemlist_filtered)
+	FauxScrollFrame_SetOffset(ItemDB_Browser_ItemScrollFrame, 0)
+	ItemDB_Browser_ItemScrollFrameScrollBar:SetValue(0)
+	self:ItemList_Update()
+end
 
 -- -----
 -- Frame Scripts
@@ -1000,7 +1086,6 @@ Script_AdvancedFilters_OnMouseWheel = function(self, delta)
 		slider:SetValue(max(minValue, currentValue - 5))
 	end
 end
-
 
 Script_AdvancedFilterButton_OnClick = function(self, button)
 	if button == "LeftButton" then
@@ -1056,37 +1141,68 @@ end
 
 Script_Filter_RarityDropDown_Initialize = function(self)
 	local info = {}
-	info.text = "|cff71d5ff"..SPELLS..FONT_COLOR_CODE_CLOSE
+	info.text = SPELLS
+	info.colorCode = "|cff71d5ff"
 	info.value = -2
-	info.checked = filter_rarity[-2] and 1 or nil
+	info.checked = Script_Filter_RarityDropDown_IsChecked
 	info.keepShownOnClick = 1
 	info.func = Script_Filter_RarityDropDown_OnClick
 	UIDropDownMenu_AddButton(info)
 
-	info.text = "|cffff0000"..UNKNOWN..FONT_COLOR_CODE_CLOSE
+	info.text = UNKNOWN
+	info.colorCode = "|cffff0000"
 	info.value = -1
-	info.checked = filter_rarity[-1] and 1 or nil
+	info.checked = Script_Filter_RarityDropDown_IsChecked
 	info.keepShownOnClick = 1
 	info.func = Script_Filter_RarityDropDown_OnClick
 	UIDropDownMenu_AddButton(info)
 
 	for i = 0, #ITEM_QUALITY_COLORS do
-		local color = ITEM_QUALITY_COLORS[i]
-		info.text = color.hex.._G["ITEM_QUALITY"..i.."_DESC"]..FONT_COLOR_CODE_CLOSE
+		info.text = _G["ITEM_QUALITY"..i.."_DESC"]
+		info.colorCode = ITEM_QUALITY_COLORS[i].hex
 		info.value = i
-		info.checked = filter_rarity[i] and 1 or nil
+		info.checked = Script_Filter_RarityDropDown_IsChecked
 		info.keepShownOnClick = 1
 		info.func = Script_Filter_RarityDropDown_OnClick
 		UIDropDownMenu_AddButton(info)
 	end
+
+	info.text = ALL.." / "..NONE
+	info.colorCode = "|cffffffff"
+	info.value = nil
+	info.notCheckable = true
+	info.justifyH = "CENTER"
+	info.checked = nil
+	info.keepShownOnClick = 1
+	info.func = Script_Filter_RarityDropDown_OnClickAll
+	UIDropDownMenu_AddButton(info)
 end
 
-Script_Filter_RarityDropDown_OnClick = function(self)
-	if ( UIDropDownMenuButton_GetChecked(self) ) then
+Script_Filter_RarityDropDown_OnClick = function(self, _, _, checked)
+	if (checked) then
 		filter_rarity[self.value] = true
 	else
-		filter_rarity[self.value] = nil
+		filter_rarity[self.value] = false
 	end
+end
+
+Script_Filter_RarityDropDown_OnClickAll = function(self)
+	local checkAll = false
+	for _, v in pairs(filter_rarity) do
+		if not v then
+			checkAll = true
+			break
+		end
+	end
+	for k, _ in pairs(filter_rarity) do
+		filter_rarity[k] = checkAll
+	end
+	UIDropDownMenu_Refresh(ItemDB_Browser_Filter_RarityDropDown)
+	UIDropDownMenu_SetText(ItemDB_Browser_Filter_RarityDropDown, FILTER)
+end
+
+Script_Filter_RarityDropDown_IsChecked = function(self)
+	return filter_rarity[self.value]
 end
 
 Script_FilterButton_OnClick = function(self)
@@ -1192,6 +1308,7 @@ Script_ItemButton_OnUpdate = function(self)
 		ResetCursor()
 	end
 end
+
 Script_ItemProviderTab_OnClick = function(self)
 	ItemDB:SelectItemProvider(self:GetID())
 end
@@ -1216,7 +1333,13 @@ Script_SearchButton_OnClick = function(self)
 	collectgarbage("collect")
 end
 
-Script_ToggleFilter_OnClick = function(self)
+Script_ShowCSVListButton_OnClick = function(self)
+	PlaySound("igMainMenuOptionCheckBoxOn")
+	ItemDB_CSVList.CSVList.EditBox:SetText(ItemDB:ExportItemList())
+	ItemDB_CSVList:Show()
+end
+
+Script_ToggleFilterButton_OnClick = function(self)
 	PlaySound("igMainMenuOptionCheckBoxOn")
 	if advanced_filter_active then
 		advanced_filter_active = false

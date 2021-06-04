@@ -337,9 +337,7 @@
 				</Anchors>
 			</Button>
 			<Button name="ItemDB_Browser_ToggleFilterButton">
-				<Size>
-					<AbsDimension x="32" y="32"/>
-				</Size>
+				<Size x="32" y="32"/>
 				<Anchors>
 					<Anchor point="TOPRIGHT" x="-9" y="-44"/>
 				</Anchors>
@@ -354,6 +352,49 @@
 				</ButtonText>
 				<NormalFont style="GameFontNormalSmall"/>
 				<PushedTextOffset x="0" y="0"/>
+			</Button>
+			<Button name="ItemDB_Browser_ShowCSVListButton">
+				<Size x="32" y="32"/>
+				<Anchors>
+					<Anchor point="RIGHT" relativeTo="ItemDB_Browser_ToggleFilterButton" relativePoint="LEFT" x="3"/>
+				</Anchors>
+				<NormalTexture file="Interface\Buttons\UI-SquareButton-Up"/>
+				<PushedTexture file="Interface\Buttons\UI-SquareButton-Down"/>
+				<DisabledTexture file="Interface\Buttons\UI-SquareButton-Disabled"/>
+				<HighlightTexture file="Interface\Buttons\UI-Common-MouseHilight" alphaMode="ADD"/>
+				<Layers>
+					<Layer level="ARTWORK" textureSubLevel="5">
+						<Texture parentKey="Icon" file="Interface\Buttons\UI-GuildButton-PublicNote-Up">
+							<Size x="16" y="16"/>
+							<Anchors>
+								<Anchor point="CENTER" />
+							</Anchors>
+						</Texture>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnMouseDown>
+						local point, relativeTo, relativePoint, x, y = self.Icon:GetPoint(1);
+						self.origX = x;
+						self.origY = y;
+						self.Icon:SetPoint(point, relativeTo, relativePoint, x-1, y-1);
+					</OnMouseDown>
+					<OnMouseUp>
+						local point, relativeTo, relativePoint = self.Icon:GetPoint(1);
+						self.Icon:SetPoint(point, relativeTo, relativePoint, self.origX, self.origY);
+					</OnMouseUp>
+					<OnHide>
+						local point, relativeTo, relativePoint = self.Icon:GetPoint(1);
+						self.Icon:SetPoint(point, relativeTo, relativePoint, self.origX, self.origY);
+					</OnHide>
+					<OnEnter>
+						if (self.tooltip) then
+							GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT");
+							GameTooltip:SetText(self.tooltip, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
+						end
+					</OnEnter>
+					<OnLeave function="GameTooltip_Hide" />
+				</Scripts>
 			</Button>
 
 			<EditBox name="ItemDB_Browser_Filter_Name" autoFocus="false" inherits="InputBoxTemplate">
@@ -484,15 +525,22 @@
 				</Anchors>
 			</Frame>
 
-			<Button name="ItemDB_Browser_Sort_Rarity" inherits="ItemDB_Browser_SortButtonTemplate" text="RARITY">
-				<Size x="189" y="19"/>
+			<Button name="ItemDB_Browser_Sort_Id" inherits="ItemDB_Browser_SortButtonTemplate" text="ID">
+				<Size x="126" y="19"/>
 				<Anchors>
-					<Anchor point="TOPLEFT" x="186" y="-82"/>
+					<Anchor point="TOPLEFT" x="190" y="-82"/>
+				</Anchors>
+			</Button>
+
+			<Button name="ItemDB_Browser_Sort_Rarity" inherits="ItemDB_Browser_SortButtonTemplate" text="RARITY">
+				<Size x="126" y="19"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="ItemDB_Browser_Sort_Id" relativePoint="RIGHT" x="-2" y="0"/>
 				</Anchors>
 			</Button>
 
 			<Button name="ItemDB_Browser_Sort_Name" inherits="ItemDB_Browser_SortButtonTemplate" text="NAME">
-				<Size x="190" y="19"/>
+				<Size x="126" y="19"/>
 				<Anchors>
 					<Anchor point="LEFT" relativeTo="ItemDB_Browser_Sort_Rarity" relativePoint="RIGHT" x="-2" y="0"/>
 				</Anchors>
@@ -609,6 +657,53 @@
 				</Frames>
 			</Frame>
 
+		</Frames>
+	</Frame>
+	
+	<Frame name="ItemDB_CSVList" parent="UIParent" frameStrata="DIALOG" hidden="true" enableMouse="true" movable="true" inherits="BasicFrameTemplate">
+		<Size x="400" y="300"/>
+		<Anchors>
+			<Anchor point="CENTER"/>
+		</Anchors>
+		<Frames>
+			<Frame name="$parentInset" useParentLevel="true" inherits="InsetFrameTemplate" parentKey="Inset">
+				<Anchors>
+					<Anchor point="TOPLEFT" x="4" y="-24" />
+					<Anchor point="BOTTOMRIGHT" x="-6" y="26" />
+				</Anchors>
+			</Frame>
+			<ScrollFrame parentKey="CSVList" name="ItemDB_CSVList_InputScrollFrame" inherits="InputScrollFrameTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.Inset" x="4" y="-4"/>
+					<Anchor point="BOTTOMRIGHT" relativeKey="$parent.Inset" x="-4" y="4"/>
+				</Anchors>
+				<KeyValues>
+					<KeyValue key="maxLetters" value="0" type="number"/>
+					<!--KeyValue key="instructions" value="LFG_LIST_NOTE_TO_LEADER" type="global"/-->
+					<KeyValue key="hideCharCount" value="true" type="boolean"/>
+				</KeyValues>
+			</ScrollFrame>
+			<Button inherits="MagicButtonTemplate" text="IMPORT">
+				<Anchors>
+					<Anchor point="BOTTOMLEFT"/>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						LibStub("AceAddon-3.0"):GetAddon("ItemDB"):ImportItemList(self:GetParent().CSVList.EditBox:GetText())
+						HideParentPanel(self)
+					</OnClick>
+				</Scripts>
+			</Button>
+			<Button inherits="MagicButtonTemplate" text="CLOSE">
+				<Anchors>
+					<Anchor point="BOTTOMRIGHT"/>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						HideParentPanel(self)
+					</OnClick>
+				</Scripts>
+			</Button>
 		</Frames>
 	</Frame>
 </Ui>
