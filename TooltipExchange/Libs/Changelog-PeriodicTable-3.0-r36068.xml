@@ -1,0 +1,21 @@
+------------------------------------------------------------------------
+r36068 | nymbia | 2007-05-21 02:43:15 -0400 (Mon, 21 May 2007) | 3 lines
+Changed paths:
+   M /trunk/PeriodicTable-3.0/PeriodicTable-3.0/PeriodicTable-3.0.lua
+   M /trunk/PeriodicTable-3.0/PeriodicTable-3.0-AllData/PeriodicTable-3.0-AllData.lua
+   M /trunk/PeriodicTable-3.0/PeriodicTable-3.0.toc
+   M /trunk/PeriodicTable-3.0/data.lua
+   M /trunk/PeriodicTable-3.0/pt3lod.bat
+   M /trunk/PeriodicTable-3.0/pt3lod.sh
+
+PeriodicTable-3.0:
+- Instead of using AllData as a fallback for missing LoD modules (and parsing it then returning during load), point to the module files themselves.
+- If users have deleted modules or done other stupid crap with their directory structure, this may cause them problems where it didn't before.  Direct all complaints to Funkeh`.
+------------------------------------------------------------------------
+r33161 | nymbia | 2007-04-20 04:04:50 -0400 (Fri, 20 Apr 2007) | 2 lines
+Changed paths:
+   M /trunk/PeriodicTable-3.0/PeriodicTable-3.0/PeriodicTable-3.0.lua
+
+PeriodicTable-3.0:
+- A couple minor optimizations
+------------------------------------------------------------------------

@@ -1,0 +1,101 @@
+------------------------------------------------------------------------
+r36539 | ckknight | 2007-05-23 01:06:05 -0400 (Wed, 23 May 2007) | 1 line
+Changed paths:
+   M /trunk/Ace2/AceComm-2.0/AceComm-2.0.lua
+   M /trunk/Ace2/AceEvent-2.0/AceEvent-2.0.lua
+
+Ace2 - remove WoW 2.0 compat.
+------------------------------------------------------------------------
+r36482 | nymbia | 2007-05-22 19:15:43 -0400 (Tue, 22 May 2007) | 4 lines
+Changed paths:
+   M /trunk/Ace2/AceEvent-2.0/AceEvent-2.0.lua
+
+.AceEvent-2.0:
+- Revert to 32527, with some added checks to ensure that revs 33121-36174 are upgraded from correctly, and more recent optimizations/bugfixes included.
+- Tested a number of different upgrade scenarios, however, users who upgrade with a path like 30806 -> 33858 -> (this) will continue to be in dire need of updating (and should still be getting a popup telling them so)
+- If anything breaks when it shouldn't (ie, with a sane upgrade path), please let me know.
+------------------------------------------------------------------------
+r36325 | ckknight | 2007-05-22 05:06:03 -0400 (Tue, 22 May 2007) | 2 lines
+Changed paths:
+   M /trunk/Ace2/Ace2.toc
+   M /trunk/Ace2/AceAddon-2.0/AceAddon-2.0.lua
+   M /trunk/Ace2/AceAddon-2.0/AceAddon-2.0.toc
+   M /trunk/Ace2/AceComm-2.0/AceComm-2.0.toc
+   M /trunk/Ace2/AceConsole-2.0/AceConsole-2.0.toc
+   M /trunk/Ace2/AceDB-2.0/AceDB-2.0.toc
+   M /trunk/Ace2/AceDebug-2.0/AceDebug-2.0.toc
+   M /trunk/Ace2/AceEvent-2.0/AceEvent-2.0.toc
+   M /trunk/Ace2/AceHook-2.1/AceHook-2.1.toc
+   M /trunk/Ace2/AceLibrary/AceLibrary.toc
+   M /trunk/Ace2/AceLocale-2.2/AceLocale-2.2.toc
+   M /trunk/Ace2/AceModuleCore-2.0/AceModuleCore-2.0.toc
+   M /trunk/Ace2/AceOO-2.0/AceOO-2.0.toc
+   M /trunk/Ace2/AceTab-2.0/AceTab-2.0.toc
+
+Ace2 - bump to 20100
+
+------------------------------------------------------------------------
+r36174 | rabbit | 2007-05-21 20:13:16 -0400 (Mon, 21 May 2007) | 1 line
+Changed paths:
+   M /trunk/Ace2/AceEvent-2.0/AceEvent-2.0.lua
+
+.AceEvent-2.0: Moving this to PerformanceFu.
+------------------------------------------------------------------------
+r35519 | rabbit | 2007-05-15 13:53:22 -0400 (Tue, 15 May 2007) | 1 line
+Changed paths:
+   M /trunk/Ace2/AceEvent-2.0/AceEvent-2.0.lua
+
+.AceEvent-2.0: Bugfix.
+------------------------------------------------------------------------
+r35478 | rabbit | 2007-05-15 01:10:15 -0400 (Tue, 15 May 2007) | 3 lines
+Changed paths:
+   M /trunk/Ace2/AceEvent-2.0/AceEvent-2.0.lua
+
+.AceEvent-2.0:
+ * If script profiling is enabled and we're running embedded, show a staticpopup to the user stating that the reported addon CPU and memory usage might be wrong.
+ * Also switch the upgrade alert to use a staticpopup instead of message.
+------------------------------------------------------------------------
+r33858 | ckknight | 2007-04-26 22:21:29 -0400 (Thu, 26 Apr 2007) | 1 line
+Changed paths:
+   M /trunk/Ace2/AceEvent-2.0/AceEvent-2.0.lua
+
+.AceEvent-2.0 - potential bugfixings.
+------------------------------------------------------------------------
+r33852 | ckknight | 2007-04-26 20:53:06 -0400 (Thu, 26 Apr 2007) | 1 line
+Changed paths:
+   M /trunk/Ace2/AceEvent-2.0/AceEvent-2.0.lua
+
+.AceEvent-2.0 - make sure to register with all events
+------------------------------------------------------------------------
+r33851 | ckknight | 2007-04-26 20:50:05 -0400 (Thu, 26 Apr 2007) | 2 lines
+Changed paths:
+   M /trunk/Ace2/AceEvent-2.0/AceEvent-2.0.lua
+
+.AceEvent-2.0 - properly revert to before the breakage started occurring.
+- note: in WoW 2.1, still use the new version
+------------------------------------------------------------------------
+r33844 | ckknight | 2007-04-26 19:15:42 -0400 (Thu, 26 Apr 2007) | 1 line
+Changed paths:
+   M /trunk/Ace2/AceEvent-2.0/AceEvent-2.0.lua
+
+.AceEvent-2.0 - for bucket events that handle units, i.e. events that start with UNIT_, before firing off the final event, make sure that all the units inside the bucket exist.
+------------------------------------------------------------------------
+r33597 | ckknight | 2007-04-24 04:47:06 -0400 (Tue, 24 Apr 2007) | 1 line
+Changed paths:
+   M /trunk/Ace2/AceEvent-2.0/AceEvent-2.0.lua
+
+.AceEvent-2.0 - turned upgrade error into a message, also checks by revision.
+------------------------------------------------------------------------
+r33494 | ckknight | 2007-04-23 07:30:44 -0400 (Mon, 23 Apr 2007) | 2 lines
+Changed paths:
+   M /trunk/Ace2/AceEvent-2.0/AceEvent-2.0.lua
+
+.AceEvent-2.0 - now holds the old version (WoW 2.0) and the new version (WoW 2.1), loading each in the respective patches. Hopefully this doesn't fuck everything to hell.
+
+------------------------------------------------------------------------
+r33493 | ckknight | 2007-04-23 07:26:32 -0400 (Mon, 23 Apr 2007) | 1 line
+Changed paths:
+   M /trunk/Ace2/AceEvent-2.0/AceEvent-2.0.lua
+
+.AceEvent-2.0 - due to a destructive upgrade bug, prevent old versions from upgrading, preliminarily.
+------------------------------------------------------------------------

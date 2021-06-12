@@ -1,0 +1,46 @@
+------------------------------------------------------------------------
+r36940 | ckknight | 2007-05-26 04:02:24 -0400 (Sat, 26 May 2007) | 1 line
+Changed paths:
+   M /trunk/Ace2/AceComm-2.0/AceComm-2.0.lua
+
+.AceComm-2.0 - don't memoize prefixes that are already 3 bytes long.
+------------------------------------------------------------------------
+r36539 | ckknight | 2007-05-23 01:06:05 -0400 (Wed, 23 May 2007) | 1 line
+Changed paths:
+   M /trunk/Ace2/AceComm-2.0/AceComm-2.0.lua
+   M /trunk/Ace2/AceEvent-2.0/AceEvent-2.0.lua
+
+Ace2 - remove WoW 2.0 compat.
+------------------------------------------------------------------------
+r36325 | ckknight | 2007-05-22 05:06:03 -0400 (Tue, 22 May 2007) | 2 lines
+Changed paths:
+   M /trunk/Ace2/Ace2.toc
+   M /trunk/Ace2/AceAddon-2.0/AceAddon-2.0.lua
+   M /trunk/Ace2/AceAddon-2.0/AceAddon-2.0.toc
+   M /trunk/Ace2/AceComm-2.0/AceComm-2.0.toc
+   M /trunk/Ace2/AceConsole-2.0/AceConsole-2.0.toc
+   M /trunk/Ace2/AceDB-2.0/AceDB-2.0.toc
+   M /trunk/Ace2/AceDebug-2.0/AceDebug-2.0.toc
+   M /trunk/Ace2/AceEvent-2.0/AceEvent-2.0.toc
+   M /trunk/Ace2/AceHook-2.1/AceHook-2.1.toc
+   M /trunk/Ace2/AceLibrary/AceLibrary.toc
+   M /trunk/Ace2/AceLocale-2.2/AceLocale-2.2.toc
+   M /trunk/Ace2/AceModuleCore-2.0/AceModuleCore-2.0.toc
+   M /trunk/Ace2/AceOO-2.0/AceOO-2.0.toc
+   M /trunk/Ace2/AceTab-2.0/AceTab-2.0.toc
+
+Ace2 - bump to 20100
+
+------------------------------------------------------------------------
+r33999 | ckknight | 2007-04-28 17:22:16 -0400 (Sat, 28 Apr 2007) | 1 line
+Changed paths:
+   M /trunk/Ace2/AceComm-2.0/AceComm-2.0.lua
+
+.AceComm-2.0 - change all (ANSI) degree symbols to \176 and all (ANSI) plus/minus symbols to \177. This should relieve issues with foreigners.
+------------------------------------------------------------------------
+r33861 | ckknight | 2007-04-26 23:02:04 -0400 (Thu, 26 Apr 2007) | 1 line
+Changed paths:
+   M /trunk/Ace2/AceComm-2.0/AceComm-2.0.lua
+
+.AceComm-2.0 - apparently this was creating a bunch of extra tables needlessly. Now uses a recycling mechanism.
+------------------------------------------------------------------------

@@ -1,0 +1,16 @@
+==Credits==
+I would like to thank all authors of numerous Ace2 based addons for their hard work and ideas, that allowed me to code TooltipExchange the way it is done.
+
+* BigWigs by Tekkub Stoutwrithe, Ammo, Shyva, Rabbit and others
+** Modular core design ideas
+** FuBar plugin Options.lua code
+** Tablet support code for Version Query and Statistics
+
+* Detox by Maia
+** Dynamic options menu idea
+
+* oRA2 by Haste, Ammo and others
+** Clear coded, easy to understand Ace2 usage
+
+* #wowace users
+** Online support
