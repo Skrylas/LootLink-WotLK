@@ -7,7 +7,7 @@ assert(TooltipExchange, "TooltipExchange not found!")
 
 local L = AceLibrary("AceLocale-2.2"):new("TooltipExchangeTypeLink")
 local storage = AceLibrary("ItemStorage-1.0")
-local MAX_ITEMID = 35000
+local MAX_ITEMID = 50000
 
 -------------------------------------------------------------------------------
 -- Localization

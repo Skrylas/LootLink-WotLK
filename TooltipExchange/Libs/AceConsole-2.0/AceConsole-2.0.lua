@@ -1,6 +1,6 @@
---[[
+﻿--[[
 Name: AceConsole-2.0
-Revision: $Rev: 33952 $
+Revision: $Rev: 1094 $
 Developed by: The Ace Development Team (http://www.wowace.com/index.php/The_Ace_Development_Team)
 Inspired By: Ace 1.x by Turan (turan@gryphon.com)
 Website: http://www.wowace.com/
@@ -14,12 +14,16 @@ License: LGPL v2.1
 ]]
 
 local MAJOR_VERSION = "AceConsole-2.0"
-local MINOR_VERSION = "$Revision: 33952 $"
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 1094 $"):match("(%d+)"))
 
 if not AceLibrary then error(MAJOR_VERSION .. " requires AceLibrary.") end
 if not AceLibrary:IsNewVersion(MAJOR_VERSION, MINOR_VERSION) then return end
 
 if not AceLibrary:HasInstance("AceOO-2.0") then error(MAJOR_VERSION .. " requires AceOO-2.0.") end
+
+local WotLK = select(4,GetBuildInfo()) >= 30000
+
+-- #AUTODOC_NAMESPACE AceConsole
 
 local MAP_ONOFF, USAGE, IS_CURRENTLY_SET_TO, IS_NOW_SET_TO, IS_NOT_A_VALID_OPTION_FOR, IS_NOT_A_VALID_VALUE_FOR, NO_OPTIONS_AVAILABLE, OPTION_HANDLER_NOT_FOUND, OPTION_HANDLER_NOT_VALID, OPTION_IS_DISABLED, KEYBINDING_USAGE, DEFAULT_CONFIRM_MESSAGE
 if GetLocale() == "deDE" then
@@ -51,16 +55,16 @@ elseif GetLocale() == "frFR" then
 elseif GetLocale() == "koKR" then
 	MAP_ONOFF = { [false] = "|cffff0000끔|r", [true] = "|cff00ff00켬|r" }
 	USAGE = "사용법"
-	IS_CURRENTLY_SET_TO = "|cffffff7f%s|r|1은;는; 현재 상태는 |cffffff7f[|r%s|cffffff7f]|r|1으로;로; 설정되어 있습니다"
-	IS_NOW_SET_TO = "|cffffff7f%s|r|1을;를; |cffffff7f[|r%s|cffffff7f]|r 상태로 변경합니다"
-	IS_NOT_A_VALID_OPTION_FOR = "[|cffffff7f%s|r]|1은;는; |cffffff7f%s|r에서 사용불가능한 설정입니다"
-	IS_NOT_A_VALID_VALUE_FOR = "[|cffffff7f%s|r]|1은;는; |cffffff7f%s|r에서 사용불가능한 설정값입니다"
-	NO_OPTIONS_AVAILABLE = "가능한 설정이 없습니다"
-	OPTION_HANDLER_NOT_FOUND = "설정 조정값인 |cffffff7f%q|r|1을;를; 찾지 못했습니다."
-	OPTION_HANDLER_NOT_VALID = "설정 조정값이 올바르지 않습니다."
+	IS_CURRENTLY_SET_TO = "|cffffff7f%s|r|1은;는; 현재 상태는 |cffffff7f[|r%s|cffffff7f]|r|1으로;로; 설정되어 있습니다."
+	IS_NOW_SET_TO = "|cffffff7f%s|r|1을;를; |cffffff7f[|r%s|cffffff7f]|r 상태로 변경합니다."
+	IS_NOT_A_VALID_OPTION_FOR = "[|cffffff7f%s|r]|1은;는; |cffffff7f%s|r에서 사용 불가능한 설정입니다."
+	IS_NOT_A_VALID_VALUE_FOR = "[|cffffff7f%s|r]|1은;는; |cffffff7f%s|r에서 사용 불가능한 설정 값입니다."
+	NO_OPTIONS_AVAILABLE = "가능한 설정이 없습니다."
+	OPTION_HANDLER_NOT_FOUND = "설정 조정 값인 |cffffff7f%q|r|1을;를; 찾지 못했습니다."
+	OPTION_HANDLER_NOT_VALID = "설정 조정 값이 올바르지 않습니다."
 	OPTION_IS_DISABLED = "|cffffff7f%s|r 설정은 사용할 수 없습니다."
-	KEYBINDING_USAGE = "<ALT-CTRL-SHIFT-KEY>" -- fix
-	DEFAULT_CONFIRM_MESSAGE = "Are you sure you want to perform `%s'?" -- fix
+	KEYBINDING_USAGE = "<ALT-CTRL-SHIFT-KEY>"
+	DEFAULT_CONFIRM_MESSAGE = "정말 당신은 `%s'|1을;를; 하시겠습니까?"
 elseif GetLocale() == "zhCN" then
 	MAP_ONOFF = { [false] = "|cffff0000\229\133\179\233\151\173|r", [true] = "|cff00ff00\229\188\128\229\144\175|r" }
 	USAGE = "\231\148\168\230\179\149"
@@ -77,16 +81,16 @@ elseif GetLocale() == "zhCN" then
 elseif GetLocale() == "zhTW" then
 	MAP_ONOFF = { [false] = "|cffff0000關閉|r", [true] = "|cff00ff00開啟|r" }
 	USAGE = "用法"
-	IS_CURRENTLY_SET_TO = "|cffffff7f%s|r 目前的設定為 |cffffff7f[|r%s|cffffff7f]|r"
-	IS_NOW_SET_TO = "|cffffff7f%s|r 現在被設定為 |cffffff7f[|r%s|cffffff7f]|r"
-	IS_NOT_A_VALID_OPTION_FOR = "[|cffffff7f%s|r] 是一個不符合規定的選項，對於 |cffffff7f%s|r"
-	IS_NOT_A_VALID_VALUE_FOR = "[|cffffff7f%s|r] 是一個不符合規定的數值，對於 |cffffff7f%s|r"
+	IS_CURRENTLY_SET_TO = "|cffffff7f%s|r目前的設定為|cffffff7f[|r%s|cffffff7f]|r"
+	IS_NOW_SET_TO = "|cffffff7f%s|r現在被設定為|cffffff7f[|r%s|cffffff7f]|r"
+	IS_NOT_A_VALID_OPTION_FOR = "對於|cffffff7f%2$s|r，[|cffffff7f%1$s|r]是一個不符合規定的選項"
+	IS_NOT_A_VALID_VALUE_FOR = "對於|cffffff7f%2$s|r，[|cffffff7f%1$s|r]是一個不符合規定的數值"
 	NO_OPTIONS_AVAILABLE = "沒有可用的選項"
-	OPTION_HANDLER_NOT_FOUND = "找不到 |cffffff7f%q|r 選項處理器。"
+	OPTION_HANDLER_NOT_FOUND = "找不到|cffffff7f%q|r選項處理器。"
 	OPTION_HANDLER_NOT_VALID = "選項處理器不符合規定。"
-	OPTION_IS_DISABLED = "|cffffff7f%s|r 已被停用。"
-	KEYBINDING_USAGE = "<ALT-CTRL-SHIFT-鍵>"
-	DEFAULT_CONFIRM_MESSAGE = "是否執行 '%s'？"
+	OPTION_IS_DISABLED = "|cffffff7f%s|r已被停用。"
+	KEYBINDING_USAGE = "<Alt-Ctrl-Shift-鍵>"
+	DEFAULT_CONFIRM_MESSAGE = "是否執行「%s」?"
 elseif GetLocale() == "esES" then
 	MAP_ONOFF = { [false] = "|cffff0000Desactivado|r", [true] = "|cff00ff00Activado|r" }
 	USAGE = "Uso"
@@ -100,6 +104,19 @@ elseif GetLocale() == "esES" then
 	OPTION_IS_DISABLED = "La opci\195\179n |cffffff7f%s|r est\195\161 desactivada."
 	KEYBINDING_USAGE = "<ALT-CTRL-SHIFT-KEY>"
 	DEFAULT_CONFIRM_MESSAGE = "Are you sure you want to perform `%s'?" -- fix
+elseif GetLocale() == "ruRU" then
+	MAP_ONOFF = { [false] = "|cffff0000Off|r", [true] = "|cff00ff00On|r" }
+	USAGE = "Использование"
+	IS_CURRENTLY_SET_TO = "|cffffff7f%s|r в настоящее время установлен на |cffffff7f[|r%s|cffffff7f]|r"
+	IS_NOW_SET_TO = "|cffffff7f%s|r теперь установлен |cffffff7f[|r%s|cffffff7f]|r"
+	IS_NOT_A_VALID_OPTION_FOR = "[|cffffff7f%s|r] - недействительная опция для |cffffff7f%s|r"
+	IS_NOT_A_VALID_VALUE_FOR = "[|cffffff7f%s|r] - недействительное значение для |cffffff7f%s|r"
+	NO_OPTIONS_AVAILABLE = "Нет доступных опций"
+	OPTION_HANDLER_NOT_FOUND = "Оператор опции |cffffff7f%q|r не найден."
+	OPTION_HANDLER_NOT_VALID = "Оператор опции недействителен."
+	OPTION_IS_DISABLED = "Опция |cffffff7f%s|r отключена."
+	KEYBINDING_USAGE = "<ALT-CTRL-SHIFT-КЛАВИША>"
+	DEFAULT_CONFIRM_MESSAGE = "Вы уверены, что хотите выполнить `%s'?"
 else -- enUS
 	MAP_ONOFF = { [false] = "|cffff0000Off|r", [true] = "|cff00ff00On|r" }
 	USAGE = "Usage"
@@ -197,7 +214,7 @@ do
 			return {}
 		end
 	end
-	
+
 	function del(t)
 		for k in pairs(t) do
 			t[k] = nil
@@ -241,13 +258,19 @@ end
 
 local function literal_tostring_prime(t, depth)
 	if type(t) == "string" then
-		return ("|cff00ff00%q|r"):format((t:gsub("|", "||"))):gsub("[\001-\012\014-\031\128-\255]", escapeChar)
+		return ("|cff00ff00%q|r"):format((t:gsub("|", "||"))):gsub("[%z\001-\009\011-\031\127-\255]", escapeChar)
 	elseif type(t) == "table" then
 		if t == _G then
 			return "|cffffea00_G|r"
 		end
 		if type(rawget(t, 0)) == "userdata" and type(t.GetObjectType) == "function" then
 			return ("|cffffea00<%s:%s>|r"):format(t:GetObjectType(), t:GetName() or "(anon)")
+		end
+		if next(t) == nil then
+			local mt = getmetatable(t)
+			if type(mt) == "table" and type(mt.__raw) == "table" then
+				t = mt.__raw
+			end
 		end
 		if recurse[t] then
 			local g = findGlobal[t]
@@ -506,17 +529,20 @@ local function findTableLevel(self, options, chat, text, index, passTable)
 			table.insert(work, token)
 		end
 	end
-	
+
 	local path = chat
 	for i = 1, index - 1 do
 		path = path .. " " .. tostring(work[i])
 	end
-	
+
+	local passValue = options.passValue or (passTable and work[index-1])
+	passTable = passTable or options
+
 	if type(options.args) == "table" then
 		local disabled, hidden = options.disabled, options.cmdHidden or options.hidden
 		if hidden then
 			if type(hidden) == "function" then
-				hidden = hidden(options.passValue or passTable and work[index - 1])
+				hidden = hidden(passValue)
 			elseif type(hidden) == "string" then
 				local handler = options.handler or self
 				local f = hidden
@@ -527,7 +553,7 @@ local function findTableLevel(self, options, chat, text, index, passTable)
 				if type(handler[f]) ~= "function" then
 					AceConsole:error("%s: %s", handler, OPTION_HANDLER_NOT_FOUND:format(tostring(f)))
 				end
-				hidden = handler[f](handler, options.passValue or passTable and work[index - 1])
+				hidden = handler[f](handler, passValue)
 				if neg then
 					hidden = not hidden
 				end
@@ -537,7 +563,7 @@ local function findTableLevel(self, options, chat, text, index, passTable)
 			disabled = true
 		elseif disabled then
 			if type(disabled) == "function" then
-				disabled = disabled(options.passValue or passTable and work[index - 1])
+				disabled = disabled(passValue)
 			elseif type(disabled) == "string" then
 				local handler = options.handler or self
 				local f = disabled
@@ -548,7 +574,7 @@ local function findTableLevel(self, options, chat, text, index, passTable)
 				if type(handler[f]) ~= "function" then
 					AceConsole:error("%s: %s", handler, OPTION_HANDLER_NOT_FOUND:format(tostring(f)))
 				end
-				disabled = handler[f](handler, options.passValue or passTable and work[index - 1])
+				disabled = handler[f](handler, passValue)
 				if neg then
 					disabled = not disabled
 				end
@@ -575,7 +601,16 @@ local function findTableLevel(self, options, chat, text, index, passTable)
 						good = true
 					end
 					if good then
-						return findTableLevel(options.handler or self, v, chat, text, index + 1, options.pass and options or nil)
+						work[index] = k -- revert it back to its original form as supplied in args
+						if options.pass then
+							passTable = passTable or options
+							if options.get and options.set then
+								passTable = options
+							end
+						else
+							passTable = nil
+						end
+						return findTableLevel(options.handler or self, v, chat, text, index + 1, passTable)
 					end
 				end
 			end
@@ -584,7 +619,7 @@ local function findTableLevel(self, options, chat, text, index, passTable)
 	for i = index, #work do
 		table.insert(argwork, work[i])
 	end
-	return options, path, argwork, options.handler or self, passTable, options.passValue or passTable and work[index - 1]
+	return options, path, argwork, options.handler or self, passTable, passValue
 end
 
 local function validateOptionsMethods(self, options, position)
@@ -827,7 +862,7 @@ local function validateOptions(options, position, baseOptions, fromPass)
 				return '"multiToggle" must be a boolean or nil if "validate" is a table', position
 			end
 		elseif options.validate == "keybinding" then
-			
+
 		else
 			if type(options.usage) ~= "string" then
 				return '"usage" must be a string', position
@@ -1111,7 +1146,7 @@ local function printUsage(self, handler, realOptions, options, path, args, passV
 				end
 			end
 		end
-		
+
 		local usage
 		if type(options.validate) == "table" then
 			if filter then
@@ -1203,7 +1238,7 @@ local function printUsage(self, handler, realOptions, options, path, args, passV
 				var = handler[options.get](handler, passValue)
 			end
 		end
-		
+
 		local usage
 		local min = options.min or 0
 		local max = options.max or 1
@@ -1323,10 +1358,14 @@ local function printUsage(self, handler, realOptions, options, path, args, passV
 				local v = options.args[k]
 				if v then
 					local v_p = passTable or v
+					if v.get and v.set then
+						v_p = v
+						passValue = nil
+					end
 					if v.passValue then
 						passValue = v.passValue
 					end
-					local k = k:gsub("%s", "-")
+					local k = tostring(k):gsub("%s", "-")
 					local disabled = v.disabled
 					if disabled then
 						if type(disabled) == "function" then
@@ -1518,7 +1557,7 @@ local function confirmPopup(message, func, ...)
 	t.timeout = 0
 	t.whileDead = 1
 	t.hideOnEscape = 1
-	
+
 	StaticPopup_Show("ACECONSOLE20_CONFIRM_DIALOG")
 end
 
@@ -1529,7 +1568,7 @@ local function handlerFunc(self, chat, msg, options)
 		msg = msg:gsub("^%s*(.-)%s*$", "%1")
 		msg = msg:gsub("%s+", " ")
 	end
-	
+
 	local realOptions = options
 	local options, path, args, handler, passTable, passValue = findTableLevel(self, options, chat, msg)
 	if options.type == "execute" then
@@ -1542,7 +1581,7 @@ local function handlerFunc(self, chat, msg, options)
 		end
 	end
 	passValue = options.passValue or passTable and passValue
-	
+
 	local hidden, disabled = options.cmdHidden or options.hidden, options.disabled
 	if hidden then
 		if type(hidden) == "function" then
@@ -1582,7 +1621,6 @@ local function handlerFunc(self, chat, msg, options)
 			end
 		end
 	end
-	local _G_this = this
 	local kind = (options.type or "group"):lower()
 	local options_p = passTable or options
 	if disabled then
@@ -1653,7 +1691,7 @@ local function handlerFunc(self, chat, msg, options)
 					return
 				end
 			end
-			
+
 			local var
 			local multiToggle
 			for k in pairs(tmp) do
@@ -1667,9 +1705,9 @@ local function handlerFunc(self, chat, msg, options)
 					for k,v in pairs(options.validate) do
 						local val = type(k) ~= "number" and k or v
 						if passValue then
-							var[val] = options_p.get(passValue, val)
+							var[val] = options_p.get(passValue, val) or nil
 						else
-							var[val] = options_p.get(val)
+							var[val] = options_p.get(val) or nil
 						end
 					end
 				else
@@ -1684,16 +1722,16 @@ local function handlerFunc(self, chat, msg, options)
 					for k,v in pairs(options.validate) do
 						local val = type(k) ~= "number" and k or v
 						if passValue then
-							var[val] = handler[options_p.get](handler, passValue, val)
+							var[val] = handler[options_p.get](handler, passValue, val) or nil
 						else
-							var[val] = handler[options_p.get](handler, val)
+							var[val] = handler[options_p.get](handler, val) or nil
 						end
 					end
 				else
 					var = handler[options_p.get](handler, passValue)
 				end
 			end
-			
+
 			if multiToggle or var ~= args[1] then
 				if multiToggle then
 					local current = var[args[1]]
@@ -1725,7 +1763,7 @@ local function handlerFunc(self, chat, msg, options)
 				end
 			end
 		end
-		
+
 		if #args > 0 then
 			local var
 			local multiToggle
@@ -1740,9 +1778,9 @@ local function handlerFunc(self, chat, msg, options)
 					for k,v in pairs(options_p.validate) do
 						local val = type(k) ~= "number" and k or v
 						if passValue then
-							var[val] = options_p.get(passValue, val)
+							var[val] = options_p.get(passValue, val) or nil
 						else
-							var[val] = options_p.get(val)
+							var[val] = options_p.get(val) or nil
 						end
 					end
 				else
@@ -1757,9 +1795,9 @@ local function handlerFunc(self, chat, msg, options)
 					for k,v in pairs(options.validate) do
 						local val = type(k) ~= "number" and k or v
 						if passValue then
-							var[val] = handler[options_p.get](handler, passValue, val)
+							var[val] = handler[options_p.get](handler, passValue, val) or nil
 						else
-							var[val] = handler[options_p.get](handler, val)
+							var[val] = handler[options_p.get](handler, val) or nil
 						end
 					end
 				else
@@ -1872,7 +1910,7 @@ local function handlerFunc(self, chat, msg, options)
 				var = not var
 			end
 		end
-		
+
 		print((options.message or IS_NOW_SET_TO):format(tostring(options.cmdName or options.name), (options.map or MAP_ONOFF)[var and true or false] or NONE), realOptions.cmdName or realOptions.name or self)
 	elseif kind == "range" then
 		local arg
@@ -1894,7 +1932,7 @@ local function handlerFunc(self, chat, msg, options)
 				if arg >= min and arg <= max then
 					good = true
 				end
-				
+
 				if good and type(options.step) == "number" and options.step > 0 then
 					local step = options.step
 					arg = math.floor((arg - min) / step + 0.5) * step + min
@@ -1921,7 +1959,7 @@ local function handlerFunc(self, chat, msg, options)
 				print(("|cffffff7f%s:|r %s %s"):format(USAGE, path, usage))
 				return
 			end
-			
+
 			local var
 			if type(options_p.get) == "function" then
 				var = options_p.get(passValue)
@@ -1931,7 +1969,7 @@ local function handlerFunc(self, chat, msg, options)
 				end
 				var = handler[options_p.get](handler, passValue)
 			end
-			
+
 			if var ~= arg then
 				if type(options_p.set) == "function" then
 					if passValue then
@@ -1951,7 +1989,7 @@ local function handlerFunc(self, chat, msg, options)
 				end
 			end
 		end
-		
+
 		if arg then
 			local var
 			if type(options_p.get) == "function" then
@@ -1962,7 +2000,7 @@ local function handlerFunc(self, chat, msg, options)
 				end
 				var = handler[options_p.get](handler, passValue)
 			end
-			
+
 			if var and options.isPercent then
 				var = tostring(var * 100) .. "%"
 			end
@@ -2008,7 +2046,7 @@ local function handlerFunc(self, chat, msg, options)
 				print(("|cffffff7f%s:|r %s {0-1} {0-1} {0-1}%s"):format(USAGE, path, options.hasAlpha and " {0-1}" or ""))
 				return
 			end
-			
+
 			if type(options_p.set) == "function" then
 				if passValue then
 					options_p.set(passValue, r,g,b,a)
@@ -2025,7 +2063,7 @@ local function handlerFunc(self, chat, msg, options)
 					handler[options_p.set](handler, r,g,b,a)
 				end
 			end
-			
+
 			local r,g,b,a
 			if type(options_p.get) == "function" then
 				r,g,b,a = options_p.get(passValue)
@@ -2035,7 +2073,7 @@ local function handlerFunc(self, chat, msg, options)
 				end
 				r,g,b,a = handler[options_p.get](handler, passValue)
 			end
-			
+
 			local s
 			if type(r) == "number" and type(g) == "number" and type(b) == "number" then
 				if options.hasAlpha and type(a) == "number" then
@@ -2057,11 +2095,11 @@ local function handlerFunc(self, chat, msg, options)
 				end
 				r,g,b,a = handler[options_p.get](handler, passValue)
 			end
-			
+
 			if not colorTable then
 				colorTable = {}
 				local t = colorTable
-				
+
 				if ColorPickerOkayButton then
 					local ColorPickerOkayButton_OnClick = ColorPickerOkayButton:GetScript("OnClick")
 					ColorPickerOkayButton:SetScript("OnClick", function()
@@ -2116,7 +2154,7 @@ local function handlerFunc(self, chat, msg, options)
 					colorTable[k] = nil
 				end
 			end
-			
+
 			if type(r) ~= "number" or type(g) ~= "number" or type(b) ~= "number" then
 				r,g,b = 1, 1, 1
 			end
@@ -2139,7 +2177,7 @@ local function handlerFunc(self, chat, msg, options)
 			t.message = options.message or IS_NOW_SET_TO
 			t.passValue = passValue
 			t.active = true
-			
+
 			if not colorFunc then
 				colorFunc = function()
 					local r,g,b = ColorPickerFrame:GetColorRGB()
@@ -2181,7 +2219,7 @@ local function handlerFunc(self, chat, msg, options)
 					end
 				end
 			end
-			
+
 			ColorPickerFrame.func = colorFunc
 			ColorPickerFrame.hasOpacity = options.hasAlpha
 			if options.hasAlpha then
@@ -2189,7 +2227,7 @@ local function handlerFunc(self, chat, msg, options)
 				ColorPickerFrame.opacity = 1 - a
 			end
 			ColorPickerFrame:SetColorRGB(r,g,b)
-			
+
 			if not colorCancelFunc then
 				colorCancelFunc = function()
 					if t.hasAlpha then
@@ -2235,9 +2273,9 @@ local function handlerFunc(self, chat, msg, options)
 					ColorPickerFrame.opacityFunc = nil
 				end
 			end
-			
+
 			ColorPickerFrame.cancelFunc = colorCancelFunc
-			
+
 			ShowUIPanel(ColorPickerFrame)
 		end
 		return
@@ -2250,13 +2288,8 @@ local function handlerFunc(self, chat, msg, options)
 		end
 		return
 	end
-	this = _G_this
 	if Dewdrop then
-		Dewdrop:Refresh(1)
-		Dewdrop:Refresh(2)
-		Dewdrop:Refresh(3)
-		Dewdrop:Refresh(4)
-		Dewdrop:Refresh(5)
+		Dewdrop:Refresh()
 	end
 end
 
@@ -2306,7 +2339,7 @@ function AceConsole:RegisterChatCommand(...) -- slashCommands, options, name
 		if #slashCommands == 0 then
 			AceConsole:error("Argument #2 to `RegisterChatCommand' must include at least one string")
 		end
-		
+
 		for k,v in pairs(slashCommands) do
 			if type(k) ~= "number" then
 				AceConsole:error("All keys in argument #2 to `RegisterChatCommand' must be numbers")
@@ -2318,7 +2351,7 @@ function AceConsole:RegisterChatCommand(...) -- slashCommands, options, name
 			end
 		end
 	end
-	
+
 	if not options then
 		options = {
 			type = 'group',
@@ -2326,7 +2359,7 @@ function AceConsole:RegisterChatCommand(...) -- slashCommands, options, name
 			handler = self
 		}
 	end
-	
+
 	if type(options) == "table" then
 		local err, position = validateOptions(options)
 		if err then
@@ -2336,40 +2369,40 @@ function AceConsole:RegisterChatCommand(...) -- slashCommands, options, name
 				AceConsole:error(err)
 			end
 		end
-		
+
 		if not options.handler then
 			options.handler = self
 		end
-		
+
 		if options.handler == self and options.type:lower() == "group" and self.class then
 			AceConsole:InjectAceOptionsTable(self, options)
 		end
 	end
-	
+
 	local chat
 	if slashCommands then
 		chat = slashCommands[1]
 	else
 		chat = _G["SLASH_"..name..1]
 	end
-	
+
 	local handler
 	if type(options) == "function" then
 		handler = options
 		for k,v in pairs(_G) do
 			if handler == v then
-				local k = k
-				handler = function(msg)
-					return _G[k](msg)
+				handler = function(msg, chatFrame)
+					return _G[k](msg, chatFrame)
 				end
+				break
 			end
 		end
 	else
-		function handler(msg)
+		function handler(msg, chatFrame)
 			handlerFunc(self, chat, msg, options)
 		end
 	end
-	
+
 	if not _G.SlashCmdList then
 		_G.SlashCmdList = {}
 	end
@@ -2384,7 +2417,7 @@ function AceConsole:RegisterChatCommand(...) -- slashCommands, options, name
 			name = string.char(math.random(26) + A - 1) .. string.char(math.random(26) + A - 1) .. string.char(math.random(26) + A - 1) .. string.char(math.random(26) + A - 1) .. string.char(math.random(26) + A - 1) .. string.char(math.random(26) + A - 1) .. string.char(math.random(26) + A - 1) .. string.char(math.random(26) + A - 1)
 		until not _G.SlashCmdList[name]
 	end
-	
+
 	if slashCommands then
 		if _G.SlashCmdList[name] then
 			local i = 0
@@ -2397,34 +2430,14 @@ function AceConsole:RegisterChatCommand(...) -- slashCommands, options, name
 				end
 			end
 		end
-		
+
 		local i = 0
 		for _,command in ipairs(slashCommands) do
-			local good = true
-			for k in pairs(_G.SlashCmdList) do
-				local j = 0
-				while true do
-					j = j + 1
-					local cmd = _G["SLASH_" .. k .. j]
-					if not cmd then
-						break
-					end
-					if command:lower() == cmd:lower() then
-						good = false
-						break
-					end
-				end
-				if not good then
-					break
-				end
-			end
-			if good then
+			i = i + 1
+			_G["SLASH_"..name..i] = command
+			if command:lower() ~= command then
 				i = i + 1
-				_G["SLASH_"..name..i] = command
-				if command:lower() ~= command then
-					i = i + 1
-					_G["SLASH_"..name..i] = command:lower()
-				end
+				_G["SLASH_"..name..i] = command:lower()
 			end
 		end
 	end
@@ -2432,7 +2445,7 @@ function AceConsole:RegisterChatCommand(...) -- slashCommands, options, name
 	if self ~= AceConsole and self.slashCommand == nil then
 		self.slashCommand = chat
 	end
-	
+
 	if not AceEvent and AceLibrary:HasInstance("AceEvent-2.0") then
 		external(AceConsole, "AceEvent-2.0", AceLibrary("AceEvent-2.0"))
 	end
@@ -2447,9 +2460,9 @@ function AceConsole:RegisterChatCommand(...) -- slashCommands, options, name
 			end
 		end
 	end
-	
+
 	AceConsole.registry[name] = options
-	
+
 	if slashCommands == tmp then
 		for i in ipairs(tmp) do
 			tmp[i] = nil
@@ -2468,24 +2481,10 @@ function AceConsole:InjectAceOptionsTable(handler, options)
 	end
 	options.handler = handler
 	local class = handler.class
-	if not class then
-		self:error("Cannot retrieve AceOptions tables from a non-object argument #2")
-	end
-	while class and class ~= AceOO.Class do
-		if type(class.GetAceOptionsDataTable) == "function" then
-			local t = class:GetAceOptionsDataTable(handler)
-			for k,v in pairs(t) do
-				if type(options.args) ~= "table" then
-					options.args = {}
-				end
-				if options.args[k] == nil then
-					options.args[k] = v
-				end
-			end
-		end
-		local mixins = class.mixins
-		if mixins then
-			for mixin in pairs(mixins) do
+	if not AceLibrary:HasInstance("AceOO-2.0") or not class then
+		if Rock then
+			-- possible Rock object
+			for mixin in Rock:IterateObjectMixins(handler) do
 				if type(mixin.GetAceOptionsDataTable) == "function" then
 					local t = mixin:GetAceOptionsDataTable(handler)
 					for k,v in pairs(t) do
@@ -2499,8 +2498,40 @@ function AceConsole:InjectAceOptionsTable(handler, options)
 				end
 			end
 		end
-		class = class.super
+	else
+		-- Ace2 object
+		while class and class ~= AceLibrary("AceOO-2.0").Class do
+			if type(class.GetAceOptionsDataTable) == "function" then
+				local t = class:GetAceOptionsDataTable(handler)
+				for k,v in pairs(t) do
+					if type(options.args) ~= "table" then
+						options.args = {}
+					end
+					if options.args[k] == nil then
+						options.args[k] = v
+					end
+				end
+			end
+			local mixins = class.mixins
+			if mixins then
+				for mixin in pairs(mixins) do
+					if type(mixin.GetAceOptionsDataTable) == "function" then
+						local t = mixin:GetAceOptionsDataTable(handler)
+						for k,v in pairs(t) do
+							if type(options.args) ~= "table" then
+								options.args = {}
+							end
+							if options.args[k] == nil then
+								options.args[k] = v
+							end
+						end
+					end
+				end
+			end
+			class = class.super
+		end
 	end
+	
 	return options
 end
 
@@ -2544,7 +2575,7 @@ function external(self, major, instance)
 	if major == "AceEvent-2.0" then
 		if not AceEvent then
 			AceEvent = instance
-			
+
 			AceEvent:embed(self)
 		end
 	elseif major == "AceTab-2.0" then
@@ -2616,12 +2647,12 @@ end
 
 local function activate(self, oldLib, oldDeactivate)
 	AceConsole = self
-	
+
 	if oldLib then
 		self.registry = oldLib.registry
 		self.nextAddon = oldLib.nextAddon
 	end
-	
+
 	if not self.registry then
 		self.registry = {}
 	else
@@ -2629,9 +2660,9 @@ local function activate(self, oldLib, oldDeactivate)
 			self:RegisterChatCommand(false, options, name)
 		end
 	end
-	
-	self:RegisterChatCommand({ "/reload", "/rl", "/reloadui" }, function() ReloadUI() end, "RELOAD")
-	self:RegisterChatCommand({ "/gm" }, function() ToggleHelpFrame() end, "GM")
+
+	self:RegisterChatCommand("/reload", "/rl", "/reloadui", ReloadUI, "RELOAD")
+	self:RegisterChatCommand("/gm", ToggleHelpFrame, "GM")
 	local t = { "/print", "/echo" }
 	local _,_,_,enabled,loadable = GetAddOnInfo("DevTools")
 	if not enabled and not loadable then
@@ -2646,9 +2677,9 @@ local function activate(self, oldLib, oldDeactivate)
 			f()
 		end
 	end, "PRINT")
-	
+
 	self:activate(oldLib, oldDeactivate)
-	
+
 	if oldDeactivate then
 		oldDeactivate(oldLib)
 	end

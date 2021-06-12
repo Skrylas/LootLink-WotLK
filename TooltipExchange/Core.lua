@@ -9,7 +9,7 @@ local dewdrop = AceLibrary("Dewdrop-2.0")
 local storage = AceLibrary("ItemStorage-1.0")
 
 local DATABASE_VERSION = 6
-local MAX_ITEMID = 35000
+local MAX_ITEMID = 50000
 
 -------------------------------------------------------------------------------
 -- Localization
@@ -294,7 +294,7 @@ TooltipExchange.options = {
 	},
 }
 
-TooltipExchange.revision = tonumber(string.sub("$Revision: 30093 $", 12, -3))
+TooltipExchange.revision = tonumber(string.sub("$Revision: 45907 $", 12, -3))
 TooltipExchange.maxRevision = TooltipExchange.revision
 TooltipExchange.transportModules = {}
 
@@ -755,13 +755,16 @@ end
 function TooltipExchange:TooltipExchange_ItemSeen(itemID)
 	local n, _, c, x, _, t, s, _, e, o = GetItemInfo(itemID)
 
-	if n and c >= self.db.profile.rarity and t ~= "Recipe" then
+	if n then
 		local hadItem = storage:HasItem(self.db.profile.storage, itemID)
-		local item = storage:AddItem(self.db.profile.storage, itemID)
 
-		if not hadItem and item then
-			self:Debug("A", storage:GetItemLink(self.db.profile.storage, item))
-			self:DatabaseStatistics(true)
+		if (hadItem or c >= self.db.profile.rarity) and t ~= "Recipe" then
+			local item = storage:AddItem(self.db.profile.storage, itemID)
+
+			if not hadItem and item then
+				self:Debug("A", storage:GetItemLink(self.db.profile.storage, item))
+				self:DatabaseStatistics(true)
+			end
 		end
 	end
 end

@@ -87,7 +87,7 @@ TooltipExchangeMemo.commands = {
 	},
 }
 
-TooltipExchangeMemo.revision = tonumber(string.sub("$Revision: 29951 $", 12, -3))
+TooltipExchangeMemo.revision = tonumber(string.sub("$Revision: 49865 $", 12, -3))
 
 -------------------------------------------------------------------------------
 -- Main
@@ -387,6 +387,7 @@ function TooltipExchangeMemo:PopulateMemoList()
 			name = listInfo.name,
 			desc = string.format(L["%s memo list options."], listInfo.name),
 			order = 100 * (1 + (listInfo.type or 1)) + 3,
+			onClick = function() self:ShowMemoList(listInfo.name) dewdrop:Close() end,
 			args = {},
 		}
 

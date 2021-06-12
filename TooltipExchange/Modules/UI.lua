@@ -1,22 +1,56 @@
 
 assert(TooltipExchange, "TooltipExchange not found!")
 
--------------------------------------------------------------------------------
+------------------------------------------------------------------------
 -- Locals
---------------------------------------------------------------------------------
+-------------------------------------------------------------------------
 
 local L = AceLibrary("AceLocale-2.2"):new("TooltipExchangeUI")
 local dewdrop = AceLibrary("Dewdrop-2.0")
-local periodic = AceLibrary("PeriodicTable-3.0")
+local periodic = LibStub:GetLibrary("LibPeriodicTable-3.1")
 local storage = AceLibrary("ItemStorage-1.0")
 
 local MIN_PATTERN = 3
 local MAX_RESULTS = 50
-local MAX_ITEMID = 35000
+local MAX_ITEMID = 50000
 
--------------------------------------------------------------------------------
+local ITEM_QUALITY_COLORS = {}
+for i, v in pairs(_G.ITEM_QUALITY_COLORS) do
+	ITEM_QUALITY_COLORS[i] = v
+end
+if not ITEM_QUALITY_COLORS[7] then
+	ITEM_QUALITY_COLORS[7] = ITEM_QUALITY_COLORS[6]
+end
+
+local function periodic_ItemSearch(item)
+	assert(type(item) == "number" or type(item) == "string", "Invalid arg1: item must be a number or item link")
+	item = tonumber(item) or tonumber(item:match("item:(%d+)"))
+	if item == 0 then
+		self:error("Invalid arg1: invalid item.")
+	end
+	local matches = {}
+	for k,v in pairs(periodic.sets) do
+		local _, set = periodic:ItemInSet(item, k)
+		if set then
+			local have
+			for _,v in ipairs(matches) do
+				if v == set then
+					have = true
+				end
+			end
+			if not have then
+				table.insert(matches, set)
+			end
+		end
+	end
+	if #matches > 0 then
+		return matches
+	end
+end
+
+------------------------------------------------------------------------
 -- Localization
--------------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 L:RegisterTranslations("enUS", function() return {
 	["Backdrop Alpha"] = true,
@@ -126,6 +160,7 @@ L:RegisterTranslations("enUS", function() return {
 	["Quiver"] = true,
 	["Trade Goods"] = true,
 	["Weapon"] = true,
+	["Gem"] = true,
 
 	["Alchemy"] = true,
 	["Blacksmithing"] = true,
@@ -134,6 +169,7 @@ L:RegisterTranslations("enUS", function() return {
 	["Enchanting"] = true,
 	["Engineering"] = true,
 	["First Aid"] = true,
+	["Inscription"] = true,
 	["Jewelcrafting"] = true,
 	["Leatherworking"] = true,
 	["Tailoring"] = true,
@@ -166,38 +202,51 @@ L:RegisterTranslations("enUS", function() return {
 	["Two-Handed Swords"] = true,
 	["Wands"] = true,
 	["Devices"] = true,
-	["Gems"] = true,
 	["Explosives"] = true,
 	["Parts"] = true,
 	["Trade Goods"] = true,
 
+	["Blue"] = true,
+	["Green"] = true,
+	["Orange"] = true,
+	["Meta"] = true,
+	["Prismatic"] = true,
+	["Purple"] = true,
+	["Red"] = true,
+	["Simple"] = true,
+	["Yellow" ] = true,
+
 	["None"] = true,
+	["Required Level"] = true, ["Requires Level {0}"] = true,
 	["Damage Per Second"] = true, ["({0} damage per second)"] = true,
 	["Strength"] = true, ["+{0} Strength"] = true,
 	["Agility"] = true, ["+{0} Agility"] = true,
 	["Stamina"] = true, ["+{0} Stamina"] = true,
 	["Intellect"] = true, ["+{0} Intellect"] = true,
 	["Spirit"] = true, ["+{0} Spirit"] = true,
-	["Attack Power"] = true, ["Equip: Increases attack power by {0}."] = true,
-	["Ranged Attack Power"] = true, ["Equip: Increases ranged attack power by {0}."] = true,
-	["Critical Rating"] = true, ["Equip: Increases your critical strike rating by {0}."] = true,
-	["Hit Rating"] = true, ["Equip: Increases your hit rating by {0}."] = true,
-	["Parry Rating"] = true, ["Equip: Increases your parry rating by {0}."] = true,
-	["Dodge Rating"] = true, ["Equip: Increases your dodge rating by {0}."] = true,
-	["Block Rating"] = true, ["Equip: Increases your block rating by {0}."] = true,
-	["Block Value"] = true, ["Equip: Increases the block value of your shield by {0}."] = true,
-	["Defense Rating"] = true, ["Equip: Increases defense rating by {0}."] = true,
-	["Healing"] = true, ["Equip: Increases healing done by spells and effects by up to {0}."] = true,
-	["Spell Damage"] = true, ["Equip: Increases damage and healing done by magical spells and effects by up to {0}."] = true,
-	["Spell Critical Rating"] = true, ["Equip: Increases your spell critical strike rating by {0}."] = true,
-	["Spell Hit Rating"] = true, ["Equip: Increases your spell hit rating by {0}."] = true,
-	["Spell Penetration"] = true, ["Equip: Increases your spell penetration by {0}."] = true,
 	["Arcane Resistance"] = true, ["+{0} Arcane Resistance"] = true,
 	["Fire Resistance"] = true, ["+{0} Fire Resistance"] = true,
 	["Frost Resistance"] = true, ["+{0} Frost Resistance"] = true,
 	["Nature Resistance"] = true, ["+{0} Nature Resistance"] = true,
 	["Shadow Resistance"] = true, ["+{0} Shadow Resistance"] = true,
-	["Required Level"] = true, ["Requires Level {0}"] = true,
+
+	["Armor Penetration"] = true, ["Equip: Increases your armor penetration rating by {0}."] = true,
+	["Attack Power"] = true, ["Equip: Increases attack power by {0}."] = true,
+	["Block Rating"] = true, ["Equip: Increases your block rating by {0}."] = true,
+	["Block Value"] = true, ["Equip: Increases the block value of your shield by {0}."] = true,
+	["Critical Rating"] = true, ["Equip: Increases your critical strike rating by {0}."] = true,
+	["Defense Rating"] = true, ["Equip: Increases defense rating by {0}."] = true,
+	["Dodge Rating"] = true, ["Equip: Increases your dodge rating by {0}."] = true,
+	["Expertise Rating"] = true, ["Equip: Increases your expertise rating by {0}."] = true,
+	["Feral Attack Power"] = true, ["Equip: Increases attack power by {0} in Cat, Bear, Dire Bear, and Moonkin forms only."] = true,
+	["Haste Rating"] = true, ["Equip: Improves haste rating by {0}."] = true,
+	["Health Regeneration"] = true, ["Equip: Restores {0} health per 5 sec."] = true,
+	["Hit Rating"] = true, ["Equip: Increases your hit rating by {0}."] = true,
+	["Mana Regeneration"] = true, ["Equip: Restores {0} mana per 5 sec."] = true,
+	["Parry Rating"] = true, ["Equip: Increases your parry rating by {0}."] = true,
+	["Ranged Attack Power"] = true, ["Equip: Increases ranged attack power by {0}."] = true,
+	["Spell Penetration"] = true, ["Equip: Increases your spell penetration by {0}."] = true,
+	["Spell Power"] = true, ["Equip: Increases spell power by {0}."] = true,
 } end)
 
 L:RegisterTranslations("koKR", function() return {
@@ -316,6 +365,7 @@ L:RegisterTranslations("koKR", function() return {
 	["Enchanting"] = "Enchanting",
 	["Engineering"] = "Engineering",
 	["First Aid"] = "First Aid",
+	["Inscription"] = "Inscription",
 	["Jewelcrafting"] = "Jewelcrafting",
 	["Leatherworking"] = "Leatherworking",
 	["Tailoring"] = "Tailoring",
@@ -347,39 +397,53 @@ L:RegisterTranslations("koKR", function() return {
 	["Two-Handed Maces"] = "양손 둔기",
 	["Two-Handed Swords"] = "양손 도검",
 	["Wands"] = "마법봉",
+
+	["Blue"] = true,
+	["Green"] = true,
+	["Orange"] = true,
+	["Meta"] = true,
+	["Prismatic"] = true,
+	["Purple"] = true,
+	["Red"] = true,
+	["Simple"] = true,
+	["Yellow" ] = true,
+
 	["Devices"] = "Devices",
-	["Gems"] = "Gems",
 	["Explosives"] = "Explosives",
 	["Parts"] = "Parts",
 	["Trade Goods"] = "Trade Goods",
 
 	["None"] = "없음",
+	["Required Level"] = "최소 요구 레벨", ["Requires Level {0}"] = "최소 요구 레벨 {0}",
 	["Damage Per Second"] = "초당 공격력", ["({0} damage per second)"] = "(초당 공격력 {0})",
 	["Strength"] = "힘", ["+{0} Strength"] = "힘 +{0}",
 	["Agility"] = "민첩", ["+{0} Agility"] = "민첩 +{0}",
 	["Stamina"] = "체력", ["+{0} Stamina"] = "체력 +{0}",
 	["Intellect"] = "지능", ["+{0} Intellect"] = "지능 +{0}",
 	["Spirit"] = "정신력", ["+{0} Spirit"] = "정신력 +{0}",
-	["Attack Power"] = "전투력", ["Equip: Increases attack power by {0}."] = "착용 효과: 전투력이 {0}만큼 증가합니다.",
-	["Ranged Attack Power"] = "원거리 전투력", ["Equip: Increases ranged attack power by {0}."] = "착용 효과: 원거리 전투력이 {0}만큼 증가합니다.",
-	["Critical Rating"] = "치명타 적중도", ["Equip: Increases your critical strike rating by {0}."] = "착용 효과: 치명타 적중도가 {0}만큼 증가합니다.",
-	["Hit Rating"] = "적중도", ["Equip: Increases your hit rating by {0}."] = "착용 효과: 적중도가 {0}만큼 증가합니다.",
-	["Parry Rating"] = "무기 막기 숙련도", ["Equip: Increases your parry rating by {0}."] = "착용 효과: 무기 막기 숙련도가 {0}만큼 증가합니다.",
-	["Dodge Rating"] = "회피 숙련도", ["Equip: Increases your dodge rating by {0}."] = "착용 효과: 회피 숙련도가 {0}만큼 증가합니다.",
-	["Block Rating"] = "방패 막기 숙련도", ["Equip: Increases your block rating by {0}."] = "착용 효과: 방패 막기 숙련도가 {0}만큼 증가합니다.",
-	["Block Value"] = "피해 방어량", ["Equip: Increases the block value of your shield by {0}."] = "착용 효과: 방패의 피해 방어량이 {0}만큼 증가합니다.",
-	["Defense Rating"] = "방어 숙련도", ["Equip: Increases defense rating by {0}."] = "착용 효과: 방어 숙련도가 {0}만큼 증가합니다.",
-	["Healing"] = "치유량", ["Equip: Increases healing done by spells and effects by up to {0}."] = "착용 효과: 모든 주문 및 효과에 의한 치유량이 최대 {0}만큼 증가합니다.",
-	["Spell Damage"] = "마법데미지", ["Equip: Increases damage and healing done by magical spells and effects by up to {0}."] = "착용 효과: 모든 주문 및 효과에 의한 피해와 치유량이 최대 {0}만큼 증가합니다.",
-	["Spell Critical Rating"] = "주문 극대화 적중도", ["Equip: Increases your spell critical strike rating by {0}."] = "착용 효과: 주문 극대화 적중도가 {0}만큼 증가합니다.",
-	["Spell Hit Rating"] = "주문 적중도", ["Equip: Increases your spell hit rating by {0}."] = "착용 효과: 주문 적중도가 {0}만큼 증가합니다.",
-	["Spell Penetration"] = "마법 저항력 감소", ["Equip: Decreases the magical resistances of your spell targets by {0}."] = "착용 효과: 자신의 주문에 대한 대상의 마법 저항력을 {0}만큼 감소시킵니다.",
 	["Arcane Resistance"] = "비전 저항력", ["+{0} Arcane Resistance"] = "비전 저항력 +{0}",
 	["Fire Resistance"] = "화염 저항력", ["+{0} Fire Resistance"] = "화염 저항력 +{0}",
 	["Frost Resistance"] = "냉기 저항력", ["+{0} Frost Resistance"] = "냉기 저항력 +{0}",
 	["Nature Resistance"] = "자연 저항력", ["+{0} Nature Resistance"] = "자연 저항력 +{0}",
 	["Shadow Resistance"] = "암흑 저항력", ["+{0} Shadow Resistance"] = "암흑 저항력 +{0}",
-	["Required Level"] = "최소 요구 레벨", ["Requires Level {0}"] = "최소 요구 레벨 {0}",
+
+--	["Armor Penetration"] = "Armor Penetration", ["Equip: Your attacks ignore {0} of your opponent's armor."] = "Equip: Your attacks ignore {0} of your opponent's armor.",
+	["Attack Power"] = "전투력", ["Equip: Increases attack power by {0}."] = "착용 효과: 전투력이 {0}만큼 증가합니다.",
+	["Block Rating"] = "방패 막기 숙련도", ["Equip: Increases your block rating by {0}."] = "착용 효과: 방패 막기 숙련도가 {0}만큼 증가합니다.",
+	["Block Value"] = "피해 방어량", ["Equip: Increases the block value of your shield by {0}."] = "착용 효과: 방패의 피해 방어량이 {0}만큼 증가합니다.",
+	["Critical Rating"] = "치명타 적중도", ["Equip: Increases your critical strike rating by {0}."] = "착용 효과: 치명타 적중도가 {0}만큼 증가합니다.",
+	["Defense Rating"] = "방어 숙련도", ["Equip: Increases defense rating by {0}."] = "착용 효과: 방어 숙련도가 {0}만큼 증가합니다.",
+	["Dodge Rating"] = "회피 숙련도", ["Equip: Increases your dodge rating by {0}."] = "착용 효과: 회피 숙련도가 {0}만큼 증가합니다.",
+--	["Expertise Rating"] = "Expertise Rating", ["Equip: Increases your expertise rating by {0}."] = "Equip: Increases your expertise rating by {0}.",
+--	["Feral Attack Power"] = "Feral Attack Power", ["Equip: Increases attack power by {0} in Cat, Bear, Dire Bear, and Moonkin forms only."] = "Equip: Increases attack power by {0} in Cat, Bear, Dire Bear, and Moonkin forms only.",
+--	["Haste Rating"] = "Haste Rating", ["Equip: Improves haste rating by {0}."] = "Equip: Improves haste rating by {0}.",
+--	["Health Regeneration"] = "Health Regeneration", ["Equip: Restores {0} health per 5 sec."] = "Equip: Restores {0} health per 5 sec.",
+	["Hit Rating"] = "적중도", ["Equip: Increases your hit rating by {0}."] = "착용 효과: 적중도가 {0}만큼 증가합니다.",
+--	["Mana Regeneration"] = "Mana Regeneration", ["Equip: Restores {0} mana per 5 sec."] = "Equip: Restores {0} mana per 5 sec.",
+	["Parry Rating"] = "무기 막기 숙련도", ["Equip: Increases your parry rating by {0}."] = "착용 효과: 무기 막기 숙련도가 {0}만큼 증가합니다.",
+	["Ranged Attack Power"] = "원거리 전투력", ["Equip: Increases ranged attack power by {0}."] = "착용 효과: 원거리 전투력이 {0}만큼 증가합니다.",
+	["Spell Penetration"] = "마법 저항력 감소", ["Equip: Decreases the magical resistances of your spell targets by {0}."] = "착용 효과: 자신의 주문에 대한 대상의 마법 저항력을 {0}만큼 감소시킵니다.",
+--	["Spell Power"] = true, ["Equip: Increases spell power by {0}."] = true,
 } end)
 
 local reportTargets = {
@@ -435,6 +499,7 @@ local typeList = {
 	{ text = L["Armor"], value = "Armor" },
 	{ text = L["Consumable"], value = "Consumable" },
 	{ text = L["Container"], value = "Container" },
+	{ text = L["Gem"], value = "Gem" },
 	{ text = L["Key"], value = "Key" },
 	{ text = L["Miscellaneous"], value = "Miscellaneous" },
 	{ text = L["Reagent"], value = "Reagent" },
@@ -459,6 +524,16 @@ local subtypeList = {
 	{ parent = "Armor", text = L["Totems"], value = "Totems" },
 	{ parent = "Armor", text = L["Plate"], value = "Plate" },
 
+	{ parent = "Gem", text = L["Blue"], value = "Blue" },
+	{ parent = "Gem", text = L["Green"], value = "Green" },
+	{ parent = "Gem", text = L["Orange"], value = "Orange" },
+	{ parent = "Gem", text = L["Meta"], value = "Meta" },
+	{ parent = "Gem", text = L["Prismatic"], value = "Prismatic" },
+	{ parent = "Gem", text = L["Purple"], value = "Purple" },
+	{ parent = "Gem", text = L["Red"], value = "Red" },
+	{ parent = "Gem", text = L["Simple"], value = "Simple" },
+	{ parent = "Gem", text = L["Yellow"], value = "Yellow" },
+
 	{ parent = "Recipe", text = L["Alchemy"], value = "Alchemy" },
 	{ parent = "Recipe", text = L["Blacksmithing"], value = "Blacksmithing" },
 	{ parent = "Recipe", text = L["Book"], value = "Book" },
@@ -466,6 +541,7 @@ local subtypeList = {
 	{ parent = "Recipe", text = L["Enchanting"], value = "Enchanting" },
 	{ parent = "Recipe", text = L["Engineering"], value = "Engineering" },
 	{ parent = "Recipe", text = L["First Aid"], value = "First Aid" },
+	{ parent = "Recipe", text = L["Inscription"], value = "Inscription" },
 	{ parent = "Recipe", text = L["Jewelcrafting"], value = "Jewelcrafting" },
 	{ parent = "Recipe", text = L["Leatherworking"], value = "Leatherworking" },
 	{ parent = "Recipe", text = L["Tailoring"], value = "Tailoring" },
@@ -489,7 +565,6 @@ local subtypeList = {
 	{ parent = "Weapon", text = L["Wands"], value = "Wands" },
 
 	{ parent = "Trade Goods", text = L["Devices"], value = "Devices" },
-	{ parent = "Trade Goods", text = L["Gems"], value = "Gems" },
 	{ parent = "Trade Goods", text = L["Explosives"], value = "Explosives" },
 	{ parent = "Trade Goods", text = L["Parts"], value = "Parts" },
 	{ parent = "Trade Goods", text = L["Trade Goods"], value = "Trade Goods" },
@@ -497,37 +572,45 @@ local subtypeList = {
 
 local statList = {
 	{ text = L["None"], value = nil },
+	{ text = L["Required Level"], value = L["Requires Level {0}"] },
 	{ text = L["Damage Per Second"], value = L["({0} damage per second)"] },
+	
 	{ text = L["Strength"], value = L["+{0} Strength"] },
 	{ text = L["Agility"], value = L["+{0} Agility"] },
 	{ text = L["Stamina"], value = L["+{0} Stamina"] },
 	{ text = L["Intellect"], value = L["+{0} Intellect"] },
 	{ text = L["Spirit"], value = L["+{0} Spirit"] },
+	
 	{ text = L["Attack Power"], value = L["Equip: Increases attack power by {0}."] },
-	{ text = L["Ranged Attack Power"], value = L["Equip: Increases ranged attack power by {0}."] },
+	{ text = L["Spell Power"], value = L["Equip: Increases spell power by {0}."] },
+--	{ text = L["Ranged Attack Power"], value = L["Equip: Increases ranged attack power by {0}."] },
+--	{ text = L["Feral Attack Power"], value = L["Equip: Increases attack power by {0} in Cat, Bear, Dire Bear, and Moonkin forms only."] },
 	{ text = L["Critical Rating"], value = L["Equip: Increases your critical strike rating by {0}."] },
 	{ text = L["Hit Rating"], value = L["Equip: Increases your hit rating by {0}."] },
-	{ text = L["Parry Rating"], value = L["Equip: Increases your parry rating by {0}."] },
-	{ text = L["Dodge Rating"], value = L["Equip: Increases your dodge rating by {0}."] },
+	{ text = L["Expertise Rating"], value = L["Equip: Increases your expertise rating by {0}."] },
+	{ text = L["Haste Rating"], value = L["Equip: Improves haste rating by {0}."] },
+	{ text = L["Armor Penetration"], value = L["Equip: Increases your armor penetration rating by {0}."] },
+	{ text = L["Spell Penetration"], value = L["Equip: Increases your spell penetration by {0}."] },
+	
 	{ text = L["Block Rating"], value = L["Equip: Increases your block rating by {0}."] },
 	{ text = L["Block Value"], value = L["Equip: Increases the block value of your shield by {0}."] },
 	{ text = L["Defense Rating"], value = L["Equip: Increases defense rating by {0}."] },
-	{ text = L["Healing"], value = L["Equip: Increases healing done by spells and effects by up to {0}."] },
-	{ text = L["Spell Damage"], value = L["Equip: Increases damage and healing done by magical spells and effects by up to {0}."] },
-	{ text = L["Spell Critical Rating"], value = L["Equip: Increases your spell critical strike rating by {0}."] },
-	{ text = L["Spell Hit Rating"], value = L["Equip: Increases your spell hit rating by {0}."] },
-	{ text = L["Spell Penetration"], value = L["Equip: Increases your spell penetration by {0}."] },
+	{ text = L["Dodge Rating"], value = L["Equip: Increases your dodge rating by {0}."] },
+	{ text = L["Parry Rating"], value = L["Equip: Increases your parry rating by {0}."] },
+
+	{ text = L["Health Regeneration"], value = L["Equip: Restores {0} health per 5 sec."] },
+	{ text = L["Mana Regeneration"], value = L["Equip: Restores {0} mana per 5 sec."] },
+	
 	{ text = L["Arcane Resistance"], value = L["+{0} Arcane Resistance"]},
 	{ text = L["Fire Resistance"], value = L["+{0} Fire Resistance"]},
 	{ text = L["Frost Resistance"], value = L["+{0} Frost Resistance"]},
 	{ text = L["Nature Resistance"], value = L["+{0} Nature Resistance"]},
 	{ text = L["Shadow Resistance"], value = L["+{0} Shadow Resistance"]},
-	{ text = L["Required Level"], value = L["Requires Level {0}"] },
 }
 
--------------------------------------------------------------------------------
+------------------------------------------------------------------------
 -- Declaration
--------------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 TooltipExchangeUI = TooltipExchange:NewModule(L["User Interface"])
 TooltipExchangeUI.notToggable = true
@@ -753,11 +836,11 @@ TooltipExchangeUI.options = {
 	},
 }
 
-TooltipExchangeUI.revision = tonumber(string.sub("$Revision: 32534 $", 12, -3))
+TooltipExchangeUI.revision = tonumber(string.sub("$Revision: 81578 $", 12, -3))
 
--------------------------------------------------------------------------------
+------------------------------------------------------------------------
 -- Main
--------------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 function TooltipExchangeUI:OnInitialize()
 	self.searchID = nil
@@ -777,7 +860,6 @@ function TooltipExchangeUI:OnInitialize()
 end
 
 function TooltipExchangeUI:OnEnable()
-
 	self:RegisterEvent("TooltipExchange_OpenUI")
 	self:RegisterEvent("TooltipExchange_LocalResults")
 	self:RegisterEvent("TooltipExchange_ExternalResults")
@@ -797,9 +879,9 @@ function TooltipExchangeUI:OnDisable()
 	end
 end
 
--------------------------------------------------------------------------------
+------------------------------------------------------------------------
 -- Events and Hooks
--------------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 function TooltipExchangeUI:TooltipExchange_OpenUI(dontHide)
 	self:OpenUI(dontHide)
@@ -914,9 +996,9 @@ function TooltipExchangeUI:TooltipExchange_ResultsChanged()
 	self:UpdateResults()
 end
 
--------------------------------------------------------------------------------
+------------------------------------------------------------------------
 -- Module Specific Communication
--------------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 function TooltipExchangeUI:DS(sender, searchID, definition, searchHash)
 	local matches, n = {}, 0
@@ -1059,9 +1141,9 @@ function TooltipExchangeUI:DT(sender, searchID, tab)
 	end
 end
 
--------------------------------------------------------------------------------
+------------------------------------------------------------------------
 -- Search
--------------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 function TooltipExchangeUI:ClearResults()
 	self.searchID = nil
@@ -1206,9 +1288,9 @@ function TooltipExchangeUI:ReportResults(target)
 	end
 end
 
--------------------------------------------------------------------------------
+------------------------------------------------------------------------
 -- Interface
--------------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 function TooltipExchangeUI:OpenUI(dontHide)
 	self:CreateUI()
@@ -1247,12 +1329,12 @@ function TooltipExchangeUI:CreateUI()
 	f:SetMovable(true)
 	f:EnableMouse(true)
 	f:RegisterForDrag("LeftButton") 
-	f:SetScript("OnDragStart", function()
+	f:SetScript("OnDragStart", function(this)
 		if not self.db.profile.locked then
 			this:StartMoving()
 		end
 	end)
-	f:SetScript("OnDragStop", function()
+	f:SetScript("OnDragStop", function(this)
 		if not self.db.profile.locked then
 			this:StopMovingOrSizing()
 			self:SavePosition()
@@ -1264,19 +1346,19 @@ function TooltipExchangeUI:CreateUI()
 	f.menuButton:SetWidth(240)
 	f.menuButton:SetHeight(19)
 	f.menuButton:RegisterForDrag("LeftButton")
-	f.menuButton:SetScript("OnDragStart", function()
+	f.menuButton:SetScript("OnDragStart", function(this)
 		if not self.db.profile.locked then
 			this:GetParent():StartMoving()
 		end
 	end)
-	f.menuButton:SetScript("OnDragStop", function()
+	f.menuButton:SetScript("OnDragStop", function(this)
 		if not self.db.profile.locked then
 			this:GetParent():StopMovingOrSizing()
 			self:SavePosition()
 		end
 	end)
 	f.menuButton:RegisterForClicks("RightButtonUp")
-	f.menuButton:SetScript("OnClick", function()
+	f.menuButton:SetScript("OnClick", function(this, btn)
 		if dewdrop:IsOpen(f) then
 			dewdrop:Close()
 		else
@@ -1295,7 +1377,7 @@ function TooltipExchangeUI:CreateUI()
 					}
 
 					for k, v in pairs(self.core.options.args) do
-						if v.order > 0 then
+						if v.order and v.order > 0 then
 							self.saneOptions.args[k] = v
 						end
 					end
@@ -1329,8 +1411,8 @@ function TooltipExchangeUI:CreateUI()
 	f.closeButton:SetPoint("TOPRIGHT", f) 
 
 	f.scroll = CreateFrame("ScrollFrame", "TooltipExchange_ItemsScrollFrame", f, "FauxScrollFrameTemplate")
-	f.scroll:SetScript("OnVerticalScroll", function()
-		FauxScrollFrame_OnVerticalScroll(19, function()
+	f.scroll:SetScript("OnVerticalScroll", function(this, value)
+		FauxScrollFrame_OnVerticalScroll(this, value, 19, function()
 			self:UpdateResults()
 		end)
 	end)
@@ -1353,20 +1435,20 @@ function TooltipExchangeUI:CreateUI()
 		f:SetWidth(240)
 		f:SetHeight(18)
 		f:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-		f:SetScript("OnEnter", function()
+		f:SetScript("OnEnter", function(this)
 			if this:IsVisible() then
 				self:ShowItemTooltip(this.itemID, this.icon:GetTexture())
 				this.highlight:Show()
 			end
 		end)
-		f:SetScript("OnLeave", function()
+		f:SetScript("OnLeave", function(this)
 			self.tooltips.show:Hide()
 			self.tooltips.data:Hide()
 			this.highlight:Hide()
 		end)
-		f:SetScript("OnClick", function()
+		f:SetScript("OnClick", function(this, btn)
 			if this:IsVisible() then
-				if arg1 == "LeftButton" then
+				if btn == "LeftButton" then
 					local itemID = f.itemID
 					local link
 
@@ -1419,7 +1501,7 @@ function TooltipExchangeUI:CreateUI()
 							self.doubleClickCheck = nil
 						end, 0.5)
 					end
-				elseif arg1 == "RightButton" then
+				elseif btn == "RightButton" then
 					if dewdrop:IsOpen(f) then
 						dewdrop:Close()
 					else
@@ -1857,7 +1939,7 @@ function TooltipExchangeUI:UpdateDataTooltip(itemID, item)
 	end
 
 	if self.db.profile.sourceInfo then
-		local d = periodic:ItemSearch(itemID)
+		local d = periodic_ItemSearch(itemID)
 
 		if d and #(d) > 0 then
 			local a = {}
@@ -2074,9 +2156,9 @@ function TooltipExchangeUI:RestorePosition()
 	self.frames.main:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x, y)
 end
 
--------------------------------------------------------------------------------
+------------------------------------------------------------------------
 -- Dynamic Menu
--------------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 function TooltipExchangeUI:CreateStaticMenu()
 	local a = self.commands.report.args
@@ -2122,11 +2204,11 @@ function TooltipExchangeUI:CreateStaticMenu()
 	end
 end
 
--------------------------------------------------------------------------------
+------------------------------------------------------------------------
 -- Generic UI Code
--------------------------------------------------------------------------------
+------------------------------------------------------------------------
 
---[[-----------------------------------------------------------------
+--[[--------------------------------------------------------------------
   CreateTextBox(parent, spec)
 
 	width (80)
@@ -2136,7 +2218,7 @@ end
 	justify ("LEFT")
 	func (nil)
 	anchor (nil)
------------------------------------------------------------------]]--
+--------------------------------------------------------------------]]--
 
 function TooltipExchangeUI:CreateTextBox(parent, spec)
 	local f = CreateFrame("EditBox", nil, parent)

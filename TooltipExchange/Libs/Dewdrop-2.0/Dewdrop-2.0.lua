@@ -1,6 +1,6 @@
 ﻿--[[
 Name: Dewdrop-2.0
-Revision: $Rev: 37109 $
+Revision: $Rev: 320 $
 Author(s): ckknight (ckknight@gmail.com)
 Website: http://ckknight.wowinterface.com/
 Documentation: http://wiki.wowace.com/index.php/Dewdrop-2.0
@@ -11,12 +11,14 @@ License: LGPL v2.1
 ]]
 
 local MAJOR_VERSION = "Dewdrop-2.0"
-local MINOR_VERSION = "$Revision: 37109 $"
+local MINOR_VERSION = tonumber(strmatch("$Revision: 320 $", "%d+")) + 90000
 
 if not AceLibrary then error(MAJOR_VERSION .. " requires AceLibrary") end
 if not AceLibrary:IsNewVersion(MAJOR_VERSION, MINOR_VERSION) then return end
 
 local Dewdrop = {}
+
+local SharedMedia
 
 local CLOSE = "Close"
 local CLOSE_DESC = "Close the menu."
@@ -34,7 +36,7 @@ if GetLocale() == "deDE" then
 	CLOSE_DESC = "Men\195\188 schlie\195\159en."
 	VALIDATION_ERROR = "Validierungsfehler."
 	USAGE_TOOLTIP = "Benutzung: %s."
-	RANGE_TOOLTIP = "Beachte das du mit dem Mausrad scrollen kannst solange du \195\188ber dem Schieberegler bist, um 10er Spr\195\188nge zu machen."
+	RANGE_TOOLTIP = "Beachte das du mit dem Mausrad scrollen kannst solange du mit dem Mauszeiger \195\188ber dem Schieberegler bist, um feinere Spr\195\188nge zu machen."
 	RESET_KEYBINDING_DESC = "Escape dr\195\188cken, um die Tastenbelegung zu l\195\182schen."
 	KEY_BUTTON1 = "Linke Maustaste"
 	KEY_BUTTON2 = "Rechte Maustaste"
@@ -64,20 +66,48 @@ elseif GetLocale() == "frFR" then
 	DEFAULT_CONFIRM_MESSAGE = "\195\138tes-vous s\195\187r de vouloir effectuer '%s' ?"
 elseif GetLocale() == "esES" then
 	CLOSE = "Cerrar"
-	CLOSE_DESC = "Cierra el men\195\186."
-	VALIDATION_ERROR = "Error de validaci\195\179n"
-	RESET_KEYBINDING_DESC = "Pulsa Escape para limpiar la asignaci\195\179n de tecla."
+	CLOSE_DESC = "Cierra el menú."
+	VALIDATION_ERROR = "Error de validación."
+	USAGE_TOOLTIP = "Uso: %s."
+	RANGE_TOOLTIP = "Puedes desplazarte verticalmente con la rueda del ratón sobre el desplazador."
+	RESET_KEYBINDING_DESC = "Pulsa Escape para borrar la asignación de tecla."
+	KEY_BUTTON1 = "Clic Izquierdo"
+	KEY_BUTTON2 = "Clic Derecho"
+	DISABLED = "Desactivado"
+	DEFAULT_CONFIRM_MESSAGE = "¿Estás seguro de querer realizar `%s'?"
 elseif GetLocale() == "zhTW" then
 	CLOSE = "關閉"
 	CLOSE_DESC = "關閉選單。"
 	VALIDATION_ERROR = "驗證錯誤。"
-	USAGE_TOOLTIP = "用法：%s。"
+	USAGE_TOOLTIP = "用法: %s。"
 	RANGE_TOOLTIP = "你可以在捲動條上使用滑鼠滾輪來捲動。"
 	RESET_KEYBINDING_DESC = "按Esc鍵清除快捷鍵。"
 	KEY_BUTTON1 = "滑鼠左鍵"
 	KEY_BUTTON2 = "滑鼠右鍵"
 	DISABLED = "停用"
-	DEFAULT_CONFIRM_MESSAGE = "是否執行 '%s'？"
+	DEFAULT_CONFIRM_MESSAGE = "是否執行「%s」?"
+elseif GetLocale() == "zhCN" then
+	CLOSE = "关闭"
+	CLOSE_DESC = "关闭菜单"
+	VALIDATION_ERROR = "验证错误."
+	USAGE_TOOLTIP = "用法: %s."
+	RANGE_TOOLTIP = "你可以在滚动条上使用鼠标滚轮来翻页."
+	RESET_KEYBINDING_DESC = "按ESC键清除按键绑定"
+	KEY_BUTTON1 = "鼠标左键"
+	KEY_BUTTON2 = "鼠标右键"
+	DISABLED = "禁用"
+	DEFAULT_CONFIRM_MESSAGE = "是否执行'%s'?"
+elseif GetLocale() == "ruRU" then
+	CLOSE = "Закрыть"
+	CLOSE_DESC = "Закрыть меню."
+	VALIDATION_ERROR = "Ошибка проверки данных."
+	USAGE_TOOLTIP = "Используйте: %s."
+	RANGE_TOOLTIP = "Используйте колесо мыши для прокрутки ползунка."
+	RESET_KEYBINDING_DESC = "Нажмите клавишу Escape для очистки клавиши."
+	KEY_BUTTON1 = "ЛКМ"
+	KEY_BUTTON2 = "ПКМ"
+	DISABLED = "Отключено"
+	DEFAULT_CONFIRM_MESSAGE = "Вы уверены что вы хотите выполнять `%s'?"
 end
 
 Dewdrop.KEY_BUTTON1 = KEY_BUTTON1
@@ -141,91 +171,118 @@ local buttons
 -- master secureframe that we pop onto menu items on mouseover. This requires
 -- some dark magic with OnLeave etc, but it's not too bad.
 
-local secureFrame = CreateFrame("Button", nil, nil, "SecureActionButtonTemplate");
-secureFrame:Hide();
+local secureFrame = CreateFrame("Button", nil, nil, "SecureActionButtonTemplate")
+secureFrame:Hide()
 
-function secureFrame_Show(self)
-  local owner = self.owner;
-  local scale = owner:GetEffectiveScale();
-  
-  self:SetPoint("TOPLEFT", nil, "BOTTOMLEFT", owner:GetLeft() * scale, owner:GetTop() * scale);
-  self:SetPoint("BOTTOMRIGHT", nil, "BOTTOMLEFT", owner:GetRight() * scale, owner:GetBottom() * scale);
-  self:EnableMouse(true);
+local function secureFrame_Show(self)
+  local owner = self.owner
+
+  if self.secure then	-- Leftovers from previos owner, clean up! ("Shouldn't" happen but does..)
+	  for k,v in pairs(self.secure) do
+	    self:SetAttribute(k, nil)
+	  end
+  end
+  self.secure = owner.secure;	-- Grab hold of new secure data
+
+  local scale = owner:GetEffectiveScale()
+
+  self:SetPoint("TOPLEFT", nil, "BOTTOMLEFT", owner:GetLeft() * scale, owner:GetTop() * scale)
+  self:SetPoint("BOTTOMRIGHT", nil, "BOTTOMLEFT", owner:GetRight() * scale, owner:GetBottom() * scale)
+  self:EnableMouse(true)
   for k,v in pairs(self.secure) do
-    self:SetAttribute(k, v);
+    self:SetAttribute(k, v)
   end
 
-	secureFrame:SetFrameStrata(owner:GetFrameStrata());
-	secureFrame:SetFrameLevel(owner:GetFrameLevel()+1);
-  
-  self:Show();
+	secureFrame:SetFrameStrata(owner:GetFrameStrata())
+	secureFrame:SetFrameLevel(owner:GetFrameLevel()+1)
+
+  self:Show()
 end
 
-function secureFrame_Hide(self)
-  self:Hide();
+local function secureFrame_Hide(self)
+  self:Hide()
   if self.secure then
 	  for k,v in pairs(self.secure) do
-	    self:SetAttribute(k, nil);
+	    self:SetAttribute(k, nil)
 	  end
 	end
-  self.secure = nil;
+  self.secure = nil
 end
 
-secureFrame:SetScript("OnEvent", 
+secureFrame:SetScript("OnEvent",
 	function()
 		if event=="PLAYER_REGEN_ENABLED" then
-			this.combat = false;
-			if(not this:IsShown() and this.owner) then
-				secureFrame_Show(this);
+			this.combat = false
+			if not this:IsShown() and this.owner then
+				secureFrame_Show(this)
 			end
 		elseif event=="PLAYER_REGEN_DISABLED" then
-			this.combat = true;
-			if(this:IsShown()) then
-				secureFrame_Hide(this);
+			this.combat = true
+			if this:IsShown() then
+				secureFrame_Hide(this)
 			end
 		end
 	end
-);
-secureFrame:RegisterEvent("PLAYER_REGEN_ENABLED");
-secureFrame:RegisterEvent("PLAYER_REGEN_DISABLED");
+)
+secureFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+secureFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
 
-secureFrame:SetScript("OnLeave", 
-	function() 
-		local owner=this.owner;
-		this:Deactivate() 
-		owner:GetScript("OnLeave")();
+secureFrame:SetScript("OnLeave",
+	function()
+		local owner=this.owner
+		this:Deactivate()
+		owner:GetScript("OnLeave")()
 	end
-);
+)
 
 secureFrame:HookScript("OnClick",
 	function()
-		local realthis = this;
-		this = this.owner;
-		this:GetScript("OnClick")();
+		local realthis = this
+		this = this.owner
+		this:GetScript("OnClick")()
 	end
-);
+)
 
 function secureFrame:IsOwnedBy(frame)
-	return self.owner == frame;
+	return self.owner == frame
 end
 
 function secureFrame:Activate(owner)
-	assert(not self.owner);
-	self.owner = owner;
-	self.secure = owner.secure;
+	if self.owner then		-- "Shouldn't" happen but apparently it does and I cba to troubleshoot...
+		if not self.combat then
+			secureFrame_Hide(self)
+		end
+	end
+	self.owner = owner
 	if not self.combat then
-		secureFrame_Show(self);
+		secureFrame_Show(self)
 	end
 end
 
 function secureFrame:Deactivate()
 	if not self.combat then
-		secureFrame_Hide(self);
+		secureFrame_Hide(self)
 	end
-	self.owner = nil;
+	self.owner = nil
 end
 
 -- END secure frame utilities
+
+
+-- Underline on mouseover - use a single global underline that we move around, no point in creating lots of copies
+local underlineFrame = CreateFrame("Frame", nil)
+underlineFrame.tx = underlineFrame:CreateTexture()
+underlineFrame.tx:SetTexture(1,1,0.5,0.75)
+underlineFrame:SetScript("OnHide", function(this) this:Hide(); end)
+underlineFrame:SetScript("OnShow", function(this) 	-- change sizing on the fly to catch runtime uiscale changes
+    underlineFrame.tx:SetPoint("TOPLEFT", -1, -2/this:GetEffectiveScale())
+    underlineFrame.tx:SetPoint("RIGHT", 1,0)
+    underlineFrame.tx:SetHeight(0.6 / this:GetEffectiveScale());
+end)
+underlineFrame:SetHeight(1)
+
+-- END underline on mouseover
+
 
 local function GetScaledCursorPosition()
 	local x, y = GetCursorPosition()
@@ -442,17 +499,34 @@ end
 local sliderFrame
 local editBoxFrame
 
+local normalFont
+local lastSetFont
+local justSetFont = false
+local regionTmp = {}
+local function fillRegionTmp(...)
+	for i = 1, select('#', ...) do
+		regionTmp[i] = select(i, ...)
+	end
+end
+
 local function showGameTooltip(this)
 	if this.tooltipTitle or this.tooltipText then
 		GameTooltip_SetDefaultAnchor(GameTooltip, this)
 		local disabled = not this.isTitle and this.disabled
+		local font
 		if this.tooltipTitle then
+			if SharedMedia and SharedMedia:IsValid("font", this.tooltipTitle) then
+				font = SharedMedia:Fetch("font", this.tooltipTitle)
+			end
 			if disabled then
 				GameTooltip:SetText(this.tooltipTitle, 0.5, 0.5, 0.5, 1)
 			else
 				GameTooltip:SetText(this.tooltipTitle, 1, 1, 1, 1)
 			end
 			if this.tooltipText then
+				if not font and SharedMedia and SharedMedia:IsValid("font", this.tooltipText) then
+					font = SharedMedia:Fetch("font", this.tooltipText)
+				end
 				if disabled then
 					GameTooltip:AddLine(this.tooltipText, (NORMAL_FONT_COLOR.r + 0.5) / 2, (NORMAL_FONT_COLOR.g + 0.5) / 2, (NORMAL_FONT_COLOR.b + 0.5) / 2, 1)
 				else
@@ -460,10 +534,36 @@ local function showGameTooltip(this)
 				end
 			end
 		else
+			if SharedMedia and SharedMedia:IsValid("font", this.tooltipText) then
+				font = SharedMedia:Fetch("font", this.tooltipText)
+			end
 			if disabled then
 				GameTooltip:SetText(this.tooltipText, 0.5, 0.5, 0.5, 1)
 			else
 				GameTooltip:SetText(this.tooltipText, 1, 1, 1, 1)
+			end
+		end
+		if font then
+			fillRegionTmp(GameTooltip:GetRegions())
+			lastSetFont = font
+			justSetFont = true
+			for i,v in ipairs(regionTmp) do
+				if v.SetFont then
+					local norm,size,outline = v:GetFont()
+					v:SetFont(font, size, outline)
+					if not normalFont then
+						normalFont = norm
+					end
+				end
+				regionTmp[i] = nil
+			end
+		elseif not normalFont then
+			fillRegionTmp(GameTooltip:GetRegions())
+			for i,v in ipairs(regionTmp) do
+				if v.GetFont and not normalFont then
+					normalFont = v:GetFont()
+				end
+				regionTmp[i] = nil
 			end
 		end
 		GameTooltip:Show()
@@ -521,7 +621,7 @@ local function AcquireButton(self, level)
 			self:Close(this.level.num + 1)
 			if not this.disabled then
 				if this.secure then
-					secureFrame:Activate(this);
+					secureFrame:Activate(this)
 				elseif this.hasSlider then
 					OpenSlider(self, this)
 				elseif this.hasEditBox then
@@ -539,18 +639,25 @@ local function AcquireButton(self, level)
 				if this.isRadio then
 					button.radioHighlight:Show()
 				end
+				if this.mouseoverUnderline then
+					underlineFrame:SetParent(this)
+					underlineFrame:SetPoint("BOTTOMLEFT",this.text,0,0)
+					underlineFrame:SetWidth(this.text:GetWidth())
+					underlineFrame:Show()
+				end
 			end
 			showGameTooltip(this)
 		end)
 		button:SetScript("OnHide", function()
 			if this.secure and secureFrame:IsOwnedBy(this) then
-				secureFrame:Deactivate();
+				secureFrame:Deactivate()
 			end
 		end)
 		button:SetScript("OnLeave", function()
 			if this.secure and secureFrame:IsShown() then
 				return;	-- it's ok, we didn't actually mouse out of the button, only onto the secure frame on top of it
 			end
+			underlineFrame:Hide()
 			if not this.selected then
 				highlight:Hide()
 			end
@@ -644,7 +751,7 @@ local function AcquireButton(self, level)
 								Dewdrop:Close(i+1)
 							end
 							value = levels[i].value
-						end	
+						end
 					end
 				elseif this.closeWhenClicked then
 					self:Close()
@@ -831,8 +938,8 @@ local function validateOptions(options, position, baseOptions, fromPass)
 	local kind = options.type
 	if type(kind) ~= "string" then
 		return '"type" must be a string.', position
-	elseif kind ~= "group" and kind ~= "range" and kind ~= "text" and kind ~= "execute" and kind ~= "toggle" and kind ~= "color" and kind ~= "header" then
-		return '"type" must either be "range", "text", "group", "toggle", "execute", "color", or "header".', position
+	elseif kind ~= "group" and kind ~= "range" and kind ~= "text" and kind ~= "execute" and kind ~= "toggle" and kind ~= "color" and kind ~= "dragLink" and kind ~= "header" then
+		return '"type" must either be "range", "text", "group", "toggle", "execute", "color", "dragLink", or "header".', position
 	end
 	if options.aliases then
 		if type(options.aliases) ~= "table" and type(options.aliases) ~= "string" then
@@ -1101,9 +1208,76 @@ local function confirmPopup(message, func, ...)
 	t.timeout = 0
 	t.whileDead = 1
 	t.hideOnEscape = 1
-	
+
 	Dewdrop:Close()
 	StaticPopup_Show("DEWDROP20_CONFIRM_DIALOG")
+end
+
+
+local function getMethod(settingname, handler, v, methodName, ...)	-- "..." is simply returned straight out cause you can't do "a,b,c = 111,f(),222"
+	assert(v and type(v)=="table")
+	assert(methodName and type(methodName)=="string")
+
+	local method = v[methodName]
+	if type(method)=="function" then
+		return method, ...
+	elseif type(method)=="string" then
+		if not handler then
+			Dewdrop:error("[%s] 'handler' is required if providing a method name: %q", tostring(settingname), method)
+		elseif not handler[method] then
+			Dewdrop:error("[%s] 'handler' method %q not defined", tostring(settingname), method)
+		end
+		return handler[method], handler, ...
+	end
+
+	Dewdrop:error("[%s] Missing %q directive", tostring(settingname), methodName)
+end
+
+local function callMethod(settingname, handler, v, methodName, ...)
+	assert(v and type(v)=="table")
+	assert(methodName and type(methodName)=="string")
+
+	local method = v[methodName]
+	if type(method)=="function" then
+		local success, ret,ret2,ret3,ret4 = pcall(v[methodName], ...)
+		if not success then
+			geterrorhandler()(ret)
+			return nil
+		end
+		return ret,ret2,ret3,ret4
+
+	elseif type(method)=="string" then
+
+		local neg = method:match("^~(.-)$")
+		if neg then
+			method = neg
+		end
+		if not handler then
+			Dewdrop:error("[%s] 'handler' is required if providing a method name: %q", tostring(settingname), method)
+		elseif not handler[method] then
+			Dewdrop:error("[%s] 'handler' (%q) method %q not defined", tostring(settingname), handler.name or "(unnamed)", method)
+		end
+		local success, ret,ret2,ret3,ret4 = pcall(handler[method], handler, ...)
+		if not success then
+			geterrorhandler()(ret)
+			return nil
+		end
+		if neg then
+			return not ret
+		end
+		return ret,ret2,ret3,ret4
+	elseif method == false then
+		return nil
+	end
+
+	Dewdrop:error("[%s] Missing %q directive in %q", tostring(settingname), methodName, v.name or "(unnamed)")
+end
+
+local function skip1Nil(...)
+	if select(1,...)==nil then
+		return select(2,...)
+	end
+	return ...
 end
 
 function Dewdrop:FeedAceOptionsTable(options, difference)
@@ -1144,7 +1318,7 @@ function Dewdrop:FeedAceOptionsTable(options, difference)
 	end
 
 	local current = level
-	while current do
+	while current do		-- this traverses from higher level numbers to lower, building "values" with leaf nodes first and trunk nodes later
 		if current.num == difference + 1 then
 			break
 		end
@@ -1156,8 +1330,16 @@ function Dewdrop:FeedAceOptionsTable(options, difference)
 	local handler = options.handler
 	local passTable
 	local passValue
-	while #values > 0 do
-		passTable = options.pass and options or nil
+	while #values > 0 do	-- This loop traverses values from the END (trunk nodes first, then onto leaf nodes)
+		if options.pass then
+			if options.get and options.set then
+				passTable = options
+			elseif not passTable then
+				passTable = options
+			end
+		else
+			passTable = nil
+		end
 		local value = table.remove(values)
 		options = options.args and options.args[value]
 		if not options then
@@ -1168,40 +1350,16 @@ function Dewdrop:FeedAceOptionsTable(options, difference)
 	end
 
 	if options.type == "group" then
-		local hidden, disabled = options.hidden
-		if hidden then
-			if type(hidden) == "function" then
-				hidden = hidden()
-			elseif type(hidden) == "string" then
-				local f = hidden
-				local neg = f:match("^~(.-)$")
-				if neg then
-					f = neg
-				end
-				hidden = handler[f](handler)
-				if neg then
-					hidden = not hidden
-				end
-			end
+		local hidden = options.hidden
+		if type(hidden) == "function" or type(hidden) == "string" then
+			hidden = callMethod(options.name or "(options root)", handler, options, "hidden", options.passValue) or false
 		end
 		if hidden then
 			return
 		end
 		local disabled = options.disabled
-		if disabled then
-			if type(disabled) == "function" then
-				disabled = disabled(options.passValue)
-			elseif type(disabled) == "string" then
-				local f = disabled
-				local neg = f:match("^~(.-)$")
-				if neg then
-					f = neg
-				end
-				hidden = handler[f](handler, options.passValue)
-				if neg then
-					disabled = not disabled
-				end
-			end
+		if type(disabled) == "function" or type(disabled) == "string" then
+			disabled = callMethod(options.name or "(options root)", handler, options, "disabled", options.passValue) or false
 		end
 		if disabled then
 			self:AddLine(
@@ -1213,7 +1371,15 @@ function Dewdrop:FeedAceOptionsTable(options, difference)
 		for k in pairs(options.args) do
 			table.insert(values, k)
 		end
-		passTable = options.pass and options or nil
+		if options.pass then
+			if options.get and options.set then
+				passTable = options
+			elseif not passTable then
+				passTable = options
+			end
+		else
+			passTable = nil
+		end
 		if not mysort then
 			mysort = function(a, b)
 				local alpha, bravo = mysort_args[a], mysort_args[b]
@@ -1223,7 +1389,7 @@ function Dewdrop:FeedAceOptionsTable(options, difference)
 				local bravo_name = bravo.guiName or bravo.name
 				if alpha_order == bravo_order then
 					if not alpha_name then
-						return true
+						return bravo_name
 					elseif not bravo_name then
 						return false
 					else
@@ -1256,55 +1422,16 @@ function Dewdrop:FeedAceOptionsTable(options, difference)
 				self:AddLine()
 			end
 			local hidden, disabled = v.guiHidden or v.hidden, v.disabled
-			if type(hidden) == "function" then
-				local success
-				success, hidden = pcall(hidden, v.passValue)
-				if not success then
-					geterrorhandler()(hidden)
-					hidden = false
-				end
-			elseif type(hidden) == "string" then
-				local f = hidden
-				local neg = f:match("^~(.-)$")
-				if neg then
-					f = neg
-				end
-				local success
-				success, hidden = pcall(handler[f], handler, v.passValue)
-				if not success then
-					geterrorhandler()(hidden)
-					hidden = false
-				end
-				if neg then
-					hidden = not hidden
-				end
+
+			if type(hidden) == "function" or type(hidden) == "string" then
+				hidden = callMethod(k, handler, v, "hidden", v.passValue) or false
 			end
 			if not hidden then
-				if type(disabled) == "function" then
-					local success
-					success, disabled = pcall(disabled, v.passValue)
-					if not success then
-						geterrorhandler()(disabled)
-						disabled = false
-					end
-				elseif type(disabled) == "string" then
-					local f = disabled
-					local neg = f:match("^~(.-)$")
-					if neg then
-						f = neg
-					end
-					local success
-					success, disabled = pcall(handler[f], handler, v.passValue)
-					if not success then
-						geterrorhandler()(disabled)
-						disabled = false
-					end
-					if neg then
-						disabled = not disabled
-					end
+				if type(disabled) == "function" or type(disabled) == "string" then
+					disabled = callMethod(k, handler, v, "disabled", v.passValue) or false
 				end
 				local name = (v.guiIconOnly and v.icon) and "" or (v.guiName or v.name)
-				local desc = v.desc
+				local desc = v.guiDesc or v.desc
 				local iconHeight = v.iconHeight or 16
 				local iconWidth = v.iconWidth or 16
 				local iconCoordLeft = v.iconCoordLeft
@@ -1326,68 +1453,15 @@ function Dewdrop:FeedAceOptionsTable(options, difference)
 				local v_p = passTable
 				if not v_p or (v.type ~= "execute" and v.get and v.set) or (v.type == "execute" and v.func) then
 					v_p = v
-					passTable = nil
 				end
-				local passValue = v.passValue or passTable and k or nil
+				local passValue = v.passValue or (v_p~=v and k) or nil
 				if v.type == "toggle" then
-					local checked
-					local checked_arg
-					if type(v_p.get) == "function" then
-						local success, ret = pcall(v_p.get, passValue)
-						if success then
-							checked = ret
-						else
-							geterrorhandler()(ret)
-							checked = false
-						end
-						checked_arg = checked
-					else
-						local f = v_p.get
-						local neg = f:match("^~(.-)$")
-						if neg then
-							f = neg
-						end
-						if not handler then
-							Dewdrop:error("[%s] Handler is required if providing a method: %q", name, f)
-						elseif not handler[f] then
-							Dewdrop:error("[%s] Handler %q not available", name, f)
-						end
-						local success, ret = pcall(handler[f], handler, passValue)
-						if success then
-							checked = ret
-						else
-							geterrorhandler()(ret)
-							checked = false
-						end
-						checked_arg = checked
-						if neg then
-							checked = not checked
-						end
+					local checked = callMethod(name, handler, v_p, "get", passValue) or false
+					local checked_arg = checked
+					if type(v_p.get)=="string" and v_p.get:match("^~") then
+						checked_arg = not checked
 					end
-					local func, arg1, arg2, arg3
-					if type(v_p.set) == "function" then
-						func = v_p.set
-						if passValue then
-							arg1 = passValue
-							arg2 = not checked_arg
-						else
-							arg1 = not checked_arg
-						end
-					else
-						if not handler then
-							Dewdrop:error("[%s] Handler is required if providing a method: %q", name, f)
-						elseif not handler[v_p.set] then
-							Dewdrop:error("[%s] Handler %q not available", name, v_p.set)
-						end
-						func = handler[v_p.set]
-						arg1 = handler
-						if passValue then
-							arg2 = passValue
-							arg3 = not checked_arg
-						else
-							arg2 = not checked_arg
-						end
-					end
+					local func, arg1, arg2, arg3 = getMethod(name, handler, v_p, "set",   skip1Nil(passValue, not checked_arg))
 					if v.guiNameIsMap then
 						checked = checked and true or false
 						name = tostring(v.map and v.map[checked]):gsub("|c%x%x%x%x%x%x%x%x(.-)|r", "%1")
@@ -1411,34 +1485,11 @@ function Dewdrop:FeedAceOptionsTable(options, difference)
 					local confirm = v.confirm
 					if confirm == true then
 						confirm = DEFAULT_CONFIRM_MESSAGE:format(tooltipText or tooltipTitle)
-					end
-					if type(v_p.func) == "function" then
-						if confirm then
-							func = confirmPopup
-							arg1 = confirm
-							arg2 = v_p.func
-							arg3 = passValue
-						else
-							func = v_p.func
-							arg1 = passValue
-						end
+						func,arg1,arg2,arg3,arg4 = confirmPopup, confirm, getMethod(name, handler, v_p, "func", passValue)
+					elseif type(confirm) == "string" then
+						func,arg1,arg2,arg3,arg4 = confirmPopup, confirm, getMethod(name, handler, v_p, "func", passValue)
 					else
-						if not handler then
-							Dewdrop:error("[%s] Handler is required if providing a method: %q", name, v_p.func)
-						elseif not handler[v_p.func] then
-							Dewdrop:error("[%s] Handler %q not available", name, v_p.func)
-						end
-						if confirm then
-							func = confirmPopup
-							arg1 = confirm
-							arg2 = handler[v_p.func]
-							arg3 = handler
-							arg4 = passValue
-						else
-							func = handler[v_p.func]
-							arg1 = handler
-							arg2 = passValue
-						end
+						func,arg1,arg2 = getMethod(name, handler, v_p, "func", passValue)
 					end
 					self:AddLine(
 						'text', name,
@@ -1461,44 +1512,10 @@ function Dewdrop:FeedAceOptionsTable(options, difference)
 					)
 				elseif v.type == "range" then
 					local sliderValue
-					if type(v_p.get) == "function" then
-						local success, ret = pcall(v_p.get, passValue)
-						if success then
-							sliderValue = ret
-						else
-							geterrorhandler()(ret)
-							sliderValue = 0
-						end
-					else
-						if not handler then
-							Dewdrop:error("[%s] Handler is required if providing a method: %q", name, v_p.get)
-						elseif not handler[v_p.get] then
-							Dewdrop:error("[%s] Handler %q not available", name, v_p.get)
-						end
-						local success, ret = pcall(handler[v_p.get], handler, passValue)
-						if success then
-							sliderValue = ret
-						else
-							geterrorhandler()(ret)
-							sliderValue = 0
-						end
-					end
-					local sliderFunc, sliderArg1, sliderArg2
-					if type(v_p.set) == "function" then
-						sliderFunc = v_p.set
-						sliderArg1 = passValue
-					else
-						if not handler then
-							Dewdrop:error("[%s] Handler is required if providing a method: %q", name, v_p.set)
-						elseif not handler[v_p.set] then
-							Dewdrop:error("[%s] Handler %q not available", name, v_p.set)
-						end
-						sliderFunc = handler[v_p.set]
-						sliderArg1 = handler
-						sliderArg2 = passValue
-					end
+					sliderValue = callMethod(name, handler, v_p, "get", passValue) or 0
+					local sliderFunc, sliderArg1, sliderArg2 = getMethod(name, handler, v_p, "set",    passValue)
 					if tooltipText then
-						tooltipText = tooltipText .. "\n\n" .. RANGE_TOOLTIP
+						tooltipText = format("%s\n\n%s", tooltipText, RANGE_TOOLTIP)
 					else
 						tooltipText = RANGE_TOOLTIP
 					end
@@ -1515,6 +1532,7 @@ function Dewdrop:FeedAceOptionsTable(options, difference)
 						'sliderFunc', sliderFunc,
 						'sliderArg1', sliderArg1,
 						'sliderArg2', sliderArg2,
+						'fromAceOptions', true,
 						'disabled', disabled,
 						'tooltipTitle', tooltipTitle,
 						'tooltipText', tooltipText,
@@ -1527,41 +1545,11 @@ function Dewdrop:FeedAceOptionsTable(options, difference)
 						'iconCoordBottom', iconCoordBottom
 					)
 				elseif v.type == "color" then
-					local r,g,b,a
-					if type(v_p.get) == "function" then
-						local success
-						success, r, g, b, a = pcall(v_p.get, passValue)
-						if not success then
-							geterrorhandler()(r)
-							r, g, b, a = 0, 0, 0, 0
-						end
-					else
-						if not handler then
-							Dewdrop:error("[%s] Handler is required if providing a method: %q", name, v_p.get)
-						elseif not handler[v_p.get] then
-							Dewdrop:error("[%s] Handler %q not available", name, v_p.get)
-						end
-						local success
-						success, r, g, b, a = pcall(handler[v_p.get], handler, passValue)
-						if not success then
-							geterrorhandler()(r)
-							r, g, b, a = 0, 0, 0, 0
-						end
+					local r,g,b,a = callMethod(name, handler, v_p, "get", passValue)
+					if not r then
+						r,g,b,a = 0,0,0,0
 					end
-					local colorFunc, colorArg1, colorArg2
-					if type(v_p.set) == "function" then
-						colorFunc = v_p.set
-						colorArg1 = passValue
-					else
-						if not handler then
-							Dewdrop:error("[%s] Handler is required if providing a method: %q", name, v_p.set)
-						elseif not handler[v_p.set] then
-							Dewdrop:error("[%s] Handler %q not available", name, v_p.set)
-						end
-						colorFunc = handler[v_p.set]
-						colorArg1 = handler
-						colorArg2 = passValue
-					end
+					local colorFunc, colorArg1, colorArg2 = getMethod(name, handler, v_p, "set",    passValue)
 					self:AddLine(
 						'text', name,
 						'hasArrow', true,
@@ -1579,12 +1567,25 @@ function Dewdrop:FeedAceOptionsTable(options, difference)
 						'tooltipText', tooltipText
 					)
 				elseif v.type == "text" then
-					if type(v.validate) == "table" then
+						if type(v.validate) == "table" then
+						local func,arg1,arg2
+						if v.onClick then
+							func,arg1,arg2 = getMethod(name, handler, v, "onClick",    passValue)
+						end
+						local checked
+						if v.isChecked then
+							checked = callMethod(name, handler, v, "isChecked",    passValue) or false
+						end
 						self:AddLine(
 							'text', name,
 							'hasArrow', true,
 							'value', k,
+							'func', func,
+							'arg1', arg1,
+							'arg2', arg2,
+							'mouseoverUnderline', func and true or nil,
 							'disabled', disabled,
+							'checked', checked,
 							'tooltipTitle', tooltipTitle,
 							'tooltipText', tooltipText,
 							'icon', v.icon,
@@ -1597,67 +1598,23 @@ function Dewdrop:FeedAceOptionsTable(options, difference)
 						)
 					else
 						local editBoxText
-						if type(v_p.get) == "function" then
-							local success, ret = pcall(v_p.get, passValue)
-							if success then
-								editBoxText = ret
-							else
-								geterrorhandler()(ret)
-								editBoxText = ""
-							end
-						elseif v_p.get == false then
-							editBoxText = nil
-						else
-							if not handler then
-								Dewdrop:error("[%s] Handler is required if providing a method: %q", name, v_p.get)
-							elseif not handler[v_p.get] then
-								Dewdrop:error("[%s] Handler %q not available", name, v_p.get)
-							end
-							local success, ret = pcall(handler[v_p.get], handler, passValue)
-							if success then
-								editBoxText = ret
-							else
-								geterrorhandler()(ret)
-								editBoxText = ""
-							end
-						end
-						local editBoxFunc, editBoxArg1, editBoxArg2
-						if type(v_p.set) == "function" then
-							editBoxFunc = v_p.set
-							editBoxArg1 = passValue
-						else
-							if not handler then
-								Dewdrop:error("[%s] Handler is required if providing a method: %q", name, v_p.set)
-							elseif not handler[v_p.set] then
-								Dewdrop:error("[%s] Handler %q not available", name, v_p.set)
-							end
-							editBoxFunc = handler[v_p.set]
-							editBoxArg1 = handler
-							editBoxArg2 = passValue
-						end
-						
+						editBoxText = callMethod(name, handler, v_p, "get", passValue) or ""
+						local editBoxFunc, editBoxArg1, editBoxArg2 = getMethod(name, handler, v_p, "set",    passValue)
+
 						local editBoxValidateFunc, editBoxValidateArg1
 
 						if v.validate and v.validate ~= "keybinding" then
-							if type(v.validate) == "function" then
-								editBoxValidateFunc = v.validate
-							else
-								if not handler then
-									Dewdrop:error("[%s] Handler is required if providing a method: %q", name, v.validate)
-								elseif not handler[v.validate] then
-									Dewdrop:error("[%s] Handler %q not available", name, v.validate)
+							if v.validate == "keybinding" then
+								if tooltipText then
+									tooltipText = format("%s\n\n%s", tooltipText, RESET_KEYBINDING_DESC)
+								else
+									tooltipText = RESET_KEYBINDING_DESC
 								end
-								editBoxValidateFunc = handler[v.validate]
-								editBoxValidateArg1 = handler
-							end
-						elseif v.validate then
-							if tooltipText then
-								tooltipText = tooltipText .. "\n\n" .. RESET_KEYBINDING_DESC
 							else
-								tooltipText = RESET_KEYBINDING_DESC
+								editBoxValidateFunc, editBoxValidateArg1 = getMethod(name, handler, v, "validate") -- no passvalue!
 							end
 						end
-						
+
 						self:AddLine(
 							'text', name,
 							'hasArrow', true,
@@ -1684,11 +1641,24 @@ function Dewdrop:FeedAceOptionsTable(options, difference)
 						)
 					end
 				elseif v.type == "group" then
+					local func,arg1,arg2
+					if v.onClick then
+						func,arg1,arg2 = getMethod(name, handler, v, "onClick",    passValue)
+					end
+					local checked
+					if v.isChecked then
+						checked = callMethod(name, handler, v, "isChecked",    passValue) or false
+					end
 					self:AddLine(
 						'text', name,
 						'hasArrow', true,
 						'value', k,
+						'func', func,
+						'arg1', arg1,
+						'arg2', arg2,
+						'mouseoverUnderline', func and true or nil,
 						'disabled', disabled,
+						'checked', checked,
 						'tooltipTitle', tooltipTitle,
 						'tooltipText', tooltipText,
 						'icon', v.icon,
@@ -1739,16 +1709,7 @@ function Dewdrop:FeedAceOptionsTable(options, difference)
 		local multiToggle = options.multiToggle
 		local passValue = options.passValue or passValue
 		if not multiToggle then
-			if type(options_p.get) == "function" then
-				current = options_p.get(passValue)
-			elseif options_p.get ~= false then
-				if not handler then
-					Dewdrop:error("[%s] Handler is required if providing a method: %q", name, options_p.get)
-				elseif not handler[options_p.get] then
-					Dewdrop:error("[%s] Handler %q not available", name, options_p.get)
-				end
-				current = handler[options_p.get](handler, passValue)
-			end
+			current = callMethod(k, handler, options_p, "get", passValue)
 		end
 		local indexed = true
 		for k,v in pairs(options.validate) do
@@ -1772,50 +1733,10 @@ function Dewdrop:FeedAceOptionsTable(options, difference)
 			if type(k) == "number" then
 				k = v
 			end
-			local func, arg1, arg2, arg3, arg4
-			if type(options_p.set) == "function" then
-				func = options_p.set
-				if passValue then
-					arg1 = passValue
-					arg2 = k
-				else
-					arg1 = k
-				end
-			else
-				if not handler then
-					Dewdrop:error("[%s] Handler is required if providing a method: %q", name, options_p.set)
-				elseif not handler[options_p.set] then
-					Dewdrop:error("[%s] Handler %q not available", name, options_p.set)
-				end
-				func = handler[options_p.set]
-				arg1 = handler
-				if passValue then
-					arg2 = passValue
-					arg3 = k
-				else
-					arg2 = k
-				end
-			end
+			local func, arg1, arg2, arg3, arg4 = getMethod(k, handler, options_p, "set",    skip1Nil(passValue, k))
 			local checked
 			if multiToggle then
-				if type(options_p.get) == "function" then
-					if passValue == nil then
-						checked = options_p.get(k)
-					else
-						checked = options_p.get(passValue, k)
-					end
-				elseif options_p.get ~= false then
-					if not handler then
-						Dewdrop:error("[%s] Handler is required if providing a method: %q", name, options_p.get)
-					elseif not handler[options_p.get] then
-						Dewdrop:error("[%s] Handler %q not available", name, options_p.get)
-					end
-					if passValue == nil then
-						checked = handler[options_p.get](handler, k)
-					else
-						checked = handler[options_p.get](handler, passValue, k)
-					end
-				end
+				checked = callMethod(k, handler, options_p, "get", skip1Nil(passValue, k)) or false
 				if arg2 == nil then
 					arg2 = not checked
 				elseif arg3 == nil then
@@ -1978,8 +1899,14 @@ function Refresh(self, level)
 end
 
 function Dewdrop:Refresh(level)
-	self:argCheck(level, 2, "number")
-	Refresh(self, levels[level])
+	self:argCheck(level, 2, "number", "nil")
+	if not level then
+		for k,v in pairs(levels) do
+			Refresh(self, v)
+		end
+	else
+		Refresh(self, levels[level])
+	end
 end
 
 function OpenSlider(self, parent)
@@ -2053,7 +1980,7 @@ function OpenSlider(self, parent)
 		editBox:SetPoint("LEFT", slider, "RIGHT", 12, 0)
 		editBox:SetText("50%")
 		editBox:SetJustifyH("CENTER")
-		
+
 		local width = editBox:GetWidth()/2 + 10
 		local left = editBox:CreateTexture(nil, "BACKGROUND")
 		left:SetTexture("Interface\\ChatFrame\\UI-ChatInputBorder-Left")
@@ -2067,7 +1994,7 @@ function OpenSlider(self, parent)
 		right:SetWidth(width)
 		right:SetHeight(32)
 		right:SetPoint("RIGHT", editBox, "RIGHT", 10, 0)
-		
+
 		local changed = false
 		local inside = false
 		slider:SetScript("OnValueChanged", function()
@@ -2099,7 +2026,9 @@ function OpenSlider(self, parent)
 				end
 				sliderFrame.lastValue = value
 				local text = sliderFrame.parent.sliderFunc(getArgs(sliderFrame.parent, 'sliderArg', 1, value))
-				if type(text) == "string" or type(text) == "number" then
+				if sliderFrame.parent.fromAceOptions then
+					text = nil
+				elseif type(text) == "string" or type(text) == "number" then
 					sliderFrame.currentText:SetText(text)
 					done = true
 				end
@@ -2163,7 +2092,7 @@ function OpenSlider(self, parent)
 				else
 					sliderFrame:Hide()
 				end
-			end			
+			end
 		end)
 		editBox:SetScript("OnEnter", onEnter)
 		editBox:SetScript("OnLeave", onLeave)
@@ -2204,7 +2133,7 @@ function OpenSlider(self, parent)
 		slider:SetScript("OnLeave", function()
 			inside = false
 			GameTooltip:Hide()
-			if changed and not sliderFrame.mouseDown then 
+			if changed and not sliderFrame.mouseDown then
 				local parent = sliderFrame.parent
 				local sliderFunc = parent.sliderFunc
 				for i = 1, sliderFrame.level - 1 do
@@ -2222,21 +2151,21 @@ function OpenSlider(self, parent)
 				else
 					sliderFrame:Hide()
 				end
-				
+
 				changed = false
-			end			
+			end
 		end)
 		sliderFrame:SetScript("OnMouseWheel", function(t, a1)
 			local arg1 = a1 or arg1
 			local up = arg1 > 0
-			
+
 			local min = sliderFrame.parent.sliderMin or 0
 			local max = sliderFrame.parent.sliderMax or 1
 			local step = sliderFrame.parent.sliderStep or (max - min) / 100
 			if step <= 0 then
 				step = (max - min) / 100
 			end
-			
+
 			local value = (1 - slider:GetValue()) * (max - min) + min
 			if up then
 				value = value + step
@@ -2249,27 +2178,35 @@ function OpenSlider(self, parent)
 				value = min
 			end
 			sliderFrame.fineStep = true
-			slider:SetValue(1 - (value - min) / (max - min))
+			if max<=min then
+				slider:SetValue(0)
+			else
+				slider:SetValue(1 - (value - min) / (max - min))
+			end
 			sliderFrame.fineStep = nil
 		end)
 		slider:SetScript("OnMouseWheel", sliderFrame:GetScript("OnMouseWheel"))
 		editBox:SetScript("OnEnterPressed", function(t, a1)
 			local value = editBox:GetNumber()
-			
+
 			if sliderFrame.parent.sliderIsPercent then
 				value = value / 100
 			end
-			
+
 			local min = sliderFrame.parent.sliderMin or 0
 			local max = sliderFrame.parent.sliderMax or 1
-			
+
 			if value > max then
 				value = max
 			elseif value < min then
 				value = min
 			end
 			sliderFrame.fineStep = true
-			slider:SetValue(1 - (value - min) / (max - min))
+			if max <= min then
+				slider:SetValue(0)
+			else
+				slider:SetValue(1 - (value - min) / (max - min))
+			end
 			sliderFrame.fineStep = nil
 
 			StartCounting(self, sliderFrame.level)
@@ -2304,12 +2241,16 @@ function OpenSlider(self, parent)
 	if not parent.sliderValue then
 		parent.sliderValue = (parent.sliderMin + parent.sliderMax) / 2
 	end
-	sliderFrame.slider:SetValue(1 - (parent.sliderValue - parent.sliderMin) / (parent.sliderMax - parent.sliderMin))
+	if parent.sliderMax <= parent.sliderMin then
+		sliderFrame.slider:SetValue(0)
+	else
+		sliderFrame.slider:SetValue(1 - (parent.sliderValue - parent.sliderMin) / (parent.sliderMax - parent.sliderMin))
+	end
 	sliderFrame.changing = false
 	sliderFrame.bottomText:SetText(parent.sliderMinText or "0")
 	sliderFrame.topText:SetText(parent.sliderMaxText or "1")
 	local text
-	if parent.sliderFunc then
+	if parent.sliderFunc and not parent.fromAceOptions then
 		text = parent.sliderFunc(getArgs(parent, 'sliderArg', 1, parent.sliderValue))
 	end
 	if type(text) == "number" or type(text) == "string" then
@@ -2325,10 +2266,10 @@ function OpenSlider(self, parent)
 			sliderFrame.currentText:SetText(string.format("%.0f", parent.sliderValue))
 		end
 	end
-	
+
 
 	sliderFrame.lastValue = parent.sliderValue
-	
+
 	local level = parent.level
 	sliderFrame:Show()
 	sliderFrame:ClearAllPoints()
@@ -2440,7 +2381,7 @@ function OpenEditBox(self, parent)
 		right:SetWidth(100)
 		right:SetHeight(32)
 		right:SetPoint("RIGHT", editBox, "RIGHT", 10, 0)
-		
+
 		editBox:SetScript("OnEnterPressed", function()
 			if editBoxFrame.parent and editBoxFrame.parent.editBoxValidateFunc then
 				local t = editBox.realText or editBox:GetText() or ""
@@ -2493,7 +2434,7 @@ function OpenEditBox(self, parent)
 			end
 			if text ~= oldText then
 				changing = true
-				self:SetText(text)
+				self:SetText(tostring(text))
 				changing = false
 				skipNext = true
 			end
@@ -2537,7 +2478,7 @@ function OpenEditBox(self, parent)
 				Screenshot()
 				return
 			end
-			
+
 			if arg1 == "LeftButton" then
 				arg1 = "BUTTON1"
 			elseif arg1 == "RightButton" then
@@ -2622,7 +2563,7 @@ function OpenEditBox(self, parent)
 	editBoxFrame.editBox:SetFrameLevel(editBoxFrame:GetFrameLevel() + 1)
 	editBoxFrame.editBox.realText = nil
 	editBoxFrame:SetClampedToScreen(false)
-	
+
 	editBoxFrame.editBox:SpecialSetText("")
 	if parent.editBoxIsKeybinding then
 		local s = parent.editBoxText
@@ -2648,7 +2589,7 @@ function OpenEditBox(self, parent)
 	else
 		editBoxFrame.editBox:SpecialSetText(parent.editBoxText)
 	end
-	
+
 	editBoxFrame.editBox.keybinding = parent.editBoxIsKeybinding
 	editBoxFrame.editBox.keybindingOnly = parent.editBoxKeybindingOnly
 	editBoxFrame.editBox.keybindingExcept = parent.editBoxKeybindingExcept
@@ -2970,7 +2911,7 @@ function Dewdrop:Register(parent, ...)
 	local info = new(...)
 	if type(info.children) == "table" then
 		local err, position = validateOptions(info.children)
-		
+
 		if err then
 			if position then
 				Dewdrop:error(position .. ": " .. err)
@@ -2983,9 +2924,9 @@ function Dewdrop:Register(parent, ...)
 	if not info.dontHook and not self.onceRegistered[parent] and type(parent) == "table" then
 		if parent:HasScript("OnMouseUp") then
 			local script = parent:GetScript("OnMouseUp")
-			parent:SetScript("OnMouseUp", function()
+			parent:SetScript("OnMouseUp", function(this, ...)
 				if script then
-					script()
+					script(this, ...)
 				end
 				if arg1 == "RightButton" and self.registry[parent] then
 					if self:IsOpen(parent) then
@@ -2998,9 +2939,9 @@ function Dewdrop:Register(parent, ...)
 		end
 		if parent:HasScript("OnMouseDown") then
 			local script = parent:GetScript("OnMouseDown")
-			parent:SetScript("OnMouseDown", function()
+			parent:SetScript("OnMouseDown", function(this, ...)
 				if script then
-					script()
+					script(this, ...)
 				end
 				if self.registry[parent] then
 					self:Close()
@@ -3021,9 +2962,11 @@ function Dewdrop:Open(parent, ...)
 	local info
 	local k1 = ...
 	if type(k1) == "table" and k1[0] and k1.IsFrameType and self.registry[k1] then
-		info = tmp()
+		info = tmp(select(2, ...))
 		for k,v in pairs(self.registry[k1]) do
-			info[k] = v
+			if info[k] == nil then
+				info[k] = v
+			end
 		end
 	else
 		info = tmp(...)
@@ -3105,6 +3048,19 @@ function Dewdrop:Close(level)
 	end
 end
 
+function Dewdrop:AddSeparator(level)
+	level = levels[level or currentLevel]
+	if not level or not level.buttons then return; end
+
+	local prevbutton = level.buttons[#level.buttons]
+	if not prevbutton then return; end
+
+	if prevbutton.disabled and prevbutton.text:GetText() == "" then
+		return
+	end
+	self:AddLine("text", "", "disabled", true)
+end
+
 function Dewdrop:AddLine(...)
 	local info = tmp(...)
 	local level = info.level or currentLevel
@@ -3113,7 +3069,7 @@ function Dewdrop:AddLine(...)
 	if not next(info) then
 		info.disabled = true
 	end
-	button.disabled = info.isTitle or info.notClickable or info.disabled or (self.combat and info.secure);
+	button.disabled = info.isTitle or info.notClickable or info.disabled or (self.combat and info.secure)
 	button.isTitle = info.isTitle
 	button.notClickable = info.notClickable
 	if button.isTitle then
@@ -3143,6 +3099,7 @@ function Dewdrop:AddLine(...)
 	button.notCheckable = info.notCheckable
 	button.text:SetPoint("LEFT", button, "LEFT", button.notCheckable and 0 or 24, 0)
 	button.checked = not info.notCheckable and info.checked
+	button.mouseoverUnderline = info.mouseoverUnderline
 	button.isRadio = not info.notCheckable and info.isRadio
 	if info.isRadio then
 		button.check:Show()
@@ -3245,6 +3202,7 @@ function Dewdrop:AddLine(...)
 			button.sliderMaxText = info.sliderMaxText or button.sliderIsPercent and string.format("%.0f%%", button.sliderMax * 100) or button.sliderMax
 			button.sliderFunc = info.sliderFunc
 			button.sliderValue = info.sliderValue
+			button.fromAceOptions = info.fromAceOptions
 			local i = 1
 			while true do
 				local k = "sliderArg" .. i
@@ -3363,23 +3321,9 @@ function Dewdrop:InjectAceOptionsTable(handler, options)
 	options.handler = handler
 	local class = handler.class
 	if not AceLibrary:HasInstance("AceOO-2.0") or not class then
-		self:error("Cannot retrieve AceOptions tables from a non-object argument #2")
-	end
-	while class and class ~= AceLibrary("AceOO-2.0").Class do
-		if type(class.GetAceOptionsDataTable) == "function" then
-			local t = class:GetAceOptionsDataTable(handler)
-			for k,v in pairs(t) do
-				if type(options.args) ~= "table" then
-					options.args = {}
-				end
-				if options.args[k] == nil then
-					options.args[k] = v
-				end
-			end
-		end
-		local mixins = class.mixins
-		if mixins then
-			for mixin in pairs(mixins) do
+		if Rock then
+			-- possible Rock object
+			for mixin in Rock:IterateObjectMixins(handler) do
 				if type(mixin.GetAceOptionsDataTable) == "function" then
 					local t = mixin:GetAceOptionsDataTable(handler)
 					for k,v in pairs(t) do
@@ -3393,9 +3337,60 @@ function Dewdrop:InjectAceOptionsTable(handler, options)
 				end
 			end
 		end
-		class = class.super
+	else
+		-- Ace2 object
+		while class and class ~= AceLibrary("AceOO-2.0").Class do
+			if type(class.GetAceOptionsDataTable) == "function" then
+				local t = class:GetAceOptionsDataTable(handler)
+				for k,v in pairs(t) do
+					if type(options.args) ~= "table" then
+						options.args = {}
+					end
+					if options.args[k] == nil then
+						options.args[k] = v
+					end
+				end
+			end
+			local mixins = class.mixins
+			if mixins then
+				for mixin in pairs(mixins) do
+					if type(mixin.GetAceOptionsDataTable) == "function" then
+						local t = mixin:GetAceOptionsDataTable(handler)
+						for k,v in pairs(t) do
+							if type(options.args) ~= "table" then
+								options.args = {}
+							end
+							if options.args[k] == nil then
+								options.args[k] = v
+							end
+						end
+					end
+				end
+			end
+			class = class.super
+		end
 	end
 	return options
+end
+
+function Dewdrop:OnTooltipHide()
+	if lastSetFont then
+		if lastSetFont == normalFont then
+			lastSetFont = nil
+			return
+		end
+		fillRegionTmp(GameTooltip:GetRegions())
+		for i,v in ipairs(regionTmp) do
+			if v.GetFont then
+				local font,size,outline = v:GetFont()
+				if font == lastSetFont then
+					v:SetFont(normalFont, size, outline)
+				end
+			end
+			regionTmp[i] = nil
+		end
+		lastSetFont = nil
+	end
 end
 
 local function activate(self, oldLib, oldDeactivate)
@@ -3410,20 +3405,20 @@ local function activate(self, oldLib, oldDeactivate)
 		local WorldFrame_OnMouseDown = WorldFrame:GetScript("OnMouseDown")
 		local WorldFrame_OnMouseUp = WorldFrame:GetScript("OnMouseUp")
 		local oldX, oldY, clickTime
-		WorldFrame:SetScript("OnMouseDown", function()
+		WorldFrame:SetScript("OnMouseDown", function(this, ...)
 			oldX,oldY = GetCursorPosition()
 			clickTime = GetTime()
 			if WorldFrame_OnMouseDown then
-				WorldFrame_OnMouseDown()
+				WorldFrame_OnMouseDown(this, ...)
 			end
 		end)
 
-		WorldFrame:SetScript("OnMouseUp", function()
+		WorldFrame:SetScript("OnMouseUp", function(this, ...)
 			local x,y = GetCursorPosition()
 			if not oldX or not oldY or not x or not y or not clickTime then
 				self:Close()
 				if WorldFrame_OnMouseUp then
-					WorldFrame_OnMouseUp()
+					WorldFrame_OnMouseUp(this, ...)
 				end
 				return
 			end
@@ -3432,7 +3427,7 @@ local function activate(self, oldLib, oldDeactivate)
 				self:Close()
 			end
 			if WorldFrame_OnMouseUp then
-				WorldFrame_OnMouseUp()
+				WorldFrame_OnMouseUp(this, ...)
 			end
 		end)
 
@@ -3441,13 +3436,13 @@ local function activate(self, oldLib, oldDeactivate)
 				self:Close()
 			end
 		end)
-		
+
 		hooksecurefunc("HideDropDownMenu", function()
 			if levels[1] and levels[1]:IsVisible() then
 				self:Close()
 			end
 		end)
-		
+
 		hooksecurefunc("CloseDropDownMenus", function()
 			if levels[1] and levels[1]:IsVisible() then
 				local stack = debugstack()
@@ -3465,15 +3460,27 @@ local function activate(self, oldLib, oldDeactivate)
 	self.frame:SetScript("OnEvent", function(this, event)
 		this:Show()
 		if event=="PLAYER_REGEN_ENABLED" then			-- track combat state for secure frame operations
-			self.combat = false;
+			self.combat = false
 		elseif event=="PLAYER_REGEN_DISABLED" then
-			self.combat = true;
+			self.combat = true
 		end
 	end)
 	self.frame:SetScript("OnUpdate", function(this)
 		this:Hide()
 		self:Refresh(1)
 	end)
+	self.hookedTooltip = true
+	if not oldLib or not oldLib.hookedTooltip then
+		local OnTooltipHide = GameTooltip:GetScript("OnHide")
+		GameTooltip:SetScript("OnHide", function(this, ...)
+			if OnTooltipHide then
+				OnTooltipHide(this, ...)
+			end
+			if type(self.OnTooltipHide) == "function" then
+				self:OnTooltipHide()
+			end
+		end)
+	end
 	levels = {}
 	buttons = {}
 
@@ -3482,4 +3489,10 @@ local function activate(self, oldLib, oldDeactivate)
 	end
 end
 
-AceLibrary:Register(Dewdrop, MAJOR_VERSION, MINOR_VERSION, activate)
+local function external(lib, major, instance)
+	if major == "LibSharedMedia-3.0" then
+		SharedMedia = instance
+	end
+end
+
+AceLibrary:Register(Dewdrop, MAJOR_VERSION, MINOR_VERSION, activate, nil, external)

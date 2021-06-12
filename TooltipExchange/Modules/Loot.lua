@@ -1,5 +1,4 @@
-﻿
-assert(TooltipExchange, "TooltipExchange not found!")
+﻿assert(TooltipExchange, "TooltipExchange not found!")
 
 -------------------------------------------------------------------------------
 -- Locals
@@ -7,7 +6,7 @@ assert(TooltipExchange, "TooltipExchange not found!")
 
 local L = AceLibrary("AceLocale-2.2"):new("TooltipExchangeLoot")
 local dewdrop = AceLibrary("Dewdrop-2.0")
-local periodic = AceLibrary("PeriodicTable-3.0")
+local periodic = LibStub:GetLibrary("LibPeriodicTable-3.1")
 
 -------------------------------------------------------------------------------
 -- Localization
@@ -27,21 +26,38 @@ L:RegisterTranslations("enUS", function() return {
 
 local instanceLoot = {
 	{ header = L["Raid Loot"] },
-	{ text = "Azeroth", zone = "World Bosses", bosses = { "Azuregos", "Lord Kazzak", "Emeriss", "Lethon", "Taerar", "Ysondre" } },
-	{ zone = "Zul'Gurub" },
-	{ zone = "Ruins of Ahn'Qiraj" },
-	{ zone = "Onyxia's Lair" },
-	{ zone = "Molten Core" },
-	{ zone = "Blackwing Lair" },
-	{ zone = "Ahn'Qiraj" },
+	{ text = "Ulduar (Heroic)", zone = "Ulduar", heroic = true },
+	{ text = "Naxxramas (Heroic)", zone = "Naxxramas", heroic = true },
+	{ text = "The Eye of Eternity (Heroic)", zone = "The Eye of Eternity", heroic = true },
+	{ text = "Obsidian Sanctum (Heroic)", zone = "Obsidian Sanctum", heroic = true },
+	{ text = "Vault of Archavon (Heroic)", zone = "Vault of Archavon", heroic = true },
+	{ header = " " },
+	{ zone = "Ulduar" },
 	{ zone = "Naxxramas" },
+	{ zone = "The Eye of Eternity" },
+	{ zone = "Obsidian Sanctum" },
+	{ zone = "Vault of Archavon" },
+--[[ -- Do we really need Classic and TBC raid loot shown here?
 	{ header = " " },
 	{ text = "Outland", zone = "World Bosses", bosses = { "Doom Lord Kazzak", "Doomwalker" } },
-	{ zone = "Karazhan" },
-	{ zone = "Gruul's Lair" },
-	{ zone = "Magtheridon's Lair" },
-	{ zone = "Serpentshrine Cavern" },
+	{ zone = "Sunwell Plateau" },
+	{ zone = "Black Temple" },
+	{ zone = "Hyjal Summit" },
 	{ text = "Tempest Keep", zone = "The Eye" },
+	{ zone = "Serpentshrine Cavern" },
+	{ zone = "Magtheridon's Lair" },
+	{ zone = "Gruul's Lair" },
+	{ zone = "Zul'Aman" },
+	{ zone = "Karazhan" },
+	{ header = " " },
+	{ text = "Azeroth", zone = "World Bosses", bosses = { "Azuregos", "Lord Kazzak", "Emeriss", "Lethon", "Taerar", "Ysondre" } },
+	{ zone = "Ahn'Qiraj" },
+	{ zone = "Blackwing Lair" },
+	{ zone = "Molten Core" },
+	{ zone = "Onyxia's Lair" },
+	{ zone = "Ruins of Ahn'Qiraj" },
+	{ zone = "Zul'Gurub" },
+]]
 }
 
 TooltipExchangeLoot = TooltipExchange:NewModule(L["Raid Loot"])
@@ -70,7 +86,7 @@ TooltipExchangeLoot.commands = {
 	},
 }
 
-TooltipExchangeLoot.revision = tonumber(string.sub("$Revision: 32534 $", 12, -3))
+TooltipExchangeLoot.revision = tonumber(string.sub("$Revision: 78200 $", 12, -3))
 
 -------------------------------------------------------------------------------
 -- Main
@@ -134,19 +150,21 @@ function TooltipExchangeLoot:CreateStaticMenu()
 					c = c + 1
 				end
 			else
-				local t = periodic:GetSetTable("InstanceLoot." .. z)
+				local s = "InstanceLoot" .. (v.heroic and "Heroic." or ".") .. z
+
+				local t = periodic:GetSetTable(s)
 
 				if t then
 					for _, set in ipairs(t) do
 						if set.set then
-							local b = string.sub(set.set, string.len("InstanceLoot." .. z) + 2)
+							local b = string.sub(set.set, string.len(s) + 2)
 
 							a[zz].args[string.gsub(b, "[^%a]", "")] = {
 								type = "execute",
 								name = b,
 								desc = b,
 								func = function()
-									self:TriggerEvent("TooltipExchange_PeriodicResults", "InstanceLoot." .. z .. "." .. b)
+									self:TriggerEvent("TooltipExchange_PeriodicResults", s .. "." .. b)
 									dewdrop:Close()
 								end,
 							}
@@ -155,14 +173,17 @@ function TooltipExchangeLoot:CreateStaticMenu()
 					end
 
 					if c > 1 then
+						local f = function()
+							self:TriggerEvent("TooltipExchange_PeriodicResults", s)
+							dewdrop:Close()
+						end
+
+						a[zz].onClick = f
 						a[zz].args.allInstanceLoot = {
 							type = "execute",
 							name = L["All instance loot"],
 							desc = L["Displays all item that drop in given instance."],
-							func = function()
-								self:TriggerEvent("TooltipExchange_PeriodicResults", "InstanceLoot." .. z)
-								dewdrop:Close()
-							end,
+							func = f,
 							order = -1,
 						}
 					end
@@ -181,6 +202,7 @@ function TooltipExchangeLoot:CreateStaticMenu()
 	{
 		{ set = "TradeskillResultMats.Forward", offset = 3, name = "Trade Skills" },
 		{ set = "InstanceLoot", offset = 2, name = "Instance Loot" },
+		{ set = "InstanceLootHeroic", offset = 2, name = "Heroic Instance Loot" },
 		{ set = "GearSet", offset = 2, name = "Item Sets" },
 		{ set = "Reputation.Reward", offset = 3, name = "Reputation" },
 	}

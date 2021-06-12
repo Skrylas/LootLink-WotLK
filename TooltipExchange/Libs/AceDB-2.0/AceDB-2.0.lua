@@ -1,11 +1,11 @@
---[[
+﻿--[[
 Name: AceDB-2.0
-Revision: $Rev: 33362 $
+Revision: $Rev: 1094 $
 Developed by: The Ace Development Team (http://www.wowace.com/index.php/The_Ace_Development_Team)
 Inspired By: Ace 1.x by Turan (turan@gryphon.com)
 Website: http://www.wowace.com/
 Documentation: http://www.wowace.com/index.php/AceDB-2.0
-SVN: http://svn.wowace.com/root/trunk/Ace2/AceDB-2.0
+SVN: http://svn.wowace.com/wowace/trunk/Ace2/AceDB-2.0
 Description: Mixin to allow for fast, clean, and featureful saved variable
              access.
 Dependencies: AceLibrary, AceOO-2.0, AceEvent-2.0
@@ -13,7 +13,7 @@ License: LGPL v2.1
 ]]
 
 local MAJOR_VERSION = "AceDB-2.0"
-local MINOR_VERSION = "$Revision: 33362 $"
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 1094 $"):match("(%d+)"))
 
 if not AceLibrary then error(MAJOR_VERSION .. " requires AceLibrary") end
 if not AceLibrary:IsNewVersion(MAJOR_VERSION, MINOR_VERSION) then return end
@@ -27,7 +27,16 @@ end
 
 local ACTIVE, ENABLED, STATE, TOGGLE_ACTIVE, MAP_ACTIVESUSPENDED, SET_PROFILE, SET_PROFILE_USAGE, PROFILE, PLAYER_OF_REALM, CHOOSE_PROFILE_DESC, CHOOSE_PROFILE_GUI, COPY_PROFILE_DESC, COPY_PROFILE_GUI, OTHER_PROFILE_DESC, OTHER_PROFILE_GUI, OTHER_PROFILE_USAGE, RESET_PROFILE, RESET_PROFILE_DESC, CHARACTER_COLON, REALM_COLON, CLASS_COLON, DEFAULT, ALTERNATIVE
 
+-- Move these into "enUS" when they've been translated in all other locales
+local DELETE_PROFILE = "Delete"
+local DELETE_PROFILE_DESC = "Deletes a profile. Note that no check is made whether this profile is in use by other characters or not."
+local DELETE_PROFILE_USAGE = "<profile name>"
+
 if GetLocale() == "deDE" then
+	DELETE_PROFILE = "L\195\182schen"
+	DELETE_PROFILE_DESC = "L\195\182scht ein Profil. Beachte das nicht \195\188berpr\195\188ft wird ob das zu l\195\182schende Profil von anderen Charakteren genutzt wird oder nicht."
+	DELETE_PROFILE_USAGE = "<profil name>"
+
 	ACTIVE = "Aktiv"
 	ENABLED = "Aktiviert"
 	STATE = "Status"
@@ -44,15 +53,15 @@ if GetLocale() == "deDE" then
 	OTHER_PROFILE_DESC = "W\195\164hle ein anderes Profil."
 	OTHER_PROFILE_GUI = "Anderes"
 	OTHER_PROFILE_USAGE = "<Profilname>"
-	RESET_PROFILE = "Reset profile" -- fix
-	RESET_PROFILE_DESC = "Clear all settings of the current profile." -- fix
+	RESET_PROFILE = "Resette das Profil"
+	RESET_PROFILE_DESC = "Entfernt alle Einstellungen des gegenw\195\164rtigen Profils."
 
 	CHARACTER_COLON = "Charakter: "
 	REALM_COLON = "Realm: "
 	CLASS_COLON = "Klasse: "
-	
-	DEFAULT = "Default" -- fix
-	ALTERNATIVE = "Alternative" -- fix
+
+	DEFAULT = "Vorgabe"
+	ALTERNATIVE = "Alternativ"
 elseif GetLocale() == "frFR" then
 	ACTIVE = "Actif"
 	ENABLED = "Activ\195\169"
@@ -76,45 +85,53 @@ elseif GetLocale() == "frFR" then
 	CHARACTER_COLON = "Personnage: "
 	REALM_COLON = "Royaume: "
 	CLASS_COLON = "Classe: "
-	
+
 	DEFAULT = "Default" -- fix
 	ALTERNATIVE = "Alternative" -- fix
 elseif GetLocale() == "koKR" then
-	ACTIVE = "활성화"
-	ENABLED = "활성화"
+	DELETE_PROFILE = "삭제"
+	DELETE_PROFILE_DESC = "프로필을 삭제합니다."
+	DELETE_PROFILE_USAGE = "<프로필명>"
+
+	ACTIVE = "사용"
+	ENABLED = "사용"
 	STATE = "상태"
-	TOGGLE_ACTIVE = "이 애드온 중지/계속 실행"
-	MAP_ACTIVESUSPENDED = { [true] = "|cff00ff00활성화|r", [false] = "|cffff0000중지됨|r" }
+	TOGGLE_ACTIVE = "이 애드온 중지/다시 시작"
+	MAP_ACTIVESUSPENDED = { [true] = "|cff00ff00사용|r", [false] = "|cffff0000중지|r" }
 	SET_PROFILE = "이 애드온에 프로필 설정"
 	SET_PROFILE_USAGE = "{캐릭터명 || 직업 || 서버명 || <프로필명>}"
 	PROFILE = "프로필"
 	PLAYER_OF_REALM = "%s (%s 서버)"
-	CHOOSE_PROFILE_DESC = "프로파일을 선택합니다."
+	CHOOSE_PROFILE_DESC = "프로필을 선택합니다."
 	CHOOSE_PROFILE_GUI = "선택"
-	COPY_PROFILE_DESC = "다른 프로파일에서 설정을 복사합니다."
+	COPY_PROFILE_DESC = "다른 프로필 설정을 복사합니다."
 	COPY_PROFILE_GUI = "복사"
-	OTHER_PROFILE_DESC = "다른 프로파일을 선택합니다."
+	OTHER_PROFILE_DESC = "다른 프로필을 선택합니다."
 	OTHER_PROFILE_GUI = "기타"
-	OTHER_PROFILE_USAGE = "<프로파일명>"
-	RESET_PROFILE = "Reset profile" -- fix
-	RESET_PROFILE_DESC = "Clear all settings of the current profile." -- fix
+	OTHER_PROFILE_USAGE = "<프로필명>"
+	RESET_PROFILE = "프로필 초기화"
+	RESET_PROFILE_DESC = "모든 세팅에서 현재 프로필을 초기화 합니다."
 
 	CHARACTER_COLON = "캐릭터: "
 	REALM_COLON = "서버: "
 	CLASS_COLON = "직업: "
-	
-	DEFAULT = "Default" -- fix
-	ALTERNATIVE = "Alternative" -- fix
+
+	DEFAULT = "기본값"
+	ALTERNATIVE = "대체"
 elseif GetLocale() == "zhTW" then
+	DELETE_PROFILE = "刪除"
+	DELETE_PROFILE_DESC = "刪除記錄檔。注意，有可能別的角色也使用這個記錄檔。"
+	DELETE_PROFILE_USAGE = "<記錄檔名稱>"
+
 	ACTIVE = "啟動"
 	ENABLED = "啟用"
 	STATE = "狀態"
-	TOGGLE_ACTIVE = "暫停/重啟這個插件。"
+	TOGGLE_ACTIVE = "暫停/繼續使用這個插件。"
 	MAP_ACTIVESUSPENDED = { [true] = "|cff00ff00啟動|r", [false] = "|cffff0000已暫停|r" }
 	SET_PROFILE = "設定這插件的記錄檔。"
 	SET_PROFILE_USAGE = "{角色 || 職業 || 伺服器 || <記錄檔名稱>}"
 	PROFILE = "記錄檔"
-	PLAYER_OF_REALM = "%s 於 %s"
+	PLAYER_OF_REALM = "%s - %s"
 	CHOOSE_PROFILE_DESC = "選擇一個記錄檔。"
 	CHOOSE_PROFILE_GUI = "選擇"
 	COPY_PROFILE_DESC = "由其他記錄檔複製設定。"
@@ -125,10 +142,10 @@ elseif GetLocale() == "zhTW" then
 	RESET_PROFILE = "重設記錄檔"
 	RESET_PROFILE_DESC = "清除目前的記錄檔上的所有設定。"
 
-	CHARACTER_COLON = "角色："
-	REALM_COLON = "伺服器："
-	CLASS_COLON = "職業："
-	
+	CHARACTER_COLON = "角色: "
+	REALM_COLON = "伺服器: "
+	CLASS_COLON = "職業: "
+
 	DEFAULT = "預設"
 	ALTERNATIVE = "替代"
 elseif GetLocale() == "zhCN" then
@@ -154,7 +171,7 @@ elseif GetLocale() == "zhCN" then
 	CHARACTER_COLON = "\229\173\151\231\172\166: "
 	REALM_COLON = "\229\159\159: "
 	CLASS_COLON = "\233\128\137\228\187\182\231\177\187: "
-	
+
 	DEFAULT = "Default" -- fix
 	ALTERNATIVE = "Alternative" -- fix
 elseif GetLocale() == "esES" then
@@ -180,9 +197,39 @@ elseif GetLocale() == "esES" then
 	CHARACTER_COLON = "Personaje: "
 	REALM_COLON = "Reino: "
 	CLASS_COLON = "Clase: "
-	
+
 	DEFAULT = "Por defecto"
 	ALTERNATIVE = "Alternativo"
+elseif GetLocale() == "ruRU" then
+	DELETE_PROFILE = "Удалить"
+	DELETE_PROFILE_DESC = "Удалить профиль. Изначально проверьте не используется ли этот профиль другими персонажами, чтобы не натворить себе неудобств."
+	DELETE_PROFILE_USAGE = "<название профиля>"
+
+	ACTIVE = "Активный"
+	ENABLED = "Включён"
+	STATE = "Состояние"
+	TOGGLE_ACTIVE = "Отключить/Запустить аддон."
+	MAP_ACTIVESUSPENDED = { [true] = "|cff00ff00Активный|r", [false] = "|cffff0000Suspended|r" }
+	SET_PROFILE = "Установить профиль для этого аддона."
+	SET_PROFILE_USAGE = "{чар || класс || сервер || <название профиля>}"
+	PROFILE = "Профиль"
+	PLAYER_OF_REALM = "%s из %s"
+	CHOOSE_PROFILE_DESC = "Выберите профиль."
+	CHOOSE_PROFILE_GUI = "Выбор"
+	COPY_PROFILE_DESC = "Скопировать настройки из другого профиля."
+	COPY_PROFILE_GUI = "Скопировать из"
+	OTHER_PROFILE_DESC = "Выбрать другой профиль."
+	OTHER_PROFILE_GUI = "Другое"
+	OTHER_PROFILE_USAGE = "<название профиля>"
+	RESET_PROFILE = "Сброс профиля"
+	RESET_PROFILE_DESC = "Очистить все настройки для текущего профиля."
+
+	CHARACTER_COLON = "Персонаж: "
+	REALM_COLON = "Сервер: "
+	CLASS_COLON = "Класс: "
+
+	DEFAULT = "По-умолчанию"
+	ALTERNATIVE = "Альтернатива"
 else -- enUS
 	ACTIVE = "Active"
 	ENABLED = "Enabled"
@@ -206,7 +253,7 @@ else -- enUS
 	CHARACTER_COLON = "Character: "
 	REALM_COLON = "Realm: "
 	CLASS_COLON = "Class: "
-	
+
 	DEFAULT = "Default"
 	ALTERNATIVE = "Alternative"
 end
@@ -232,6 +279,7 @@ local AceDB = Mixin {
 						"SetProfile",
 						"GetProfile",
 						"CopyProfileFrom",
+						"DeleteProfile",
 						"ToggleActive",
 						"IsActive",
 						"AcquireDBNamespace",
@@ -323,7 +371,7 @@ do
 			return {}
 		end
 	end
-	
+
 	function del(t)
 		setmetatable(t, nil)
 		for k in pairs(t) do
@@ -828,19 +876,19 @@ end }
 local tmp = {}
 function AceDB:InitializeDB(addonName)
 	local db = self.db
-	
+
 	if not db then
 		if addonName then
 			AceDB.addonsLoaded[addonName] = true
 		end
 		return
 	end
-	
+
 	if db.raw then
 		-- someone manually initialized
 		return
 	end
-	
+
 	if type(_G[db.name]) ~= "table" then
 		_G[db.name] = {}
 	else
@@ -1006,7 +1054,7 @@ function AceDB:ResetDB(kind, a2)
 		name, kind = kind, a2
 		AceDB:argCheck(name, 2, "nil", "string")
 		AceDB:argCheck(kind, 3, "nil", "string")
-	else	
+	else
 		AceDB:argCheck(kind, 2, "nil", "string")
 		if kind ~= "char" and kind ~= "class" and kind ~= "profile" and kind ~= "account" and kind ~= "realm" and kind ~= "faction" and kind ~= "server" then
 			name, kind = kind, nil
@@ -1038,7 +1086,7 @@ function AceDB:ResetDB(kind, a2)
 		else
 			if db.raw.namespaces then
 				db.raw.namespaces[name] = nil
-			end	
+			end
 			if db.namespaces then
 				local v = db.namespaces[name]
 				if v then
@@ -1138,7 +1186,7 @@ function AceDB:ResetDB(kind, a2)
 					rawset(v, 'realm', nil)
 				end
 			end
-		else	
+		else
 			if db.raw.namespaces then
 				local v = db.raw.namespaces[name]
 				if v and v.realms then
@@ -1248,7 +1296,7 @@ function AceDB:ResetDB(kind, a2)
 				end
 			end
 		end
-	elseif kind == "profile" then	
+	elseif kind == "profile" then
 		local id = db.raw.currentProfile and db.raw.currentProfile[charID] or AceDB.registry[self] or "Default"
 		if id == "char" then
 			id = "char/" .. charID
@@ -1257,7 +1305,7 @@ function AceDB:ResetDB(kind, a2)
 		elseif id == "realm" then
 			id = "realm/" .. realmID
 		end
-		
+
 		local current = self.class
 		while current and current ~= AceOO.Class do
 			if current.mixins then
@@ -1273,7 +1321,7 @@ function AceDB:ResetDB(kind, a2)
 			safecall(self.OnProfileDisable, self, id)
 		end
 		local active = self:IsActive()
-		
+
 		if not name then
 			if db.raw.profiles then
 				db.raw.profiles[id] = nil
@@ -1305,7 +1353,7 @@ function AceDB:ResetDB(kind, a2)
 				end
 			end
 		end
-		
+
 		local current = self.class
 		while current and current ~= AceOO.Class do
 			if current.mixins then
@@ -1322,17 +1370,18 @@ function AceDB:ResetDB(kind, a2)
 		end
 		local newactive = self:IsActive()
 		if active ~= newactive then
-			local first = nil
-			if AceOO.inherits(self, "AceAddon-2.0") then
-				local AceAddon = AceLibrary("AceAddon-2.0")
-				if not AceAddon.addonsStarted[self] then
-					return
-				end
-				if AceAddon.addonsEnabled and not AceAddon.addonsEnabled[self] then
-					first = true
-				end
-			end
 			if newactive then
+				local first = nil
+				if AceOO.inherits(self, "AceAddon-2.0") then
+					local AceAddon = AceLibrary("AceAddon-2.0")
+					if not AceAddon.addonsStarted[self] then
+						return
+					end
+					if AceAddon.addonsEnabled and not AceAddon.addonsEnabled[self] then
+						AceAddon.addonsEnabled[self] = true
+						first = true
+					end
+				end
 				local current = self.class
 				while current and current ~= AceOO.Class do
 					if current.mixins then
@@ -1370,6 +1419,11 @@ function AceDB:ResetDB(kind, a2)
 				end
 			end
 		end
+	else
+		return -- skip event
+	end
+	if AceEvent then
+		AceEvent:TriggerEvent("AceDB20_ResetDB", self, self.db.name, kind)
 	end
 end
 
@@ -1567,11 +1621,7 @@ function AceDB:SetProfile(name)
 		RecalculateAceDBCopyFromList(self)
 	end
 	if Dewdrop then
-		Dewdrop:Refresh(1)
-		Dewdrop:Refresh(2)
-		Dewdrop:Refresh(3)
-		Dewdrop:Refresh(4)
-		Dewdrop:Refresh(5)
+		Dewdrop:Refresh()
 	end
 end
 
@@ -1701,11 +1751,69 @@ function AceDB:CopyProfileFrom(copyFrom)
 		RecalculateAceDBCopyFromList(self)
 	end
 	if Dewdrop then
-		Dewdrop:Refresh(1)
-		Dewdrop:Refresh(2)
-		Dewdrop:Refresh(3)
-		Dewdrop:Refresh(4)
-		Dewdrop:Refresh(5)
+		Dewdrop:Refresh()
+	end
+end
+
+function AceDB:DeleteProfile(profile, noconfirm)
+	AceDB:argCheck(profile , 2, "string")
+	if not self.db or not self.db.raw then
+		AceDB:error("Cannot call \"DeleteProfile\" before \"RegisterDB\" has been called and before \"ADDON_LOADED\" has been fired.")
+	end
+	local db = self.db
+
+	local currentProfile = db.raw.currentProfile[charID]
+	if currentProfile:lower() == profile:lower() then
+		AceDB:error("Cannot delete profile %q, it is currently in use.", profile)
+	end
+
+	if not (noconfirm or IsShiftKeyDown()) then
+		if not StaticPopupDialogs["ACEDB20_CONFIRM_DELETE_DIALOG"] then
+			StaticPopupDialogs["ACEDB20_CONFIRM_DELETE_DIALOG"] = {}
+		end
+		local t = StaticPopupDialogs["ACEDB20_CONFIRM_DELETE_DIALOG"]
+		t.text = format("%s: %s?", DELETE_PROFILE, profile)
+		t.button1 = DELETE_PROFILE
+		t.button2 = CANCEL or "Cancel"
+		t.OnAccept = function()
+			self:DeleteProfile(profile, true)
+		end
+		t.timeout = 0
+		t.whileDead = 1
+		t.hideOnEscape = 1
+
+		StaticPopup_Show("ACEDB20_CONFIRM_DELETE_DIALOG")
+		return;
+	end
+
+	local good = false
+	if db.raw.profiles and db.raw.profiles[profile] then
+		good = true;
+		db.raw.profiles[profile] = nil;
+	end
+
+	if db.raw.namespaces then
+		for _,n in pairs(db.raw.namespaces) do
+			if n.profiles and n.profiles[profile] then
+				n.profiles[profile] = nil;
+				good = true
+			end
+		end
+	end
+
+	if not good then
+		AceDB:error("Cannot delete profile %q, it does not exist.", profile)
+	end
+
+	if self['acedb-profile-list'] then
+		RecalculateAceDBProfileList(self)
+	end
+	if self['acedb-profile-copylist'] then
+		RecalculateAceDBCopyFromList(self)
+	end
+
+	if Dewdrop then
+		Dewdrop:Refresh()
 	end
 end
 
@@ -1800,6 +1908,9 @@ function AceDB:PLAYER_LOGOUT()
 	for addon, defaultProfile in pairs(AceDB.registry) do
 		local db = addon.db
 		if db then
+			if type(addon.OnDatabaseCleanup) == "function" then
+				safecall(addon.OnDatabaseCleanup, addon)
+			end
 			setmetatable(db, nil)
 			CrawlForSerialization(db.raw)
 			if type(_G[db.charName]) == "table" then
@@ -2034,6 +2145,18 @@ function AceDB:GetAceOptionsDataTable(target)
 					get = "GetProfile",
 					set = "SetProfile",
 				},
+				delete = {
+					name = DELETE_PROFILE,
+					desc = DELETE_PROFILE_DESC,
+					usage = DELETE_PROFILE_USAGE,
+					type = 'text',
+					set = "DeleteProfile",
+					get = false,
+					validate = target['acedb-profile-copylist'],
+					disabled = function()
+						return not next(target['acedb-profile-copylist'])
+					end,
+				},
 				reset = {
 					name = RESET_PROFILE,
 					desc = RESET_PROFILE_DESC,
@@ -2051,7 +2174,7 @@ end
 local function activate(self, oldLib, oldDeactivate)
 	AceDB = self
 	AceEvent = AceLibrary:HasInstance("AceEvent-2.0") and AceLibrary("AceEvent-2.0")
-	
+
 	self.addonsToBeInitialized = oldLib and oldLib.addonsToBeInitialized or {}
 	self.addonsLoaded = oldLib and oldLib.addonsLoaded or {}
 	self.registry = oldLib and oldLib.registry or {}
@@ -2060,9 +2183,9 @@ local function activate(self, oldLib, oldDeactivate)
 			self.registry[k] = "Default"
 		end
 	end
-	
+
 	self:activate(oldLib, oldDeactivate)
-	
+
 	for t in pairs(self.embedList) do
 		if t.db then
 			rawset(t.db, 'char', nil)
@@ -2075,7 +2198,7 @@ local function activate(self, oldLib, oldDeactivate)
 			setmetatable(t.db, db_mt)
 		end
 	end
-	
+
 	if oldLib then
 		oldDeactivate(oldLib)
 	end
@@ -2084,9 +2207,9 @@ end
 local function external(self, major, instance)
 	if major == "AceEvent-2.0" then
 		AceEvent = instance
-		
+
 		AceEvent:embed(self)
-		
+
 		self:RegisterEvent("ADDON_LOADED")
 		self:RegisterEvent("PLAYER_LOGOUT")
 	elseif major == "Dewdrop-2.0" then

@@ -1,26 +1,34 @@
 
 --[[
 Name: ItemStorage-1.0
-Revision: $Rev: 29951 $
+Revision: $Rev: 78200 $
 Author(s): Usz
 Description: Item storage library.
 Dependencies: AceLibrary
 ]]
 
-local major, minor = "ItemStorage-1.0", "$Revision: 29951 $"
+local major, minor = "ItemStorage-1.0", "$Revision: 78200 $"
 
 if not AceLibrary then error(major .. " requires AceLibrary.") end
 if not AceLibrary:IsNewVersion(major, minor) then return end
 
-local tooltip = CreateFrame("GameTooltip", "ItemStorage_Tooltip" .. string.sub("$Revision: 29951 $", 12, -3), UIParent, "GameTooltipTemplate")
+local tooltip = CreateFrame("GameTooltip", "ItemStorage_Tooltip" .. string.sub("$Revision: 78200 $", 12, -3), UIParent, "GameTooltipTemplate")
 
 local lib = {}
+
+local ITEM_QUALITY_COLORS = {}
+for i, v in pairs(_G.ITEM_QUALITY_COLORS) do
+	ITEM_QUALITY_COLORS[i] = v
+end
+if not ITEM_QUALITY_COLORS[7] then
+	ITEM_QUALITY_COLORS[7] = ITEM_QUALITY_COLORS[6]
+end
 
 ---------------------------------------------------------------------
 -- Localization
 ---------------------------------------------------------------------
 
-local L_SET, L_SOCKETBONUS, L_REQUIRESLEVEL, L_SOCKET, L_REDSOCKET, L_YELLOWSOCKET, L_BLUESOCKET, L_METASOCKET, L_CLASS, L_CLASSPATTERN, L_PARTS
+local L_SET, L_SOCKETBONUS, L_REQUIRESLEVEL, L_SOCKET, L_REDSOCKET, L_YELLOWSOCKET, L_BLUESOCKET, L_METASOCKET, L_CLASS, L_CLASSPATTERN, L_PARTS, L_REGENPATTERN
 
 if GetLocale() == "xxXX" then
 
@@ -36,6 +44,7 @@ else -- enUS
 	L_CLASS = "^Class"
 	L_CLASSPATTERN = "^Class.*%s"
 	L_PARTS = "^  "
+	L_REGENPATTERN = "^[^%d]*%d+ [hm][ea][an][la]t?h? [ep][ve][er]r?y? 5 sec[^%d]*$"
 end
 
 ---------------------------------------------------------------------
@@ -76,6 +85,7 @@ end
 local patterns = {
 	{ pattern = "^[^%d]*%d+%.%d+[^%d]*$", capture = "(%d+%.%d+)" },
 	{ pattern = "^[^%d]*%d+[^%d]*$", capture = "(%d+)" },
+	{ pattern = L_REGENPATTERN, capture = "(%d+)" },
 }
 
 local function ParseLine(line)

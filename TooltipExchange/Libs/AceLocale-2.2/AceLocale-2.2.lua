@@ -1,11 +1,11 @@
 --[[
 Name: AceLocale-2.2
-Revision: $Rev: 27198 $
+Revision: $Rev: 1094 $
 Developed by: The Ace Development Team (http://www.wowace.com/index.php/The_Ace_Development_Team)
 Inspired By: Ace 1.x by Turan (turan@gryphon.com)
 Website: http://www.wowace.com/
 Documentation: http://www.wowace.com/index.php/AceLocale-2.2
-SVN: http://svn.wowace.com/root/trunk/Ace2/AceLocale-2.2
+SVN: http://svn.wowace.com/wowace/trunk/Ace2/AceLocale-2.2
 Description: Localization library for addons to use to handle proper
              localization and internationalization.
 Dependencies: AceLibrary
@@ -13,29 +13,51 @@ License: LGPL v2.1
 ]]
 
 local MAJOR_VERSION = "AceLocale-2.2"
-local MINOR_VERSION = "$Revision: 27198 $"
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 1094 $"):match("(%d+)"))
 
 if not AceLibrary then error(MAJOR_VERSION .. " requires AceLibrary.") end
 if not AceLibrary:IsNewVersion(MAJOR_VERSION, MINOR_VERSION) then return end
 
 local AceLocale = {}
-
-local DEFAULT_LOCALE = "enUS"
-local _G = getfenv(0)
+AceLocale.prototype = { class = AceLocale }
 
 local BASE_TRANSLATIONS, DEBUGGING, TRANSLATIONS, BASE_LOCALE, TRANSLATION_TABLES, REVERSE_TRANSLATIONS, STRICTNESS, DYNAMIC_LOCALES, CURRENT_LOCALE, NAME
 
+local _G = _G
 local rawget = rawget
 local rawset = rawset
 local type = type
+local pairs = pairs
+local next = next
+local getmetatable = getmetatable
+local setmetatable = setmetatable
+local GetTime = GetTime
+local geterrorhandler = geterrorhandler
+local pcall = pcall
+local ipairs = ipairs
+local GetLocale = GetLocale
 
 local newRegistries = {}
 local scheduleClear
 
 local lastSelf
-local __index = function(self, key)
+local strict__index = function(self, key)
 	lastSelf = self
 	local value = (rawget(self, TRANSLATIONS) or AceLocale.prototype)[key]
+	rawset(self, key, value)
+	return value
+end
+local nonstrict__index = function(self, key)
+	lastSelf = self
+	local t = rawget(self, TRANSLATIONS)
+	if t then
+		local value = rawget(t, key)
+		if value then
+			rawset(self, key, value)
+			return value
+		end
+	end
+	local value = (rawget(self, BASE_TRANSLATIONS) or AceLocale.prototype)[key]
 	rawset(self, key, value)
 	return value
 end
@@ -56,6 +78,11 @@ local __tostring = function(self)
 end
 
 local function clearCache(self)
+	for k, v in pairs(AceLocale.prototype) do
+		if type(v) == "function" and type(rawget(self, k)) == "function" then
+			self[k] = nil
+		end
+	end
 	if not rawget(self, BASE_TRANSLATIONS) then
 		return
 	end
@@ -72,6 +99,9 @@ local function clearCache(self)
 	self.tmp = nil
 end
 
+local strict_instance_mt, nonstrict_instance_mt
+local baseTranslations_mt
+
 local function refixInstance(instance)
 	if getmetatable(instance) then
 		setmetatable(instance, nil)
@@ -86,36 +116,16 @@ local function refixInstance(instance)
 			setmetatable(baseTranslations, nil)
 		end
 		if translations == baseTranslations or instance[STRICTNESS] then
-			setmetatable(instance, {
-				__index = __index,
-				__newindex = __newindex,
-				__tostring = __tostring
-			})
+			setmetatable(instance, strict_instance_mt)
 			
-			setmetatable(translations, {
-				__index = AceLocale.prototype
-			})
+			setmetatable(translations, baseTranslations_mt)
 		else
-			setmetatable(instance, {
-				__index = __index,
-				__newindex = __newindex,
-				__tostring = __tostring
-			})
+			setmetatable(instance, nonstrict_instance_mt)
 			
-			setmetatable(translations, {
-				__index = baseTranslations,
-			})
-			
-			setmetatable(baseTranslations, {
-				__index = AceLocale.prototype,
-			})
+			setmetatable(baseTranslations, baseTranslations_mt)
 		end
 	else
-		setmetatable(instance, {
-			__index = __index,
-			__newindex = __newindex,
-			__tostring = __tostring,
-		})
+		setmetatable(instance, strict_instance_mt)
 	end
 	clearCache(instance)
 	newRegistries[instance] = true
@@ -137,8 +147,6 @@ function AceLocale:new(name)
 	newRegistries[AceLocale.registry[name]] = true
 	return AceLocale.registry[name]
 end
-
-AceLocale.prototype = { class = AceLocale }
 
 function AceLocale.prototype:EnableDebugging()
 	if rawget(self, BASE_TRANSLATIONS) then
@@ -335,7 +343,9 @@ function AceLocale.prototype:GetStrictTranslation(text)
 	end
 	local value = rawget(x, text)
 	if value == nil then
-		AceLocale.error(self, "Translation %q does not exist for locale %s", text, self[CURRENT_LOCALE])
+		local _, ret = pcall(AceLocale.error, self, "Translation %q does not exist for locale %s", text, self[CURRENT_LOCALE])
+		geterrorhandler()(ret)
+		return text
 	end
 	return value
 end
@@ -351,7 +361,9 @@ function AceLocale.prototype:GetReverseTranslation(text)
 	end
 	local translation = x[text]
 	if not translation then
-		AceLocale.error(self, "Reverse translation for %q does not exist", text)
+		local _, ret = pcall(AceLocale.error, self, "Reverse translation for %q does not exist", text)
+		geterrorhandler()(ret)
+		return text
 	end
 	return translation
 end
@@ -411,7 +423,7 @@ function AceLocale.prototype:Debug()
 		return
 	end
 	local words = {}
-	local locales = {"enUS", "deDE", "frFR", "koKR", "zhCN", "zhTW", "esES"}
+	local locales = {"enUS", "deDE", "frFR", "koKR", "zhCN", "zhTW", "esES", "ruRU"}
 	local localizations = {}
 	DEFAULT_CHAT_FRAME:AddMessage("--- AceLocale Debug ---")
 	for _,locale in ipairs(locales) do
@@ -472,7 +484,9 @@ end
 setmetatable(AceLocale.prototype, {
 	__index = function(self, k)
 		if type(k) ~= "table" and k ~= 0 and k ~= "GetLibraryVersion"  and k ~= "error" and k ~= "assert" and k ~= "argCheck" and k ~= "pcall" then -- HACK: remove "GetLibraryVersion" and such later.
-			AceLocale.error(lastSelf or self, "Translation %q does not exist.", k)
+			local _, ret = pcall(AceLocale.error, lastSelf or self, "Translation %q does not exist.", k)
+			geterrorhandler()(ret)
+			return k
 		end
 		return nil
 	end
@@ -506,6 +520,21 @@ local function activate(self, oldLib, oldDeactivate)
 	DYNAMIC_LOCALES = self.DYNAMIC_LOCALES
 	CURRENT_LOCALE = self.CURRENT_LOCALE
 	
+	strict_instance_mt = {
+		__index = strict__index,
+		__newindex = __newindex,
+		__tostring = __tostring
+	}
+
+	nonstrict_instance_mt = {
+		__index = nonstrict__index,
+		__newindex = __newindex,
+		__tostring = __tostring
+	}
+
+	baseTranslations_mt = {
+		__index = AceLocale.prototype
+	}
 	
 	local GetTime = GetTime
 	local timeUntilClear = GetTime() + 5
@@ -516,25 +545,20 @@ local function activate(self, oldLib, oldDeactivate)
 		end
 	end
 	
-	if not self.registry then
-		self.registry = {}
-	else
-		for name, instance in pairs(self.registry) do
-			local name = name
-			local mt = getmetatable(instance)
-			setmetatable(instance, nil)
-			instance[NAME] = name
-			local strict
-			if instance[STRICTNESS] ~= nil then
-				strict = instance[STRICTNESS]
-			elseif instance[TRANSLATIONS] ~= instance[BASE_TRANSLATIONS] then
-				if getmetatable(instance[TRANSLATIONS]).__index == oldLib.prototype then
-					strict = true
-				end
+	for name, instance in pairs(self.registry) do
+		local name = name
+		setmetatable(instance, nil)
+		instance[NAME] = name
+		local strict
+		if instance[STRICTNESS] ~= nil then
+			strict = instance[STRICTNESS]
+		elseif instance[TRANSLATIONS] ~= instance[BASE_TRANSLATIONS] then
+			if getmetatable(instance[TRANSLATIONS]).__index == oldLib.prototype then
+				strict = true
 			end
-			instance[STRICTNESS] = strict and true or false
-			refixInstance(instance)
 		end
+		instance[STRICTNESS] = strict and true or false
+		refixInstance(instance)
 	end
 	
 	self.frame:SetScript("OnEvent", scheduleClear)
@@ -559,3 +583,87 @@ local function activate(self, oldLib, oldDeactivate)
 end
 
 AceLibrary:Register(AceLocale, MAJOR_VERSION, MINOR_VERSION, activate)
+--[[
+if true then -- debug
+	local L = AceLocale:new(MINOR_VERSION ~= 100000 and "AceLocale_DEBUG" or "AceLocale_DEBUG3")
+	L:RegisterTranslations("enUS", function() return {
+		Monkey = true,
+		House = true,
+	} end)
+	
+	L:RegisterTranslations("deDE", function() return {
+		Monkey = "Affe"
+	} end)
+	
+	L = AceLocale:new(MINOR_VERSION ~= 100000 and "AceLocale_DEBUG" or "AceLocale_DEBUG3")
+	assert(L.Monkey == "Monkey")
+	assert(L.House == "House")
+	if not L.Debug then
+		local pants = L.Pants
+		assert(not pants)
+	end
+	assert(L.Debug)
+	assert(L.Debug == AceLocale.prototype.Debug)
+	
+	if MINOR_VERSION == 100000 then
+		L = AceLocale:new("AceLocale_DEBUG")
+		assert(L.Monkey == "Monkey")
+		assert(L.House == "House")
+		assert(L.Debug)
+		assert(type(L.Debug) == "function")
+		assert(AceLocale.prototype.Debug)
+		assert(type(AceLocale.prototype.Debug) == "function")
+		assert(L.Debug == AceLocale.prototype.Debug)
+	end
+	
+	local L = AceLocale:new(MINOR_VERSION ~= 100000 and "AceLocale_DEBUG2" or "AceLocale_DEBUG4")
+	L:RegisterTranslations("deDE", function() return {
+		Affe = true,
+		Haus = true,
+	} end)
+	
+	L:RegisterTranslations("enUS", function() return {
+		Affe = "Monkey"
+	} end)
+	
+	L = AceLocale:new(MINOR_VERSION ~= 100000 and "AceLocale_DEBUG2" or "AceLocale_DEBUG4")
+	assert(L.Affe == "Monkey")
+	assert(L.Haus == "Haus")
+	assert(L.Debug)
+	assert(L.Debug == AceLocale.prototype.Debug)
+	
+	if MINOR_VERSION == 100000 then
+		L = AceLocale:new("AceLocale_DEBUG2")
+		assert(L.Affe == "Monkey")
+		assert(L.Haus == "Haus")
+		assert(L.Debug)
+		assert(L.Debug == AceLocale.prototype.Debug)
+	end
+	
+	local L = AceLocale:new(MINOR_VERSION ~= 100000 and "AceLocale_DEBUG5" or "AceLocale_DEBUG6")
+	L:RegisterTranslations("deDE", function() return {
+		Affe = true,
+		Haus = true,
+	} end)
+	
+	L:RegisterTranslations("enUS", function() return {
+		Affe = "Monkey"
+	} end)
+	
+	L:SetStrictness(true)
+	
+	L = AceLocale:new(MINOR_VERSION ~= 100000 and "AceLocale_DEBUG5" or "AceLocale_DEBUG6")
+	assert(L.Affe == "Monkey")
+	assert(L.Haus == "Haus")
+	assert(L.Debug)
+	assert(L.Debug == AceLocale.prototype.Debug)
+	
+	if MINOR_VERSION == 100000 then
+		L = AceLocale:new("AceLocale_DEBUG5")
+		assert(L.Affe == "Monkey")
+		assert(L.Haus == "Haus")
+		assert(L.Debug)
+		assert(L.Debug == AceLocale.prototype.Debug)
+	end
+end
+]]

@@ -1,6 +1,6 @@
---[[
+﻿--[[
 Name: AceAddon-2.0
-Revision: $Rev: 36325 $
+Revision: $Rev: 1096 $
 Developed by: The Ace Development Team (http://www.wowace.com/index.php/The_Ace_Development_Team)
 Inspired By: Ace 1.x by Turan (turan@gryphon.com)
 Website: http://www.wowace.com/
@@ -12,7 +12,7 @@ License: LGPL v2.1
 ]]
 
 local MAJOR_VERSION = "AceAddon-2.0"
-local MINOR_VERSION = "$Revision: 36325 $"
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 1096 $"):match("(%d+)"))
 
 -- This ensures the code is only executed if the libary doesn't already exist, or is a newer version
 if not AceLibrary then error(MAJOR_VERSION .. " requires AceLibrary.") end
@@ -25,7 +25,7 @@ local function safecall(func,...)
 	if not success then geterrorhandler()(err:find("%.lua:%d+:") and err or (debugstack():match("\n(.-: )in.-\n") or "") .. err) end
 end
 -- Localization
-local STANDBY, TITLE, NOTES, VERSION, AUTHOR, DATE, CATEGORY, EMAIL, CREDITS, WEBSITE, CATEGORIES, ABOUT, LICENSE, PRINT_ADDON_INFO
+local STANDBY, TITLE, NOTES, VERSION, AUTHOR, DATE, CATEGORY, EMAIL, CREDITS, WEBSITE, CATEGORIES, ABOUT, LICENSE, PRINT_ADDON_INFO, DONATE, DONATE_DESC, HOWTO_DONATE_WINDOWS, HOWTO_DONATE_MAC
 if GetLocale() == "deDE" then
 	STANDBY = "|cffff5050(Standby)|r" -- capitalized
 
@@ -42,6 +42,10 @@ if GetLocale() == "deDE" then
 
 	ABOUT = "Über"
 	PRINT_ADDON_INFO = "Gibt Addondaten aus"
+	DONATE = "Donate" -- fix
+	DONATE_DESC = "Give a much-needed donation to the author of this addon." -- fix
+	HOWTO_DONATE_WINDOWS = "Press Ctrl-A to select the link, then Ctrl-C to copy, then Alt-Tab out of the game, open your favorite web browser, and paste the link into the address bar." -- fix
+	HOWTO_DONATE_MAC = "Press Cmd-A to select the link, then Cmd-C to copy, then Cmd-Tab out of the game, open your favorite web browser, and paste the link into the address bar." -- fix
 
 	CATEGORIES = {
 		["Action Bars"] = "Aktionsleisten",
@@ -81,7 +85,7 @@ if GetLocale() == "deDE" then
 	}
 elseif GetLocale() == "frFR" then
 	STANDBY = "|cffff5050(attente)|r"
-	
+
 	TITLE = "Titre"
 	NOTES = "Notes"
 	VERSION = "Version"
@@ -92,10 +96,14 @@ elseif GetLocale() == "frFR" then
 	WEBSITE = "Site web"
 	CREDITS = "Credits" -- fix
 	LICENSE = "License" -- fix
-	
+
 	ABOUT = "A propos"
 	PRINT_ADDON_INFO = "Afficher les informations sur l'addon"
-	
+	DONATE = "Donate" -- fix
+	DONATE_DESC = "Give a much-needed donation to the author of this addon." -- fix
+	HOWTO_DONATE_WINDOWS = "Press Ctrl-A to select the link, then Ctrl-C to copy, then Alt-Tab out of the game, open your favorite web browser, and paste the link into the address bar." -- fix
+	HOWTO_DONATE_MAC = "Press Cmd-A to select the link, then Cmd-C to copy, then Cmd-Tab out of the game, open your favorite web browser, and paste the link into the address bar." -- fix
+
 	CATEGORIES = {
 		["Action Bars"] = "Barres d'action",
 		["Auction"] = "Hôtel des ventes",
@@ -134,21 +142,25 @@ elseif GetLocale() == "frFR" then
 	}
 elseif GetLocale() == "koKR" then
 	STANDBY = "|cffff5050(사용가능)|r"
-	
+
 	TITLE = "제목"
 	NOTES = "노트"
 	VERSION = "버전"
 	AUTHOR = "저작자"
 	DATE = "날짜"
 	CATEGORY = "분류"
-	EMAIL = "E-mail"
-	WEBSITE = "웹사이트"
-	CREDITS = "Credits" -- fix
-	LICENSE = "License" -- fix
-	
+	EMAIL = "전자 우편"
+	WEBSITE = "웹 사이트"
+	CREDITS = "공로자"
+	LICENSE = "라이센스"
+
 	ABOUT = "정보"
-	PRINT_ADDON_INFO = "애드온 정보 출력"
-	
+	PRINT_ADDON_INFO = "애드온에 대한 정보를 출력합니다."
+	DONATE = "기부"
+	DONATE_DESC = "이 애드온의 저작자에게 기부를 합니다."
+	HOWTO_DONATE_WINDOWS = "Ctrl-A를 눌려 링크를 선택후, Ctrl-C로 복사합니다. Alt-Tab 눌려 게임으로 부터 나간후 웹 브라우저를 엽니다. 복사된 링크를 주소 창에 붙여넣기 합니다."
+	HOWTO_DONATE_MAC = "Cmd-A를 눌려 링크를 선택후, Cmd-C로 복사합니다. Cmd-Tab 눌려 게임으로 부터 나간후 웹 브라우저를 엽니다. 복사된 링크를 주소 창에 붙여넣기 합니다."
+
 	CATEGORIES = {
 		["Action Bars"] = "액션바",
 		["Auction"] = "경매",
@@ -187,7 +199,7 @@ elseif GetLocale() == "koKR" then
 	}
 elseif GetLocale() == "zhTW" then
 	STANDBY = "|cffff5050(待命)|r"
-	
+
 	TITLE = "標題"
 	NOTES = "註記"
 	VERSION = "版本"
@@ -198,10 +210,14 @@ elseif GetLocale() == "zhTW" then
 	WEBSITE = "網站"
 	CREDITS = "特別感謝"
 	LICENSE = "版權"
-	
+
 	ABOUT = "關於"
 	PRINT_ADDON_INFO = "顯示插件資訊。"
-	
+	DONATE = "捐贈"
+	DONATE_DESC = "捐贈金錢給插件作者。"
+	HOWTO_DONATE_WINDOWS = "請按Ctrl-A選擇網站連結，Ctrl-C複製網址，Alt-Tab切換到電腦桌面，打開瀏覽器，在網址列貼上網址。"
+	HOWTO_DONATE_MAC = "請按Cmd-A選擇網站連結，Cmd-C複製網址，Cmd-Tab切換到電腦桌面，打開瀏覽器，在網址列貼上網址。"
+
 	CATEGORIES = {
 		["Action Bars"] = "動作條",
 		["Auction"] = "拍賣",
@@ -222,13 +238,13 @@ elseif GetLocale() == "zhTW" then
 		["Tank"] = "坦克",
 		["Caster"] = "施法者",
 		["Combat"] = "戰鬥",
-		["Compilations"] = "編輯",
+		["Compilations"] = "整合",
 		["Data Export"] = "資料匯出",
 		["Development Tools"] = "開發工具",
 		["Guild"] = "公會",
 		["Frame Modification"] = "框架修改",
 		["Interface Enhancements"] = "介面增強",
-		["Inventory"] = "背包",
+		["Inventory"] = "庫存",
 		["Library"] = "程式庫",
 		["Map"] = "地圖",
 		["Mail"] = "郵件",
@@ -240,7 +256,7 @@ elseif GetLocale() == "zhTW" then
 	}
 elseif GetLocale() == "zhCN" then
 	STANDBY = "|cffff5050(暂挂)|r"
-	
+
 	TITLE = "标题"
 	NOTES = "附注"
 	VERSION = "版本"
@@ -251,10 +267,14 @@ elseif GetLocale() == "zhCN" then
 	WEBSITE = "网站"
 	CREDITS = "Credits" -- fix
 	LICENSE = "License" -- fix
-	
+
 	ABOUT = "关于"
 	PRINT_ADDON_INFO = "印列出插件信息"
-	
+	DONATE = "Donate" -- fix
+	DONATE_DESC = "Give a much-needed donation to the author of this addon." -- fix
+	HOWTO_DONATE_WINDOWS = "Press Ctrl-A to select the link, then Ctrl-C to copy, then Alt-Tab out of the game, open your favorite web browser, and paste the link into the address bar." -- fix
+	HOWTO_DONATE_MAC = "Press Cmd-A to select the link, then Cmd-C to copy, then Cmd-Tab out of the game, open your favorite web browser, and paste the link into the address bar." -- fix
+
 	CATEGORIES = {
 		["Action Bars"] = "动作条",
 		["Auction"] = "拍卖",
@@ -271,9 +291,9 @@ elseif GetLocale() == "zhCN" then
 		["Shaman"] = "萨满祭司",
 		["Warlock"] = "术士",
 		["Warrior"] = "战士",
---		["Healer"] = "治疗保障",
---		["Tank"] = "近战控制",
---		["Caster"] = "远程输出",
+		["Healer"] = "Healer",
+		["Tank"] = "Tank",
+		["Caster"] = "Caster",
 		["Combat"] = "战斗",
 		["Compilations"] = "编译",
 		["Data Export"] = "数据导出",
@@ -293,7 +313,7 @@ elseif GetLocale() == "zhCN" then
 	}
 elseif GetLocale() == "esES" then
 	STANDBY = "|cffff5050(espera)|r"
-	
+
 	TITLE = "Título"
 	NOTES = "Notas"
 	VERSION = "Versión"
@@ -304,10 +324,14 @@ elseif GetLocale() == "esES" then
 	WEBSITE = "Web"
 	CREDITS = "Créditos"
 	LICENSE = "License" -- fix
-	
+
 	ABOUT = "Acerca de"
 	PRINT_ADDON_INFO = "Muestra información acerca del accesorio."
-	
+	DONATE = "Donate" -- fix
+	DONATE_DESC = "Give a much-needed donation to the author of this addon." -- fix
+	HOWTO_DONATE_WINDOWS = "Press Ctrl-A to select the link, then Ctrl-C to copy, then Alt-Tab out of the game, open your favorite web browser, and paste the link into the address bar." -- fix
+	HOWTO_DONATE_MAC = "Press Cmd-A to select the link, then Cmd-C to copy, then Cmd-Tab out of the game, open your favorite web browser, and paste the link into the address bar." -- fix
+
 	CATEGORIES = {
 		["Action Bars"] = "Barras de Acción",
 		["Auction"] = "Subasta",
@@ -344,9 +368,66 @@ elseif GetLocale() == "esES" then
 		["Tradeskill"] = "Habilidad de Comercio",
 		["UnitFrame"] = "Marco de Unidades",
 	}
+elseif GetLocale() == "ruRU" then
+	STANDBY = "|cffff5050(в режиме ожидания)|r"
+
+	TITLE = "Название"
+	NOTES = "Описание"
+	VERSION = "Версия"
+	AUTHOR = "Автор"
+	DATE = "Дата"
+	CATEGORY = "Категория"
+	EMAIL = "E-mail"
+	WEBSITE = "Сайт"
+	CREDITS = "Титры"
+	LICENSE = "Лицензия"
+
+	ABOUT = "Об аддоне"
+	PRINT_ADDON_INFO = "Показать информацию об аддоне."
+	DONATE = "Пожертвовать"
+	DONATE_DESC = "Отблагодарить автора за разработку аддона."
+	HOWTO_DONATE_WINDOWS = "Для выделения всей ссылки нажмите Ctrl-A, потом для её копирования Ctrl-C, чтобы свернуть игру - Alt-Tab, откройте ваш браузер и вставьте ссылку в адресную строку - Ctrl-V"
+	HOWTO_DONATE_MAC = "Для выделения всей ссылки нажмите Cmd-A, потом для её копирования Ctrl-C, чтобы свернуть игру -  Cmd-Tab, откройте ваш браузер и вставьте ссылку в адресную строку Cmd-V"
+
+	CATEGORIES = {
+		["Action Bars"] = "Панели команд",
+		["Auction"] = "Аукцион",
+		["Audio"] = "Аудио",
+		["Battlegrounds/PvP"] = "Поля сражений/PvP",
+		["Buffs"] = "Баффы",
+		["Chat/Communication"] = "Чат/Коммуникация",
+		["Druid"] = "Друид",
+		["Hunter"] = "Охотник",
+		["Mage"] = "Маг",
+		["Paladin"] = "Паладин",
+		["Priest"] = "Жрец",
+		["Rogue"] = "Разбойник",
+		["Shaman"] = "Шаман",
+		["Warlock"] = "Чернокнижник",
+		["Warrior"] = "Воин",
+		["Healer"] = "Лекарь",
+		["Tank"] = "Танк",
+		["Caster"] = "Кастер",
+		["Combat"] = "Сражения",
+		["Compilations"] = "Компиляция",
+		["Data Export"] = "Экспорт данных",
+		["Development Tools"] = "Инструменты разработчика",
+		["Guild"] = "Гильдия",
+		["Frame Modification"] = "Модификация фреймов",
+		["Interface Enhancements"] = "Улучшение интерфейса",
+		["Inventory"] = "Инвентарь",
+		["Library"] = "Библиотеки",
+		["Map"] = "Карта",
+		["Mail"] = "Почта",
+		["Miscellaneous"] = "Разное",
+		["Quest"] = "Задания",
+		["Raid"] = "Рейд",
+		["Tradeskill"] = "Умения",
+		["UnitFrame"] = "Фреймы персонажей",
+	}
 else -- enUS
 	STANDBY = "|cffff5050(standby)|r"
-	
+
 	TITLE = "Title"
 	NOTES = "Notes"
 	VERSION = "Version"
@@ -357,10 +438,14 @@ else -- enUS
 	WEBSITE = "Website"
 	CREDITS = "Credits"
 	LICENSE = "License"
-	
+
 	ABOUT = "About"
 	PRINT_ADDON_INFO = "Show information about the addon."
-	
+	DONATE = "Donate"
+	DONATE_DESC = "Give a much-needed donation to the author of this addon."
+	HOWTO_DONATE_WINDOWS = "Press Ctrl-A to select the link, then Ctrl-C to copy, then Alt-Tab out of the game, open your favorite web browser, and paste the link into the address bar."
+	HOWTO_DONATE_MAC = "Press Cmd-A to select the link, then Cmd-C to copy, then Cmd-Tab out of the game, open your favorite web browser, and paste the link into the address bar."
+
 	CATEGORIES = {
 		["Action Bars"] = "Action Bars",
 		["Auction"] = "Auction",
@@ -403,6 +488,7 @@ setmetatable(CATEGORIES, { __index = function(self, key) -- case-insensitive
 	local lowerKey = key:lower()
 	for k,v in pairs(CATEGORIES) do
 		if k:lower() == lowerKey then
+			self[lowerKey] = v
 			return v
 		end
 	end
@@ -463,27 +549,7 @@ local function RegisterOnEnable(self)
 	if AceAddon.playerLoginFired then
 		AceAddon.addonsStarted[self] = true
 		if (type(self.IsActive) ~= "function" or self:IsActive()) and (not AceModuleCore or not AceModuleCore:IsModule(self) or AceModuleCore:IsModuleActive(self)) then
-			AceAddon.addonsEnabled[self] = true
-			local current = self.class
-			while true do
-				if current == AceOO.Class or not current then
-					break
-				end
-				if current.mixins then
-					for mixin in pairs(current.mixins) do
-						if type(mixin.OnEmbedEnable) == "function" then
-							safecall(mixin.OnEmbedEnable,mixin,self,true)
-						end
-					end
-				end
-				current = current.super
-			end
-			if type(self.OnEnable) == "function" then
-				safecall(self.OnEnable,self,true)
-			end
-			if AceEvent then
-				AceEvent:TriggerEvent("Ace2_AddonEnabled", self, true)
-			end
+			AceAddon:ManualEnable(self)
 		end
 	else
 		if not AceAddon.addonsToOnEnable then
@@ -517,7 +583,7 @@ function AceAddon:InitializeAddon(addon, name)
 		end
 		if addon.version == nil then
 			addon.version = GetAddOnMetadata(name, "Version")
-		end	
+		end
 		if type(addon.version) == "string" then
 			if addon.version:find("%$Revision: (%d+) %$") then
 				addon.version = addon.version:gsub("%$Revision: (%d+) %$", "%1")
@@ -539,6 +605,12 @@ function AceAddon:InitializeAddon(addon, name)
 		end
 		if type(addon.credits) == "string" then
 			addon.credits = addon.credits:trim()
+		end
+		if addon.donate == nil then
+			addon.donate = GetAddOnMetadata(name, "X-Donate")
+		end
+		if type(addon.donate) == "string" then
+			addon.donate = addon.donate:trim()
 		end
 		if addon.date == nil then
 			addon.date = GetAddOnMetadata(name, "X-Date") or GetAddOnMetadata(name, "X-ReleaseDate")
@@ -592,7 +664,7 @@ function AceAddon:InitializeAddon(addon, name)
 		current = current.super
 	end
 	local n = AceAddon.addonsToOnEnable and #AceAddon.addonsToOnEnable or 0
-	
+
 	if type(addon.OnInitialize) == "function" then
 		safecall(addon.OnInitialize, addon, name)
 	end
@@ -607,70 +679,298 @@ function AceAddon:InitializeAddon(addon, name)
 	end
 end
 
+local aboutFrame
+local function createAboutFrame()
+	aboutFrame = CreateFrame("Frame", "AceAddon20AboutFrame", UIParent, "DialogBoxFrame")
+	aboutFrame:SetWidth(500)
+	aboutFrame:SetHeight(400)
+	aboutFrame:SetPoint("CENTER")
+	aboutFrame:SetBackdrop({
+		bgFile = [[Interface\DialogFrame\UI-DialogBox-Background]],
+	    edgeFile = [[Interface\Tooltips\UI-Tooltip-Border]],
+	    tile = true, tileSize = 16, edgeSize = 16,
+	    insets = { left = 5, right = 5, top = 5, bottom = 5 }
+	})
+	aboutFrame:SetBackdropColor(0,0,0,1)
+
+	local donateButton = CreateFrame("Button", "AceAddon20AboutFrameDonateButton", aboutFrame, "UIPanelButtonTemplate2")
+	aboutFrame.donateButton = donateButton
+	donateButton:SetPoint("BOTTOMRIGHT", -20, 20)
+	_G.AceAddon20AboutFrameDonateButtonText:SetText(DONATE)
+	donateButton:SetWidth(_G.AceAddon20AboutFrameDonateButtonText:GetWidth()+20)
+	donateButton:SetScript("OnClick", function()
+		aboutFrame.currentAddon:OpenDonationFrame()
+	end)
+
+	local text = aboutFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+	aboutFrame.title = text
+	text:SetPoint("TOP", 0, -5)
+
+	aboutFrame:Hide()
+
+	aboutFrame.lefts = {}
+	aboutFrame.rights = {}
+	aboutFrame.textLefts = {}
+	aboutFrame.textRights = {}
+	function aboutFrame:Clear()
+		self.title:SetText("")
+		for i = 1, #self.lefts do
+			self.lefts[i] = nil
+			self.rights[i] = nil
+		end
+	end
+
+	function aboutFrame:AddLine(left, right)
+		aboutFrame.lefts[#aboutFrame.lefts+1] = left
+		aboutFrame.rights[#aboutFrame.rights+1] = right
+	end
+
+	local aboutFrame_Show = aboutFrame.Show
+	function aboutFrame:Show(...)
+		local maxLeftWidth = 0
+		local maxRightWidth = 0
+		local textHeight = 0
+		for i = 1, #self.lefts do
+			if not self.textLefts[i] then
+				local left = aboutFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+				self.textLefts[i] = left
+				local right = aboutFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+				self.textRights[i] = right
+				if i == 1 then
+					left:SetPoint("TOPRIGHT", aboutFrame, "TOPLEFT", 75, -35)
+				else
+					left:SetPoint("TOPRIGHT", self.textLefts[i-1], "BOTTOMRIGHT", 0, -5)
+				end
+				right:SetPoint("LEFT", left, "RIGHT", 5, 0)
+			end
+			self.textLefts[i]:SetText(self.lefts[i] .. ":")
+			self.textRights[i]:SetText(self.rights[i])
+			local leftWidth = self.textLefts[i]:GetWidth()
+			local rightWidth = self.textRights[i]:GetWidth()
+			textHeight = self.textLefts[i]:GetHeight()
+			if maxLeftWidth < leftWidth then
+				maxLeftWidth = leftWidth
+			end
+			if maxRightWidth < rightWidth then
+				maxRightWidth = rightWidth
+			end
+		end
+		for i = #self.lefts+1, #self.textLefts do
+			self.textLefts[i]:SetText('')
+			self.textRights[i]:SetText('')
+		end
+		aboutFrame:SetWidth(75 + maxRightWidth + 20)
+		aboutFrame:SetHeight(#self.lefts * (textHeight + 5) + 100)
+
+		aboutFrame_Show(self, ...)
+	end
+	aboutFrame:Hide()
+
+	createAboutFrame = nil
+end
+local donateFrame
+
+local function unobfuscateEmail(email)
+	return email:gsub(" AT ", "@"):gsub(" DOT ", ".")
+end
+
 local function isGoodVariable(var)
 	return type(var) == "string" or type(var) == "number"
 end
 function AceAddon.prototype:PrintAddonInfo()
+	if createAboutFrame then
+		createAboutFrame()
+	end
+	aboutFrame:Clear()
 	local x
 	if isGoodVariable(self.title) then
-		x = "|cffffff7f" .. tostring(self.title) .. "|r"
+		x = tostring(self.title)
 	elseif isGoodVariable(self.name) then
-		x = "|cffffff7f" .. tostring(self.name) .. "|r"
+		x = tostring(self.name)
 	else
-		x = "|cffffff7f<" .. tostring(self.class) .. " instance>|r"
+		x = "<" .. tostring(self.class) .. " instance>"
 	end
 	if type(self.IsActive) == "function" then
 		if not self:IsActive() then
 			x = x .. " " .. STANDBY
 		end
 	end
+	aboutFrame.title:SetText(x)
+
 	if isGoodVariable(self.version) then
-		x = x .. " - |cffffff7f" .. tostring(self.version) .. "|r"
+		aboutFrame:AddLine(VERSION, tostring(self.version))
 	end
 	if isGoodVariable(self.notes) then
-		x = x .. " - " .. tostring(self.notes)
+		aboutFrame:AddLine(NOTES, tostring(self.notes))
 	end
-	print(x)
 	if isGoodVariable(self.author) then
-		print(" - |cffffff7f" .. AUTHOR .. ":|r " .. tostring(self.author))
+		aboutFrame:AddLine(AUTHOR, tostring(self.author))
 	end
 	if isGoodVariable(self.credits) then
-		print(" - |cffffff7f" .. CREDITS .. ":|r " .. tostring(self.credits))
+		aboutFrame:AddLine(CREDITS, tostring(self.credits))
 	end
 	if isGoodVariable(self.date) then
-		print(" - |cffffff7f" .. DATE .. ":|r " .. tostring(self.date))
+		aboutFrame:AddLine(DATE, tostring(self.date))
 	end
-	if self.category then
+	if isGoodVariable(self.category) then
 		local category = CATEGORIES[self.category]
-		if category then
-			print(" - |cffffff7f" .. CATEGORY .. ":|r " .. category)
-		end
+		aboutFrame:AddLine(CATEGORY, category or tostring(self.category))
 	end
 	if isGoodVariable(self.email) then
-		print(" - |cffffff7f" .. EMAIL .. ":|r " .. tostring(self.email))
+		aboutFrame:AddLine(EMAIL, unobfuscateEmail(tostring(self.email)))
 	end
 	if isGoodVariable(self.website) then
-		print(" - |cffffff7f" .. WEBSITE .. ":|r " .. tostring(self.website))
+		aboutFrame:AddLine(WEBSITE, tostring(self.website))
 	end
 	if isGoodVariable(self.license) then
-		print(" - |cffffff7f" .. LICENSE .. ":|r " .. tostring(self.license))
+		aboutFrame:AddLine(LICENSE, tostring(self.license))
 	end
+
+	if donateFrame and donateFrame:IsShown() then
+		donateFrame:Hide()
+	end
+
+	aboutFrame.currentAddon = self
+
+	aboutFrame:Show()
+
+	if self.donate then
+		aboutFrame.donateButton:Show()
+	else
+		aboutFrame.donateButton:Hide()
+	end
+end
+
+local function createDonateFrame()
+	donateFrame = CreateFrame("Frame", "AceAddon20Frame", UIParent, "DialogBoxFrame")
+
+	donateFrame:SetWidth(500)
+	donateFrame:SetHeight(200)
+	donateFrame:SetPoint("CENTER")
+	donateFrame:SetBackdrop({
+		bgFile = [[Interface\DialogFrame\UI-DialogBox-Background]],
+		edgeFile = [[Interface\Tooltips\UI-Tooltip-Border]],
+		tile = true, tileSize = 16, edgeSize = 16,
+		insets = { left = 5, right = 5, top = 5, bottom = 5 }
+	})
+	donateFrame:SetBackdropColor(0,0,0,1)
+
+	local text = donateFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+	text:SetPoint("TOP", 0, -5)
+	text:SetText(DONATE)
+
+	local howto = donateFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	howto:SetPoint("TOP", text, "BOTTOM", 0, -5)
+	howto:SetPoint("LEFT", 16, 0)
+	howto:SetPoint("RIGHT", -16, 0)
+	if not IsMacClient() then
+		-- Windows or Linux
+		howto:SetText(HOWTO_DONATE_WINDOWS)
+	else
+		howto:SetText(HOWTO_DONATE_MAC)
+	end
+
+	local scrollFrame = CreateFrame("ScrollFrame", "AceAddon20FrameScrollFrame", donateFrame, "UIPanelScrollFrameTemplate")
+	scrollFrame:SetToplevel(true)
+	scrollFrame:SetPoint("TOP", -10, -76)
+	scrollFrame:SetWidth(455)
+	scrollFrame:SetHeight(70)
+	howto:SetPoint("BOTTOM", scrollFrame, "TOP")
+
+	local editBox = CreateFrame("EditBox", nil, scrollFrame)
+	donateFrame.editBox = editBox
+	scrollFrame:SetScrollChild(editBox)
+	editBox:SetFontObject(ChatFontNormal)
+	editBox:SetMultiLine(true)
+	editBox:SetMaxLetters(99999)
+	editBox:SetWidth(450)
+	editBox:SetHeight(54)
+	editBox:SetPoint("BOTTOM", 5, 0)
+	editBox:SetJustifyH("LEFT")
+	editBox:SetJustifyV("TOP")
+	editBox:SetAutoFocus(false)
+	editBox:SetScript("OnTextChanged", function(this)
+		if this:GetText() ~= this.text then
+			this:SetText(this.text)
+		end
+	end)
+	editBox:SetScript("OnEscapePressed", function(this)
+		this:ClearFocus()
+	end)
+	createDonateFrame = nil
+end
+
+local function fix(char)
+	return ("%%%02x"):format(char:byte())
+end
+
+local function urlencode(text)
+	return text:gsub("[^0-9A-Za-z]", fix)
+end
+
+function AceAddon.prototype:OpenDonationFrame()
+	if createDonateFrame then
+		createDonateFrame()
+	end
+	local donate = self.donate
+	if type(donate) ~= "string" then
+		donate = "Wowace"
+	end
+	local style, data = (":"):split(donate, 2)
+	style = style:lower()
+	if style ~= "website" and style ~= "paypal" then
+		style = "wowace"
+	end
+	if style == "wowace" then
+		donateFrame.editBox.text = "http://www.wowace.com/wiki/Donations"
+	elseif style == "website" then
+		donateFrame.editBox.text = data
+	else -- PayPal
+		local text = "https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=" .. urlencode(unobfuscateEmail(data))
+		local name
+		if type(self.title) == "string" then
+			name = self.title
+		elseif type(self.name) == "string" then
+			name = self.name
+		end
+		if name then
+			name = name:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+			text = text .. "&item_name=" .. urlencode(name)
+		end
+		donateFrame.editBox.text = text
+	end
+	donateFrame.editBox:SetText(donateFrame.editBox.text)
+
+	if aboutFrame and aboutFrame:IsShown() then
+		aboutFrame:Hide()
+	end
+
+	donateFrame:Show()
+
+	donateFrame.editBox:SetFocus()
 end
 
 local options
 function AceAddon:GetAceOptionsDataTable(target)
-	if not options then
-		options = {
-			about = {
-				name = ABOUT,
-				desc = PRINT_ADDON_INFO,
-				type = "execute",
-				func = "PrintAddonInfo",
-				order = -1,
-			}
+	return {
+		about = {
+			name = ABOUT,
+			desc = PRINT_ADDON_INFO,
+			type = "execute",
+			func = "PrintAddonInfo",
+			order = -1,
+		},
+		donate = {
+			name = DONATE,
+			desc = DONATE_DESC,
+			type = "execute",
+			func = "OpenDonationFrame",
+			order = -1,
+			hidden = function()
+				return not target.donate
+			end
 		}
-	end
-	return options
+	}
 end
 
 function AceAddon:PLAYER_LOGIN()
@@ -680,27 +980,7 @@ function AceAddon:PLAYER_LOGIN()
 			local addon = table.remove(self.addonsToOnEnable, 1)
 			self.addonsStarted[addon] = true
 			if (type(addon.IsActive) ~= "function" or addon:IsActive()) and (not AceModuleCore or not AceModuleCore:IsModule(addon) or AceModuleCore:IsModuleActive(addon)) then
-				self.addonsEnabled[addon] = true
-				local current = addon.class
-				while true do
-					if current == AceOO.Class or not current then
-						break
-					end
-					if current.mixins then
-						for mixin in pairs(current.mixins) do
-							if type(mixin.OnEmbedEnable) == "function" then
-								safecall(mixin.OnEmbedEnable, mixin, addon, true)
-							end
-						end
-					end
-					current = current.super
-				end
-				if type(addon.OnEnable) == "function" then
-					safecall(addon.OnEnable, addon, true)
-				end
-				if AceEvent then
-					AceEvent:TriggerEvent("Ace2_AddonEnabled", addon, true)
-				end
+				AceAddon:ManualEnable(addon)
 			end
 		end
 		self.addonsToOnEnable = nil
@@ -751,16 +1031,65 @@ AceAddon.new = function(self, ...)
 	return class:new()
 end
 
+function AceAddon:ManualEnable(addon)
+	AceAddon:argCheck(addon, 2, "table")
+	local first = nil
+	if AceOO.inherits(addon, "AceAddon-2.0") then
+		if AceAddon.addonsEnabled and not AceAddon.addonsEnabled[addon] then
+			first = true
+			AceAddon.addonsEnabled[addon] = true
+		end
+	end
+	local current = addon.class
+	while current and current ~= AceOO.Class do
+		if current.mixins then
+			for mixin in pairs(current.mixins) do
+				if type(mixin.OnEmbedEnable) == "function" then
+					safecall(mixin.OnEmbedEnable, mixin, addon, first)
+				end
+			end
+		end
+		current = current.super
+	end
+	if type(addon.OnEnable) == "function" then
+		safecall(addon.OnEnable, addon, first)
+	end
+	if AceEvent then
+		AceEvent:TriggerEvent("Ace2_AddonEnabled", addon, first)
+	end
+end
+
+function AceAddon:ManualDisable(addon)
+	AceAddon:argCheck(addon, 2, "table")
+	local current = addon.class
+	while current and current ~= AceOO.Class do
+		if current.mixins then
+			for mixin in pairs(current.mixins) do
+				if type(mixin.OnEmbedDisable) == "function" then
+					safecall(mixin.OnEmbedDisable, mixin, addon)
+				end
+			end
+		end
+		current = current.super
+	end
+	if type(module.OnDisable) == "function" then
+		safecall(module.OnDisable, addon)
+	end
+	if AceEvent then
+		AceEvent:TriggerEvent("Ace2_AddonDisabled", addon)
+	end
+end
+
 local function external(self, major, instance)
 	if major == "AceEvent-2.0" then
 		AceEvent = instance
-		
+
 		AceEvent:embed(self)
-		
+
 		self:RegisterEvent("PLAYER_LOGIN", "PLAYER_LOGIN", true)
 	elseif major == "AceConsole-2.0" then
 		AceConsole = instance
-		
+
 		local slashCommands = { "/ace2" }
 		local _,_,_,enabled,loadable = GetAddOnInfo("Ace")
 		if not enabled or not loadable then
@@ -770,7 +1099,7 @@ local function external(self, major, instance)
 			if not depth then
 				depth = 0
 			end
-			
+
 			local s = ("  "):rep(depth) .. " - " .. tostring(addon)
 			if rawget(addon, 'version') then
 				s = s .. " - |cffffff7f" .. tostring(addon.version) .. "|r"
@@ -1104,7 +1433,7 @@ end
 
 local function activate(self, oldLib, oldDeactivate)
 	AceAddon = self
-	
+
 	self.playerLoginFired = oldLib and oldLib.playerLoginFired or DEFAULT_CHAT_FRAME and DEFAULT_CHAT_FRAME.defaultLanguage
 	self.addonsToOnEnable = oldLib and oldLib.addonsToOnEnable
 	self.addons = oldLib and oldLib.addons or {}
@@ -1112,7 +1441,7 @@ local function activate(self, oldLib, oldDeactivate)
 	self.skipAddon = oldLib and oldLib.skipAddon or {}
 	self.addonsStarted = oldLib and oldLib.addonsStarted or {}
 	self.addonsEnabled = oldLib and oldLib.addonsEnabled or {}
-	
+
 	if oldDeactivate then
 		oldDeactivate(oldLib)
 	end

@@ -1,11 +1,11 @@
 --[[
 Name: AceModuleCore-2.0
-Revision: $Rev: 35663 $
+Revision: $Rev: 1091 $
 Developed by: The Ace Development Team (http://www.wowace.com/index.php/The_Ace_Development_Team)
 Inspired By: Ace 1.x by Turan (turan@gryphon.com)
 Website: http://www.wowace.com/
 Documentation: http://www.wowace.com/index.php/AceModuleCore-2.0
-SVN: http://svn.wowace.com/root/trunk/Ace2/AceModuleCore-2.0
+SVN: http://svn.wowace.com/wowace/trunk/Ace2/AceModuleCore-2.0
 Description: Mixin to provide a module system so that modules or plugins can
              use an addon as its core.
 Dependencies: AceLibrary, AceOO-2.0, AceAddon-2.0, AceEvent-2.0 (optional)
@@ -13,7 +13,7 @@ License: LGPL v2.1
 ]]
 
 local MAJOR_VERSION = "AceModuleCore-2.0"
-local MINOR_VERSION = "$Revision: 35663 $"
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 1091 $"):match("(%d+)"))
 
 if not AceLibrary then error(MAJOR_VERSION .. " requires AceLibrary") end
 if not AceLibrary:IsNewVersion(MAJOR_VERSION, MINOR_VERSION) then return end
@@ -33,12 +33,15 @@ local AceModuleCore = AceOO.Mixin {
 									"GetModule",
 									"IsModule",
 									"IterateModules",
-									"SetModuleMixins", 
+									"IterateModulesWithMethod",
+									"CallMethodOnAllModules",
+									"SetModuleMixins",
 									"SetModuleClass",
 									"IsModuleActive",
 									"ToggleModuleActive",
 									"SetModuleDefaultState",
 								  }
+local AceAddon
 
 local function getlibrary(lib)
 	if type(lib) == "string" then
@@ -70,6 +73,7 @@ do
 end
 
 local iterList = setmetatable({}, {__mode='v'})
+local modulesWithMethod = setmetatable({}, {__mode='kv'})
 do
 	local function func(t)
 		local i = t.i + 1
@@ -98,8 +102,61 @@ do
 		t.l = list
 		return func, t, nil
 	end
+	
+	function AceModuleCore:IterateModulesWithMethod(method)
+		local masterList = modulesWithMethod[self]
+		if not masterList then
+			masterList = new()
+			modulesWithMethod[self] = masterList
+		end
+		local list = masterList[method]
+		if not list then
+			list = new()
+			for k, v in pairs(self.modules) do
+				if self:IsModuleActive(k) and type(v[method]) == "function" then
+					list[#list+1] = k
+				end
+			end
+			table.sort(list)
+			list.m = self.modules
+			masterList[method] = list
+		end
+		local t = new()
+		t.i = 0
+		t.l = list
+		return func, t, nil
+	end
+	
+--[[----------------------------------------------------------------------------------
+Notes:
+	Safely calls the given method on all active modules if it exists on said modules. This will automatically subvert any errors that occur in the modules.
+Arguments:
+	string - the name of the method.
+	tuple - the list of arguments to call the method with.
+Example:
+	core:CallMethodOnAllModules("OnSomething")
+	core:CallMethodOnAllModules("OnSomethingElse", 1, 2, 3, 4)
+------------------------------------------------------------------------------------]]
+	function AceModuleCore:CallMethodOnAllModules(method, ...)
+		for name, module in self:IterateModulesWithMethod(method) do
+			local success, ret = pcall(module[method], module, ...)
+			if not success then
+				geterrorhandler(ret)
+			end
+		end
+	end
 end
 
+--[[----------------------------------------------------------------------------
+Notes: 
+	Create a new module, parented to self.
+	The module created does, in fact, inherit from AceAddon-2.0.
+Arguments: 
+	string - name/title of the Module.
+	list of mixins the module is to inherit from.
+Example:
+	MyModule = core:NewModule('MyModule', "AceEvent-2.0", "AceHook-2.1")
+------------------------------------------------------------------------------]]
 local tmp = {}
 function AceModuleCore:NewModule(name, ...)
 	if not self.modules then
@@ -143,6 +200,12 @@ function AceModuleCore:NewModule(name, ...)
 
 	AceModuleCore.totalModules[module] = self
 	
+	if modulesWithMethod[self] then
+		for k,v in pairs(modulesWithMethod[self]) do
+			modulesWithMethod[self] = del(v)
+		end
+	end
+	
 	if type(self.OnModuleCreated) == "function" then
 		safecall(self.OnModuleCreated, self, name, module)
 	end
@@ -156,7 +219,18 @@ function AceModuleCore:NewModule(name, ...)
 	end
 	return module
 end
-
+--[[----------------------------------------------------------------------------------
+Notes:
+	Return whether the module names given are all available in the core.
+Arguments:
+	list of strings that are the names of the modules. (typically you'd only check for one)
+Returns:
+	* boolean - Whether all the modules are available in the core.
+Example:
+	if core:HasModule('Bank') then
+		-- do banking
+	end
+------------------------------------------------------------------------------------]]
 function AceModuleCore:HasModule(...)
 	for i = 1, select('#', ...) do
 		if not self.modules[select(i, ...)] then
@@ -167,6 +241,17 @@ function AceModuleCore:HasModule(...)
 	return true
 end
 
+--[[------------------------------------------------------------------------------------
+Notes:
+	Return the module "name" if it exists.
+	If the module doesnot exist, an error is thrown.
+Arguments:
+	string - the name of the module.
+Returns:
+	The module requested, if it exists.
+Example:
+	local bank = core:GetModule('Bank')
+------------------------------------------------------------------------------------]]
 function AceModuleCore:GetModule(name)
 	if not self.modules then
 		AceModuleCore:error("Error initializing class.  Please report error.")
@@ -177,6 +262,22 @@ function AceModuleCore:GetModule(name)
 	return self.modules[name]
 end
 
+--[[----------------------------------------------------------------------------------
+Notes:
+	Return whether the given module is actually a module.
+Arguments:
+	reference to the module
+Returns:
+	* boolean - whether the given module is actually a module.
+Example:
+	if core:IsModule(module) then
+		-- do something
+	end
+	-- alternatively
+	if AceModuleCore:IsModule(module) then
+		-- checks all modules, no matter the parent
+	end
+------------------------------------------------------------------------------------]]
 function AceModuleCore:IsModule(module)
 	if self == AceModuleCore then
 		return AceModuleCore.totalModules[module]
@@ -193,6 +294,16 @@ function AceModuleCore:IsModule(module)
 	end
 end
 
+--[[----------------------------------------------------------------------------------
+Notes:
+ * Sets the default mixins for a given module.
+ * This cannot be called after :NewModule() has been called.
+ * This should really only be called if you use the mixins in your prototype.
+Arguments:
+	list of mixins (up to 20)
+Example:
+	core:SetModuleMixins("AceEvent-2.0", "AceHook-2.0")
+------------------------------------------------------------------------------------]]
 function AceModuleCore:SetModuleMixins(...)
 	if self.moduleMixins then
 		AceModuleCore:error('Cannot call "SetModuleMixins" twice')
@@ -208,6 +319,7 @@ function AceModuleCore:SetModuleMixins(...)
 	end
 end
 
+-- #NODOC
 function AceModuleCore:SetModuleClass(class)
 	class = getlibrary(class)
 	if not AceOO.inherits(class, AceOO.Class) then
@@ -257,6 +369,16 @@ local function isDisabled(core, module)
 	end
 end
 
+--[[----------------------------------------------------------------------------------
+Notes:
+	Sets the default active state of a module. This should be called before the ADDON_LOADED of the module.
+Arguments:
+	string - name of the module.
+	table - reference to the module.
+	boolean - new state. false means disabled by default, true means enabled by default (true is the default).
+Example:
+	self:SetModuleDefaultState('bank', false)
+------------------------------------------------------------------------------------]]
 function AceModuleCore:SetModuleDefaultState(module, state)
 	AceModuleCore:argCheck(module, 2, "table", "string")
 	AceModuleCore:argCheck(state, 3, "boolean")
@@ -271,6 +393,26 @@ function AceModuleCore:SetModuleDefaultState(module, state)
 	defaultState[self][module] = not state
 end
 
+--[[----------------------------------------------------------------------------------
+Notes: 
+Toggles the active state of a module.
+
+This calls module:ToggleActive([state]) if available.
+
+If suspending, This will call :OnDisable() on the module if it is available. Also, it will iterate through the addon's mixins and call :OnEmbedDisable(module) if available. - this in turn will, through AceEvent and others, unregister events/hooks/etc. depending on the mixin. Also, it will call :OnModuleDisable(module) on the core if it is available.
+
+If resuming, This will call :OnEnable(first) on the module if it is available. Also, it will iterate through the addon's mixins and call :OnEmbedEnable(module) if available. - this in turn will, through AceEvent and others, unregister events/hooks/etc. depending on the mixin. Also, it will call :OnModuleEnable(module) on the core if it is available.
+
+If you call :ToggleModuleActive("name or module, true) and it is already active, it silently returns, same if you pass false and it is inactive.
+
+Arguments:
+	string/table - name of the module or a reference to the module
+	[optional] boolean - new state. (default not :IsModuleActive("name" or module))
+Returns:
+	* boolean - Whether the module is now in an active (enabled) state.
+Example:
+	self:ToggleModuleActive('bank')
+------------------------------------------------------------------------------------]]
 function AceModuleCore:ToggleModuleActive(module, state)
 	AceModuleCore:argCheck(module, 2, "table", "string")
 	AceModuleCore:argCheck(state, 3, "nil", "boolean")
@@ -333,15 +475,15 @@ function AceModuleCore:ToggleModuleActive(module, state)
 		self.disabledModules[module.name] = value
 	end
 	if AceOO.inherits(module, "AceAddon-2.0") then
-		if not AceLibrary("AceAddon-2.0").addonsStarted[module] then
+		if not AceAddon.addonsStarted[module] then
 			return
 		end
 	end
 	if not disable then
 		local first = nil
 		if AceOO.inherits(module, "AceAddon-2.0") then
-			local AceAddon = AceLibrary("AceAddon-2.0")
-			if AceAddon.addonsEnabled and not AceAddon.addonsEnabled[self] then
+			if AceAddon.addonsEnabled and not AceAddon.addonsEnabled[module] then
+				AceAddon.addonsEnabled[module] = true
 				first = true
 			end
 		end
@@ -390,6 +532,17 @@ function AceModuleCore:ToggleModuleActive(module, state)
 	return not disable
 end
 
+--[[-----------------------------------------------------------------------
+Notes:
+	Returns whether the module is in an active (enabled) state. This calls module:IsActive() if available. if notLoaded is set, then "name" must be a string.
+Arguments:
+	string/table - name of the module or a reference to the module
+	[optional] - boolean - if set, this will check modules that are not loaded as well. (default: false)
+Returns:
+	* boolean - Whether the module is in an active (enabled) state.
+Example:
+	assert(self:IsModuleActive('bank'))
+------------------------------------------------------------------------]]
 function AceModuleCore:IsModuleActive(module, notLoaded)
 	AceModuleCore:argCheck(module, 2, "table", "string")
 	AceModuleCore:argCheck(notLoaded, 3, "nil", "boolean")
@@ -425,10 +578,19 @@ function AceModuleCore:IsModuleActive(module, notLoaded)
 	return not isDisabled(self, module)
 end
 
+-- #NODOC
 function AceModuleCore:OnInstanceInit(target)
 	if target.modules then
 		do return end
 		AceModuleCore:error("OnInstanceInit cannot be called twice")
+	end
+	
+	if not AceAddon then
+		if AceLibrary:HasInstance("AceAddon-2.0") then
+			AceAddon = AceLibrary("AceAddon-2.0")
+		else
+			self:error(MAJOR_VERSION .. " requires AceAddon-2.0")
+		end
 	end
 	target.modules = {}
 
@@ -463,20 +625,34 @@ function AceModuleCore.OnEmbedProfileDisable(AceModuleCore, self, newProfile)
 	end
 end
 
+-- #NODOC
 function AceModuleCore:Ace2_AddonEnabled(module, first)
 	local addon = self.totalModules[module]
 	if not addon then
 		return
+	end
+	
+	if modulesWithMethod[addon] then
+		for k,v in pairs(modulesWithMethod[addon]) do
+			modulesWithMethod[addon] = del(v)
+		end
 	end
 	if type(addon.OnModuleEnable) == "function" then
 		safecall(addon.OnModuleEnable, addon, module, first)
 	end
 end
 
+-- #NODOC
 function AceModuleCore:Ace2_AddonDisabled(module)
 	local addon = self.totalModules[module]
 	if not addon then
 		return
+	end
+	
+	if modulesWithMethod[addon] then
+		for k,v in pairs(modulesWithMethod[addon]) do
+			modulesWithMethod[addon] = del(v)
+		end
 	end
 	if type(addon.OnModuleDisable) == "function" then
 		safecall(addon.OnModuleDisable, addon, module)
@@ -503,6 +679,8 @@ local function external(self, major, instance)
 		self:UnregisterAllEvents()
 		self:RegisterEvent("Ace2_AddonEnabled")
 		self:RegisterEvent("Ace2_AddonDisabled")
+	elseif major == "AceAddon-2.0" then
+		AceAddon = instance
 	end
 end
 
