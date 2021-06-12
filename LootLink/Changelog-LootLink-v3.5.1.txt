@@ -1,0 +1,86 @@
+------------------------------------------------------------------------
+r10 | tegran | 2008-10-17 22:24:07 +0000 (Fri, 17 Oct 2008) | 1 line
+Changed paths:
+   A /tags/v3.5.1 (from /trunk:9)
+
+
+------------------------------------------------------------------------
+r9 | tegran | 2008-10-17 22:18:31 +0000 (Fri, 17 Oct 2008) | 1 line
+Changed paths:
+   M /trunk/LootLink.toc
+
+Bump TOC version for this AddOn
+------------------------------------------------------------------------
+r8 | tegran | 2008-10-16 20:09:48 +0000 (Thu, 16 Oct 2008) | 1 line
+Changed paths:
+   D /trunk/LootLink
+
+
+------------------------------------------------------------------------
+r7 | tegran | 2008-10-16 20:09:12 +0000 (Thu, 16 Oct 2008) | 1 line
+Changed paths:
+   A /trunk/Bindings.xml (from /trunk/LootLink/Bindings.xml:6)
+   D /trunk/LootLink/Bindings.xml
+   D /trunk/LootLink/LootLink.lua
+   D /trunk/LootLink/LootLink.toc
+   D /trunk/LootLink/LootLink.xml
+   A /trunk/LootLink.lua (from /trunk/LootLink/LootLink.lua:6)
+   A /trunk/LootLink.toc (from /trunk/LootLink/LootLink.toc:6)
+   A /trunk/LootLink.xml (from /trunk/LootLink/LootLink.xml:6)
+
+
+------------------------------------------------------------------------
+r6 | tegran | 2008-10-16 20:07:33 +0000 (Thu, 16 Oct 2008) | 1 line
+Changed paths:
+   D /trunk/Bindings.xml
+   A /trunk/LootLink/Bindings.xml (from /trunk/Bindings.xml:5)
+   A /trunk/LootLink/LootLink.lua (from /trunk/LootLink.lua:5)
+   A /trunk/LootLink/LootLink.toc (from /trunk/LootLink.toc:5)
+   A /trunk/LootLink/LootLink.xml (from /trunk/LootLink.xml:5)
+   D /trunk/LootLink.lua
+   D /trunk/LootLink.toc
+   D /trunk/LootLink.xml
+
+
+------------------------------------------------------------------------
+r5 | tegran | 2008-10-16 20:07:01 +0000 (Thu, 16 Oct 2008) | 1 line
+Changed paths:
+   A /trunk/LootLink
+
+
+------------------------------------------------------------------------
+r4 | tegran | 2008-10-16 20:06:03 +0000 (Thu, 16 Oct 2008) | 1 line
+Changed paths:
+   A /trunk/Bindings.xml
+   A /trunk/LootLink.lua
+   A /trunk/LootLink.toc
+   A /trunk/LootLink.xml
+
+
+------------------------------------------------------------------------
+r3 | tegran | 2008-10-16 20:00:03 +0000 (Thu, 16 Oct 2008) | 1 line
+Changed paths:
+   D /trunk/Bindings.xml
+   D /trunk/LootLink.lua
+   D /trunk/LootLink.toc
+   D /trunk/LootLink.xml
+
+
+------------------------------------------------------------------------
+r2 | tegran | 2008-10-16 19:56:28 +0000 (Thu, 16 Oct 2008) | 1 line
+Changed paths:
+   A /trunk/Bindings.xml
+   A /trunk/LootLink.lua
+   A /trunk/LootLink.toc
+   A /trunk/LootLink.xml
+
+
+------------------------------------------------------------------------
+r1 | root | 2008-10-16 17:16:16 +0000 (Thu, 16 Oct 2008) | 1 line
+Changed paths:
+   A /branches
+   A /tags
+   A /trunk
+
+"lootlink/mainline: Initial Import"
+------------------------------------------------------------------------
