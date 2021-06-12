@@ -1,0 +1,11 @@
+## Interface: 30000
+## Title: Lib-TradeskillLinksDB3
+## Version: 3.3.1
+## Author: Saeris
+## LoadOnDemand: 1
+## RequiredDeps: Lib-TradeskillLinksDB3_SavedVariables
+## OptionalDeps: Lib-ChatLinksMonitor2, Lib-EventsManager2
+
+## Notes: A tradeskill database library which maintains just enough information to reconstruct tradeskill links.
+
+TradeskillLinksDB3_Loader.xml

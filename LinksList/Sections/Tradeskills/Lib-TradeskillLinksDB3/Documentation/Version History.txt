@@ -1,0 +1,74 @@
+
+--==-- TradeskillLinksDB3 Version History --==--
+
+3.3.1 (Mar 1, 2009):
+	Fixed:
+		- Unrecognized prefixes (such as "Runeforging: ") are now discarded immediately rather
+			than being allowed to trigger the NAME_CHANGED event with oldData and newData
+			both set to nil.
+
+
+3.3.0 (Jan 17, 2009):
+	Changed:
+		- Database format is now a string table plus a lookup cache, rather than a massive hash
+			table. This reduces memory usage to 27-59% of previous (starting at 27% and moving
+			up as more links are cached by request). This also reduces loading time of the default
+			database significantly. This change is completely transparent to client addons, though
+			they can potentially be made more efficient by using the new parameters to IterateDB().
+
+
+3.2.0 (Dec 19, 2008):
+	Changed:
+		- Now uses TRADE_SKILL_UPDATE to monitor for tradeskill links, rather than the other
+			event, TRADE_SKILL_SHOW.
+
+
+3.1.0 (Dec 10, 2008):
+	New:
+		- The CreateSorter() function now accepts two new parameters for more detailed sorter
+			creation.
+	
+	Changed:
+		- Removed slash commands.
+	
+	Fixed:
+		- Removed some obsolete pseudo-tradeskills, like "Bite" and "Open Wound" and various
+			"Poisons:", from the default database.
+
+
+3.0.0 (Dec 5, 2008):
+	New:
+		- Rewritten for simplicity and efficiency.
+
+
+2.0.3 (May 13, 2008):
+	- Now uses LibStub as a load manager.
+
+
+2.0.2 (Apr 23, 2008):
+	- Cleaned up database loading code to handle multiple static databases more elegantly.
+
+
+2.0.1 (Apr 2, 2008):
+	- Fixed a bug where links with brackets ([]) in their name weren't being parsed properly.
+
+
+2.0.0 (Mar 8, 2007):
+	- Is now an embeddable library instead of just a top-level library. There is still a top-level stub
+		called TradeskillDB_Links2_SavedVariables which exists to reserve the saved errata for the library,
+		but it is nothing more than a single .toc file.
+	
+	- Expanded default database size from 1293 to 1312.
+	
+	- Miscellaneous code style updates.
+
+
+1.0.1 (Nov 21, 2007):
+	- Fixed TOC number. It was still 20100 instead of the proper 20300.
+	
+	- Now loads the initial number of entries in the static database from a constant number instead
+		of iterating the database once to count the entries. This reduces load time slightly.
+
+
+1.0.0 (Nov 13, 2007):
+	- Initial release.

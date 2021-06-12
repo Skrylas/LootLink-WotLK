@@ -1,0 +1,100 @@
+
+--==-- ItemLinksDB3 Version History --==--
+
+3.3.0 (Jan 12, 2009):
+	Changed:
+		- Database format is now a string table plus a lookup cache, rather than a massive hash
+			table. This reduces memory usage to 27-59% of previous (starting at 27% and moving
+			up as more links are cached by request). This also reduces loading time of the default
+			database significantly. This change is completely transparent to client addons, though
+			they can potentially be made more efficient by using the new parameters to IterateDB().
+	
+	Fixed:
+		- Items with suffixes attached to their names no longer end up in the database due to
+			blind chat link parsing.
+
+
+3.2.1 (Dec 19, 2008):
+	Changed:
+		- Updated default database to ~29,000 items.
+	
+	Fixed:
+		- Heirloom items are now stored with their proper rarity (7) rather than forcing them into
+			the Artifact rarity (6). The ITEM_QUALITY_COLORS table is now modified to add an index
+			7, containing the color information for client addons.
+
+
+3.2.0 (Dec 15, 2008):
+	New:
+		- It is now possible to automatically import links from the saved variables file of Saeris's
+			LootLink, Telo's LootLink, or the previous version of this addon, ItemDB_Links2. To do so,
+			simply place the saved variables file ("LootLink.lua" or "Lib-ItemDB_Links2_SavedVariables.lua")
+			from your <WoW>/WTF/Account/<account name>/SavedVariables directory into the
+			Lib-ItemLinksDB3_SavedVariables folder, load the game once, and then delete the file.
+	
+	Changed:
+		- Updated default database to ~26,000 items.
+
+
+3.1.0 (Dec 10, 2008):
+	New:
+		- The CreateSorter() functions now accept two new parameters for more detailed sorter
+			creation.
+		- CombGetItemInfo() now accepts a parameter saying whether it should only add new
+			items rather than updating everything as well.
+	
+	Changed:
+		- Combing of the GetItemInfo() function now loops to at least the highest itemID currently
+			in the database, rather than just the first 500-index gap. This ensures that the combing
+			will find newer items.
+		- The login scan of GetItemInfo() now searches only for new, not updated, items. This
+			improves login time. Searches for updated items can be performed by client addons.
+		- Removed slash commands.
+	
+	Optimized:
+		- Initial loading of the base database now only checks the exclusion of items based on
+			rarity if some rarity exclusions have been specified. This reduces loading time.
+
+
+3.0.0 (Dec 5, 2008):
+	New:
+		- Rewritten for simplicity and efficiency.
+
+
+2.1.1 (May 13, 2008):
+	- Now uses LibStub as a load manager.
+
+
+2.1.0 (Apr 27, 2008):
+	- Added compatibility support for the LootLink_AddItem() function.
+
+
+2.0.1 (Apr 23, 2008):
+	- Cleaned up database loading code to handle multiple static databases more elegantly.
+
+
+2.0.0 (Mar 1, 2008):
+	- Is now an embeddable library instead of just a top-level library. There is still a top-level stub
+		called ItemDB_Links2_SavedVariables which exists to reserve the saved errata for the library,
+		but it is nothing more than a single .toc file.
+	
+	- Greatly improved database search speed when using a rarity-only search.
+	
+	- Now includes the AuctionScanner1 library for auction scanning, and will report how many new
+		items were found after each scan. Check the AuctionScanner1 readme for more information.
+	
+	- Expanded default database size from 21191 to 21844.
+	
+	- Miscellaneous code style updates.
+
+
+1.1.0 (Nov 21, 2007):
+	- Now tries to add to its own database at login by searching through data from Telo's LootLink
+		and Saeris's LootLink if either of those are loaded.
+	
+	- Now loads the initial number of entries in the static database from a constant number instead
+		of iterating the database once to count the entries. This reduces load time slightly.
+
+
+1.0.0 (Nov 13, 2007):
+	- Initial release.

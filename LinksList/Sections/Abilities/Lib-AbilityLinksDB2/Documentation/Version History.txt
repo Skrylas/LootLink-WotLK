@@ -1,0 +1,56 @@
+
+--==-- AbilityLinksDB2 Version History --==--
+
+2.4.0 (Jan 12, 2009):
+	Changed:
+		- Database format is now a string table plus a lookup cache, rather than a massive hash
+			table. This reduces memory usage to 27-59% of previous (starting at 27% and moving
+			up as more links are cached by request). This also reduces loading time of the default
+			database significantly. This change is completely transparent to client addons, though
+			they can potentially be made more efficient by using the new parameters to IterateDB().
+
+
+2.3.0 (Dec 24, 2008):
+	Changed:
+		- Since a significant number of ability links are not available via GetSpellLink(), and there
+			is no warning as to when a given link may become unavailable, the default database
+			has returned.
+
+
+2.2.0 (Dec 19, 2008):
+	Changed:
+		- Now stores errata once again, for the occasional ability link that is not accessible via
+			GetSpellLink().
+
+
+2.1.0 (Dec 10, 2008):
+	New:
+		- The CreateSorter() function now accepts two new parameters for more detailed sorter
+			creation.
+	
+	Changed:
+		- Due to the nature of ability links and their consistent availability from the client via
+			GetSpellLink(), the library now acts as a powerful wrapper for this function, dynamically
+			creating a database from it, rather than maintaining its own list. This is actually
+			transparent to clients, so no changes are needed.
+
+
+2.0.0 (Dec 5, 2008):
+	New:
+		- Rewritten for simplicity and efficiency.
+
+
+1.0.3 (May 13, 2008):
+	- Now uses LibStub as a load manager.
+
+
+1.0.2 (Apr 23, 2008):
+	- Cleaned up database loading code to handle multiple static databases more elegantly.
+
+
+1.0.1 (Apr 2, 2008):
+	- Fixed a bug where links with brackets ([]) in their name weren't being parsed properly.
+
+
+1.0.0 (Mar 25, 2008):
+	- Initial release.

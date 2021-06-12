@@ -1,0 +1,11 @@
+## Interface: 30000
+## Title: Lib-ItemLinksDB3
+## Version: 3.3.0
+## Author: Saeris
+## LoadOnDemand: 1
+## RequiredDeps: Lib-ItemLinksDB3_SavedVariables
+## OptionalDeps: Lib-ChatLinksMonitor2, Lib-EventsManager2
+
+## Notes: An item database library which maintains just enough information to reconstruct item links.
+
+ItemLinksDB3_Loader.xml

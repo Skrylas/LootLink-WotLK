@@ -1,0 +1,10 @@
+## Interface: 30000
+## Title: Lib-ChatLinksMonitor2
+## Version: 2.0.0
+## Author: Saeris
+## LoadOnDemand: 1
+## OptionalDeps: Lib-EventsManager2
+
+## Notes: A library to monitor chat links from every possible source and dispatch them to listening clients.
+
+ChatLinksMonitor2.lua

@@ -1,0 +1,50 @@
+
+--==-- QuestLinksDB2 Version History --==--
+
+2.2.0 (Jan 16, 2009):
+	Changed:
+		- Database format is now a string table plus a lookup cache, rather than a massive hash
+			table. This reduces memory usage to 27-59% of previous (starting at 27% and moving
+			up as more links are cached by request). This also reduces loading time of the default
+			database significantly. This change is completely transparent to client addons, though
+			they can potentially be made more efficient by using the new parameters to IterateDB().
+
+
+2.1.0 (Dec 10, 2008):
+	New:
+		- The CreateSorter() functions now accept two new parameters for more detailed sorter
+			creation.
+
+
+2.0.0 (Dec 5, 2008):
+	New:
+		- Rewritten for simplicity and efficiency.
+
+
+1.1.3 (May 13, 2008):
+	- Now uses LibStub as a load manager.
+
+
+1.1.2 (Apr 23, 2008):
+	- Cleaned up database loading code to handle multiple static databases more elegantly.
+	
+	- Fixed a bug where any static databases loaded after the first one would remove data from the
+		active database instead of adding to it.
+
+
+1.1.1 (Apr 21, 2008):
+	- Boosted default database from 173 entries to 4815 entries, thanks to LightHeaded.
+
+
+1.1.0 (Apr 18, 2008):
+	- Added "TableSearch1_ByLevel" utility function.
+	
+	- Boosted default database from 15 entries to 173 entries.
+
+
+1.0.1 (Apr 2, 2008):
+	- Fixed a bug where links with brackets ([]) in their name weren't being parsed properly.
+
+
+1.0.0 (Mar 25, 2008):
+	- Initial release.

@@ -1,0 +1,9 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\..\FrameXML\UI.xsd">
+	<Script file="NicheDevTools\NicheDevTools_TableDotSortByLookup.lua"/>
+	
+	<Script file="TalentLinksDB1_Base.lua"/>
+	<Script file="TalentLinksDB1_DefaultDatabase_enUS.lua"/>
+	<Script file="TalentLinksDB1_DataManip.lua"/>
+	<Script file="TalentLinksDB1_Init.lua"/>
+</Ui>

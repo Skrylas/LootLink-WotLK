@@ -1,0 +1,35 @@
+
+--==-- LinksList Functionality Description --==--
+
+Addon type: Interface
+Libraries used:
+	AbilityLinksDB2 (embedded)
+	ItemBasicInfoDB3 (embedded)
+	ItemLinksDB3 (embedded)
+	TalentLinksDB1 (embedded)
+	TradeskillLinksDB3 (embedded)
+	QuestLinksDB2 (embedded)
+
+This addon provides a GUI for viewing and searching various links databases. It is the successor
+to the GUI portion of Saeris's LootLink (but it has no connection to the other successors of that addon,
+LinkBot and QuickChatlink). The addon has support for five link types: abilities, items, quests, talents,
+and tradeskills. If you wish to remove support for a link type (for instance, if you never use it and want
+to conserve memory or improve initial login time), simply delete or rename the folder corresponding to
+that link type in the Sections subdirectory. Some link types additionally have subsections which add
+more searching and sorting options to their parent section; these too can be disabled by deleting or
+renaming the appropriate folder within the Sections/<link type>/Subsections/ subdirectory.
+
+To toggle the results window, use either the provided key binding (under the LinksList header in
+the Key Bindings menu), or click the ToggleButton (a small, draggable minimap-style button that
+can be found near the center of the screen on first load), or just type the slash command ("/ll" or
+"/linkslist") without any subcommand. The results frame and search frame are both draggable. All
+links displayed in the results frame will respond to modified clicks like standard chatlinks -- a Ctrl-click
+will attempt to dress up in the link, a Shift-click will insert the link into the chat frame edit box, and
+an unmodified click will toggle the static tooltip.
+
+Configuration options are available via the "/linkslist" or "/ll" slash commands, and currently include
+the ability to toggle whether the ToggleButton is used (subcommand "togglebutton"), the ability
+to toggle whether to autofocus the QuickSearch editbox whenever it becomes shown (subcommand
+"autofocus"), and the ability to toggle whether the results frame acts as a Blizzard UI panel (moves as
+other panels open and close) (subcommand "panel"). Use the "help" subcommand ("/ll help") to view
+this list of subcommands in-game.

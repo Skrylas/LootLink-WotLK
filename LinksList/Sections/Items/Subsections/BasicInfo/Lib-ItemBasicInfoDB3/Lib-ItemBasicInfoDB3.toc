@@ -1,0 +1,11 @@
+## Interface: 30000
+## Title: Lib-ItemBasicInfoDB3
+## Version: 3.1.2
+## Author: Saeris
+## LoadOnDemand: 1
+## RequiredDeps: Lib-ItemBasicInfoDB3_SavedVariables
+## OptionalDeps: Lib-EventsManager2
+
+## Notes: An item database library which maintains basic information about items (equip location, type, subtype, equip level, and item level).
+
+ItemBasicInfoDB3_Loader.xml

@@ -1,0 +1,11 @@
+## Interface: 30000
+## Title: Lib-QuestLinksDB2
+## Version: 2.2.0
+## Author: Saeris
+## LoadOnDemand: 1
+## RequiredDeps: Lib-QuestLinksDB2_SavedVariables
+## OptionalDeps: Lib-ChatLinksMonitor2, Lib-EventsManager2
+
+## Notes: A quest database library which maintains just enough information to reconstruct quest links.
+
+QuestLinksDB2_Loader.xml

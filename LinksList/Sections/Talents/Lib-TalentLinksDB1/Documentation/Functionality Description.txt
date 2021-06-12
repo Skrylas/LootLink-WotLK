@@ -1,0 +1,142 @@
+
+--==-- TalentLinksDB1 Functionality Description --==--
+
+Addon type: Library
+Libraries used:
+	ChatLinksMonitor2
+	EventsManager2
+
+This library addon is a talent links database. It maintains just enough information to recreate talent
+links: their ID, their rank, and their name. It is meant to be used as a library for other addons which
+need this information to provide useful functionality. It loads a base database from the DefaultDatabase
+file corresponding to the current locale, and then stores any new or different entries in an errata table
+which is saved between sessions.
+
+
+Here is the API, for developers:
+
+In the following descriptions, these terms are defined:
+	talentID - A key from the database. A simple positive integer. May or may not contain the rank
+		encoded into it.
+	data - A value from the database. This can be used interchangeably with the name of the link.
+
+Note that along with maintaining the database, the library also does some rudimentary monitoring of
+chat messages for links.
+
+
+size = TalentLinksDB1.GetDBSize()
+	Returns the size of the database.
+
+iterator, state, start = TalentLinksDB1.IterateDB(keysOnly, sortedByName)
+	Returns components to iterate over the active database using a "for k, v in iterator, state, start do"
+	style of loop. If keysOnly is true, then only the talentID, not the data, will be available for iteration,
+	although the iterator will still give a nil value for the second return. This is considerably faster and
+	should be used if you do not need the data. If sortedByName is true, the iteration will be sorted
+	by name. This is generally much faster than sorting the iterated values yourself, but it does,
+	of course, take longer than the unsorted iteration.
+
+link = TalentLinksDB1.BuildLink(talentID[, rank])
+	Builds a link (usable with tooltip:SetHyperlink()) from the given talentID. If rank is nil, it will be extracted
+	from talentID, if talentID contains the rank, or otherwise it will be 0.
+
+chatlink = TalentLinksDB1.BuildChatlink(talentID[, data][, rank])
+	Builds a chatlink (usable in chat or tooltip:SetHyperlink()) from the given talentID. If rank is nil, it will be
+	extracted from talentID, if talentID contains the rank, or otherwise it will be 0. If the data argument is
+	non-nil, that information is used instead of a database lookup by talentID.
+
+matcher = TalentLinksDB1.CreateMatcher(text)
+	Creates a specially formatted value which can be used with TalentLinksDB1.IsDataMatch() to determine
+	whether a given entry in the database is a match. The input text should be a pattern if it is not nil.
+	Using this process for searching the database ensures good performance.
+
+isMatch = TalentLinksDB1.IsDataMatch(data, matcher)
+	Given a matcher from TalentLinksDB1.CreateMatcher(), determines whether the given data matches.
+	Returns non-nil for a match, or nil for a mismatch.
+
+sorter, identicalTo = TalentLinksDB1.CreateNameSorter([indexingKey][, reverse][, skipEquals][, accessDB])
+	Creates a function that can be used with a sorting algorithm to sort by name an array subset of the
+	database. If indexingKey is not nil, the function will assume the values given to the sorting function
+	are tables and must be indexed with indexingKey to access the TalentLinksDB1 data for comparison.
+	If reverse is true, the comparison order will be reversed. If skipEquals is true, < or > will be used instead
+	of <= or >= (depending on whether reverse is true or not). If accessDB is true, the sorter will assume
+	that the values it accesses are actually keys from the database rather than the data itself, and it
+	will do the necessary database lookups to get the data. If the identicalTo value is not nil, it is a
+	string saying which basic comparator the sorter is identical to (after indexingKey is accounted for),
+	either "<", ">", "<=", or ">=".
+
+sorter = TalentLinksDB1.CreateNameAndRankSorter([talentIDKey, dataKey][, indexingKey][, reverse][, skipEquals][, accessDB])
+	Creates a function that can be used with a sorting algorithm to sort by name and rank an array subset
+	of the database. If indexingKey is not nil, the function will assume the values given to the sorting function
+	are tables and must be indexed with indexingKey to access the TalentLinksDB1 data for comparison.
+	If reverse is true, the comparison order will be reversed. If skipEquals is true, < or > will be used instead
+	of <= or >= (depending on whether reverse is true or not). If accessDB is true, the sorter will assume
+	that the values it accesses are actually keys from the database rather than the data itself, and it
+	will do the necessary database lookups to get the data. If accessDB is not true, then the sorter will
+	assume that the talentID and data are stored in either a table it has indexed via the indexingKey or
+	a table that is one of the array elements passed to the function, and will use the talentIDKey and
+	dataKey, respectively, to access these values.
+
+
+data = TalentLinksDB1.GetData(talentID)
+	Returns the data (value) corresponding to the talentID (key) in the database.
+
+rank = TalentLinksDB1.GetRank(talentID)
+	Returns the rank encoded into the talentID.
+
+name, numRanks = TalentLinksDB1.SplitData(data)
+	Returns the name and number of ranks of the talent data.
+
+name = TalentLinksDB1.GetName(talentID)
+	Returns the name associated with the given talentID.
+
+numRanks = TalentLinksDB1.GetNumRanks(talentID)
+	Returns the number of ranks associated with the given talentID.
+	
+oldData, newData = TalentLinksDB1.SetData(talentID, newName, newNumRanks)
+	Sets the database's data for talentID to the newName and newNumRanks. If this new data differs from
+	that in the database at the time, it is stored in the errata table.
+
+
+minor, subminor = TalentLinksDB1.GetVersion()
+	Returns the minor and subminor components of the currently running version of the addon. This is
+	the 2 and 3, respectively, of a number like 1.2.3. This is useful if you are depending on the non-embedded
+	version of the library.
+
+
+
+The library registers some custom events with EventsManager2 which can be used to monitor for new
+or updated data:
+	TalentLinksDB1_DB_SIZE_CHANGED
+		Args:
+			1 - The old database size, 0 the first time this fires.
+			2 - The new database size.
+		Triggers any time a talent is added to or removed from the database. Of note is that this
+		fires BEFORE the update event for name/ranks (except for the first time), so the very next one of
+		those will correspond to whatever talent was added or removed.
+	TalentLinksDB1_TALENT_NAME_CHANGED
+		Args:
+			1 - talentID (with number of ranks encoded in)
+			2 - Old name, potentially nil.
+			3 - New name, potentially nil.
+		Fires when a talent's name changes. The old name will be nil if the talent was not in the database.
+		The new name will be nil if the talent is being removed from the database.
+	TalentLinksDB1_TALENT_NUM_RANKS_CHANGED
+		Args:
+			1 - talentID (with new number of ranks encoded in)
+			2 - Old number, potentially nil.
+			3 - New number, potentially nil. Always greater than the old number if it exists.
+		Fires when a talent's number of ranks changes. The old number will be nil if the talent was not in the
+		database. The new number will be nil if the talent is being removed from the database.
+
+
+To embed the library into your addon, place the Lib-TalentLinksDB1 directory into your addon's directory.
+Then, add the line PATH\TalentLinksDB1_Loader.xml at the top of the file list in your .toc file, such as
+Lib-TalentLinksDB1\TalentLinksDB1_Loader.xml. Ensure that all of the required libraries load prior to this.
+
+To run the library non-embedded, require it by listing it in the RequiredDeps line of your .toc file. Then, tell
+users to ensure that they always have the latest version installed. To check the running version from your
+addon, call the API function TalentLinksDB1.GetVersion().
+
+Either embedded or non-embedded, the saved variables stub should be present in order for errata and
+rarity exclusions to be saved. This stub acts just like a normal load-on-demand addon. Your addon does
+not need to list it at a dependency.
