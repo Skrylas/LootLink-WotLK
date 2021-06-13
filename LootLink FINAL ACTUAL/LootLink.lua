@@ -36,15 +36,15 @@ LOOTLINK_AUCTION_SCAN_DONE = "LootLink: auction scanning finished";
 LOOTLINK_SCHEDULED_AUCTION_SCAN = "LootLink: will perform a full auction scan the next time you talk to an auctioneer.";
 LOOTLINK_ITEM_RENAMED = "<item was renamed since last seen>";
 
-LOOTLINK_HELP = "help";			-- must be lowercase; command to display help
-LOOTLINK_STATUS = "status";		-- must be lowercase; command to display status
+LOOTLINK_HELP = "help";					-- must be lowercase; command to display help
+LOOTLINK_STATUS = "status";				-- must be lowercase; command to display status
 LOOTLINK_AUTOCOMPLETE = "autocomplete";	-- must be lowercase; command to toggle autocompletion support
-LOOTLINK_AUCTION = "auction";	-- must be lowercase; command to scan auctions
-LOOTLINK_SCAN = "scan";			-- must be lowercase; alias for command to scan auctions
-LOOTLINK_RESET = "reset";		-- must be lowercase; command to reset the database
-LOOTLINK_LIGHTMODE = "light";	-- must be lowercase; command to disable full-text search, using less memory
-LOOTLINK_FULLMODE = "full";		-- must be lowercase; command to enable full-text search, using more memory
-LOOTLINK_CONFIRM = "confirm";	-- must be lowercase; confirmation of MAKEHOME, RESET, or LIGHT
+LOOTLINK_AUCTION = "auction";			-- must be lowercase; command to scan auctions
+LOOTLINK_SCAN = "scan";					-- must be lowercase; alias for command to scan auctions
+LOOTLINK_RESET = "reset";				-- must be lowercase; command to reset the database
+LOOTLINK_LIGHTMODE = "light";			-- must be lowercase; command to disable full-text search, using less memory
+LOOTLINK_FULLMODE = "full";				-- must be lowercase; command to enable full-text search, using more memory
+LOOTLINK_CONFIRM = "confirm";			-- must be lowercase; confirmation of RESET or LIGHT
 
 LOOTLINK_RESET_NEEDS_CONFIRM = "|cffff0000LootLink: Warning!  This will irreversibly erase all LootLink data.  If you really want to do this, use /lootlink or /ll with the following command: "..LOOTLINK_RESET.." "..LOOTLINK_CONFIRM.."|r";
 LOOTLINK_RESET_ABORTED = "|cff00ff00LootLink: Data erase was NOT confirmed and will not be done.|r";
@@ -58,7 +58,7 @@ LOOTLINK_DATA_VERSION = "LootLink: %d items known [%d on %s], data version %.2f"
 LOOTLINK_FULL_MODE = "LootLink: full mode; full-text search is enabled";
 LOOTLINK_LIGHT_MODE = "LootLink: light mode; full-text search is disabled";
 LOOTLINK_AUTOCOMPLETE_ENABLED = "LootLink: chat autocomplete is enabled";
-LOOTLINK_AUTOCOMPLETE_DISABLED = "LootLink: chat autocomplete is disabled";																 
+LOOTLINK_AUTOCOMPLETE_DISABLED = "LootLink: chat autocomplete is disabled";
 
 LOOTLINK_HELP_TEXT0 = " ";
 LOOTLINK_HELP_TEXT1 = "|cffffff00LootLink command help:|r";
@@ -91,17 +91,17 @@ LLS_LOCATION = "Equip location:";
 LLS_MINIMUM_LEVEL = "Minimum level:";
 LLS_MAXIMUM_LEVEL = "Maximum level:";
 LLS_MINIMUM_ILEVEL = "Minimum iLevel:";
-LLS_MAXIMUM_ILEVEL = "Maximum iLevel:";									   			   
+LLS_MAXIMUM_ILEVEL = "Maximum iLevel:";
 LLS_TYPE = "Type:";
 LLS_SUBTYPE_ARMOR = "Armor subtype:";
 LLS_SUBTYPE_GEM = "Slot type:";
-LLS_SUBTYPE_GLYPH = "Glyph type:"									   
+LLS_SUBTYPE_GLYPH = "Glyph type:";
 LLS_SUBTYPE_WEAPON = "Weapon subtype:";
 LLS_SUBTYPE_SHIELD = "Shield subtype:";
 LLS_SUBTYPE_RECIPE = "Recipe subtype:";
 LLS_MINIMUM_DAMAGE = "Min. low damage:";
 LLS_MAXIMUM_DAMAGE = "Min. high damage:";
-LLS_MINIMUM_SPEED = "Minimum speed:";									 
+LLS_MINIMUM_SPEED = "Minimum speed:";
 LLS_MAXIMUM_SPEED = "Maximum speed:";
 LLS_MINIMUM_DPS = "Minimum DPS:";
 LLS_MINIMUM_ARMOR = "Minimum armor:";
@@ -189,6 +189,15 @@ LL.SORT_SKILL = "Skill Level";
 -- Local LootLink variables
 --------------------------------------------------------------------------------------------------
 
+-- The table of sorted indices for display
+local DisplayIndices;
+
+-- PanelLayout attributes for our frames
+local LootLinkPanelLayout = {
+	LootLinkFrame = { defined = true, enabled = true, area = "left", pushable = 11, whileDead = 1 },
+	LootLinkSearchFrame = { defined = true, enabled = true, area = "center", pushable = 0, whileDead = 1 },
+};
+
 -- The SimpleDropDown library
 local sdd = LibStub:GetLibrary("SimpleDropDown-1.0");
 
@@ -225,8 +234,8 @@ local lServer;
 local lServerIndex;
 
 -- The number of items in the database, total and for this server
-local lItemLinksSizeTotal;
-local lItemLinksSizeServer;
+--local LL.lItemLinksSizeTotal;
+--local LL.lItemLinksSizeServer;
 
 LL.STATE_NAME = 0;
 LL.STATE_HEROIC = 1;
@@ -243,7 +252,6 @@ LL.STATE_CONTAINER = 11;
 LL.STATE_MATCHES = 12;
 LL.STATE_REQUIRES = 13;
 LL.STATE_FINISH = 14;
-
 
 LL.BINDS_DOES_NOT_BIND = 0;
 LL.BINDS_EQUIP = 1;
@@ -281,10 +289,10 @@ lColorSortTable["ff9d9d9d"] = 8;	-- poor, gray
 lColorSortTable["ff40ffc0"] = 100;	-- unknown, teal
 
 local ArmorSubtypes = { };
-ArmorSubtypes["Cloth"] = SUBTYPE_ARMOR_CLOTH;
-ArmorSubtypes["Leather"] = SUBTYPE_ARMOR_LEATHER;
-ArmorSubtypes["Mail"] = SUBTYPE_ARMOR_MAIL;
-ArmorSubtypes["Plate"] = SUBTYPE_ARMOR_PLATE;
+ArmorSubtypes["Cloth"] = LL.SUBTYPE_ARMOR_CLOTH;
+ArmorSubtypes["Leather"] = LL.SUBTYPE_ARMOR_LEATHER;
+ArmorSubtypes["Mail"] = LL.SUBTYPE_ARMOR_MAIL;
+ArmorSubtypes["Plate"] = LL.SUBTYPE_ARMOR_PLATE;
 
 LL.SUBTYPE_GEM_META = 0;
 LL.SUBTYPE_GEM_RED = 1;
@@ -296,6 +304,13 @@ GemSubtypes["Meta"] = LL.SUBTYPE_GEM_META;
 GemSubtypes["Red"] = LL.SUBTYPE_GEM_RED;
 GemSubtypes["Yellow"] = LL.SUBTYPE_GEM_YELLOW;
 GemSubtypes["Blue"] = LL.SUBTYPE_GEM_BLUE;
+
+LL.SUBTYPE_GLYPH_MAJOR = 0;
+LL.SUBTYPE_GLYPH_MINOR = 1;
+
+local GlyphSubtypes = { };
+GlyphSubtypes["Major"] = LL.SUBTYPE_GLYPH_MAJOR;
+GlyphSubtypes["Minor"] = LL.SUBTYPE_GLYPH_MINOR;
 
 LL.SUBTYPE_WEAPON_AXE = 0;
 LL.SUBTYPE_WEAPON_BOW = 1;
@@ -397,6 +412,154 @@ lTypeAndSubtypeToSkill[LL.TYPE_RECIPE][LL.SUBTYPE_RECIPE_FIRST_AID] = "First Aid
 lTypeAndSubtypeToSkill[LL.TYPE_RECIPE][LL.SUBTYPE_RECIPE_FISHING] = "Fishing";
 lTypeAndSubtypeToSkill[LL.TYPE_RECIPE][LL.SUBTYPE_RECIPE_JEWELCRAFTING] = "Jewelcrafting";
 lTypeAndSubtypeToSkill[LL.TYPE_RECIPE][LL.SUBTYPE_RECIPE_INSCRIPTION] = "Inscription";
+
+local lClassSkills =
+{
+	["DEATHKNIGHT"] =
+	{
+		["Cloth"] = 0,
+		["Leather"] = 0,
+		["Mail"] = 0,
+		["Plate Mail"] = 0,
+		["Axes"] = 0,
+		["Two-Handed Axes"] = 0,
+		["Maces"] = 0,
+		["Two-Handed Maces"] = 0,
+		["Polearms"] = 0,
+		["Swords"] = 0,
+		["Two-Handed Swords"] = 0,
+		["Sigil"] = 0,
+	},
+
+	["DRUID"] =
+	{
+		["Cloth"] = 0,
+		["Leather"] = 0,
+		["Daggers"] = 0,
+		["Maces"] = 0,
+		["Polearms"] = 20,
+		["Staves"] = 0,
+		["Two-Handed Maces"] = 0,
+		["Fist Weapons"] = 0,
+		["Idol"] = 0,
+	},
+
+	["HUNTER"] =
+	{
+		["Cloth"] = 0,
+		["Leather"] = 0,
+		["Mail"] = 40,
+		["Axes"] = 0,
+		["Two-Handed Axes"] = 0,
+		["Daggers"] = 0,
+		["Fist Weapons"] = 0,
+		["Polearms"] = 20,
+		["Swords"] = 0,
+		["Two-Handed Swords"] = 0,
+		["Staves"] = 0,
+		["Bows"] = 0,
+		["Crossbows"] = 0,
+		["Guns"] = 0,
+		["Thrown"] = 0,
+	},
+
+	["MAGE"] =
+	{
+		["Cloth"] = 0,
+		["Daggers"] = 0,
+		["Staves"] = 0,
+		["Swords"] = 0,
+		["Wands"] = 0,
+	},
+
+	["PALADIN"] =
+	{
+		["Cloth"] = 0,
+		["Leather"] = 0,
+		["Mail"] = 0,
+		["Plate Mail"] = 40,
+		["Axes"] = 0,
+		["Two-Handed Axes"] = 0,
+		["Maces"] = 0,
+		["Two-Handed Maces"] = 0,
+		["Polearms"] = 20,
+		["Swords"] = 0,
+		["Two-Handed Swords"] = 0,
+		["Libram"] = 0,
+		["Shield"] = 0,
+	},
+
+	["PRIEST"] =
+	{
+		["Cloth"] = 0,
+		["Daggers"] = 0,
+		["Staves"] = 0,
+		["Maces"] = 0,
+		["Wands"] = 0,
+	},
+
+	["ROGUE"] =
+	{
+		["Cloth"] = 0,
+		["Leather"] = 0,
+		["Daggers"] = 0,
+		["Fist Weapons"] = 0,
+		["Maces"] = 0,
+		["Swords"] = 0,
+		["Bows"] = 0,
+		["Crossbows"] = 0,
+		["Guns"] = 0,
+		["Thrown"] = 0,
+	},
+
+	["SHAMAN"] =
+	{
+		["Cloth"] = 0,
+		["Leather"] = 0,
+		["Mail"] = 40,
+		["Axes"] = 0,
+		["Two-Handed Axes"] = 0,
+		["Daggers"] = 0,
+		["Fist Weapons"] = 0,
+		["Maces"] = 0,
+		["Two-Handed Maces"] = 0,
+		["Staves"] = 0,
+		["Totem"] = 0,
+	},
+
+	["WARLOCK"] =
+	{
+		["Cloth"] = 0,
+		["Daggers"] = 0,
+		["Staves"] = 0,
+		["Swords"] = 0,
+		["Wands"] = 0,
+	},
+
+	["WARRIOR"] =
+	{
+		["Cloth"] = 0,
+		["Leather"] = 0,
+		["Mail"] = 0,
+		["Plate Mail"] = 40,
+		["Axes"] = 0,
+		["Two-Handed Axes"] = 0,
+		["Daggers"] = 0,
+		["Fist Weapons"] = 0,
+		["Maces"] = 0,
+		["Two-Handed Maces"] = 0,
+		["Polearms"] = 20,
+		["Staves"] = 0,
+		["Swords"] = 0,
+		["Two-Handed Swords"] = 0,
+		["Bows"] = 0,
+		["Crossbows"] = 0,
+		["Guns"] = 0,
+		["Thrown"] = 0,
+		["Shield"] = 0,
+	},
+};
+
 
 local LocationTypes = { };
 LocationTypes["Held In Off-hand"]		= { i = 0, type = LL.TYPE_MISC };
@@ -636,13 +799,14 @@ local LOOTLINK_SELF_SCAN_BUFFER_TIME = 0.5;
 -- Global LootLink variables
 --------------------------------------------------------------------------------------------------
 
-LOOTLINK_VERSION = 351;	-- version 3.51
+LOOTLINK_VERSION = 400;	-- version 4.00
+LOOTLINK_CURRENT_DATA_VERSION = 201; -- version 2.01
 
 LOOTLINK_ITEM_HEIGHT = 16;
 LOOTLINK_ITEMS_SHOWN = 23;
 
-UIPanelWindows["LootLinkFrame"] =		{ area = "left",	pushable = 11,	whileDead = 1 };
-UIPanelWindows["LootLinkSearchFrame"] =	{ area = "center",	pushable = 0,	whileDead = 1 };
+--[[UIPanelWindows["LootLinkFrame"] =		{ area = "left",	pushable = 11,	whileDead = 1 };
+UIPanelWindows["LootLinkSearchFrame"] =	{ area = "center",	pushable = 0,	whileDead = 1 };]]--
 
 --------------------------------------------------------------------------------------------------
 -- Internal functions
@@ -659,24 +823,28 @@ local function dlog(...)
 	str = "";
 	for iParam = 1, select('#', ...) do
 		local param = select(iParam, ...);
-		if( param ) then
-			if( type(param) == "function" ) then
-				str = str.."{function}";
-			elseif( type(param) == "userdata" ) then
-				str = str.."{userdata}";
-			elseif( type(param) == "thread" ) then
-				str = str.."{thread}";
-			elseif( type(param) == "table" ) then
-				str = str.."{table}";
+		if( type(param) == "function" ) then
+			str = str.."{function}";
+		elseif( type(param) == "userdata" ) then
+			str = str.."{userdata}";
+		elseif( type(param) == "thread" ) then
+			str = str.."{thread}";
+		elseif( type(param) == "table" ) then
+			str = str.."{table}";
+		elseif( type(param) == "boolean" ) then
+			if( param ) then
+				str = str.."true";
 			else
-				str = str..param;
+				str = str.."false";
 			end
-		else
+		elseif( type(param) == "nil" ) then
 			str = str.."{nil}";
+		else
+			str = str..param;
 		end
 	end
 	
-	DEFAULT_CHAT_FRAME:AddMessage(str);
+	DEFAULT_CHAT_FRAME:AddMessage(string.gsub(str, "|", "||"));
 end
 
 --
@@ -699,14 +867,65 @@ local function LootLink_MakeIntFromHexString(str)
 	return amount;
 end
 
+local function LootLink_MakeHexStringFromInt(int)
+	local reverse = "";
+	
+	repeat
+		local remainder = mod(int, 16);
+		if( remainder < 10 ) then
+			reverse = reverse..string.char(string.byte("0") + remainder);
+		else
+			reverse = reverse..string.char(string.byte("A") + (remainder - 10));
+		end
+		int = floor(int / 16);
+	until( int == 0 );
+	
+	local result = "";
+	local index;
+	
+	for index = string.len(reverse), 1, -1 do
+		result = result..string.sub(reverse, index, index);
+	end
+	
+	return result;
+end
+
 local function LootLink_GetRGBFromHexColor(hexColor)
 	local red = LootLink_MakeIntFromHexString(strsub(hexColor, 3, 4)) / 255;
 	local green = LootLink_MakeIntFromHexString(strsub(hexColor, 5, 6)) / 255;
 	local blue = LootLink_MakeIntFromHexString(strsub(hexColor, 7, 8)) / 255;
-	return red, green, blue;
+	local alpha = LootLink_MakeIntFromHexString(strsub(hexColor, 1, 2)) / 255;
+	return red, green, blue, alpha;
 end
 
-local function LootLink_MouseIsOver(frame)
+local function LootLink_GetHexColorFromRGB(red, green, blue, alpha)
+	local red = floor((min(max(0, red), 1) * 255) + 0.5);
+	local green = floor((min(max(0, green), 1) * 255) + 0.5);
+	local blue = floor((min(max(0, blue), 1) * 255) + 0.5);
+	local alpha = floor((min(max(0, alpha), 1) * 255) + 0.5);
+	
+	local redString = LootLink_MakeHexStringFromInt(red);
+	local greenString = LootLink_MakeHexStringFromInt(green);
+	local blueString = LootLink_MakeHexStringFromInt(blue);
+	local alphaString = LootLink_MakeHexStringFromInt(alpha);
+	
+	if( red < 16 ) then
+		redString = "0"..redString;
+	end
+	if( green < 16 ) then
+		greenString = "0"..greenString;
+	end
+	if( blue < 16 ) then
+		blueString = "0"..blueString;
+	end
+	if( alpha < 16 ) then
+		alphaString = "0"..alphaString;
+	end
+	
+	return strlower(alphaString..redString..greenString..blueString);
+end
+
+--[[local function LootLink_MouseIsOver(frame)
 	local x, y = GetCursorPosition();
 	
 	if( not frame ) then
@@ -730,7 +949,7 @@ local function LootLink_MouseIsOver(frame)
 	else
 		return nil;
 	end
-end
+end]]--
 
 local function LootLink_GetDataVersion()
 	if( not LootLinkState or not LootLinkState.DataVersion ) then
@@ -772,7 +991,7 @@ local function LootLink_ConvertServerFormat(item)
 		local list;
 		for i, v in pairs(item.servers) do
 			if( not list ) then
-				list = TEXT(i);
+				list = tostring(i);
 			else
 				list = list.." "..i;
 			end
@@ -783,6 +1002,9 @@ local function LootLink_ConvertServerFormat(item)
 end
 
 local function LootLink_CheckItemServerRaw(item, serverIndex)
+	if( not serverIndex ) then
+		return nil;
+	end
 	if( not item.s ) then
 		return nil;
 	end
@@ -798,10 +1020,12 @@ local function LootLink_CheckItemServerRaw(item, serverIndex)
 end
 
 local function LootLink_AddItemServer(item, serverIndex)
-	if( not item.s ) then
-		item.s = TEXT(serverIndex);
-	elseif( not LootLink_CheckItemServerRaw(item, serverIndex) ) then
-		item.s = item.s.." "..serverIndex;
+	if( serverIndex ) then
+		if( not item.s ) then
+			item.s = tostring(serverIndex);
+		elseif( not LootLink_CheckItemServerRaw(item, serverIndex) ) then
+			item.s = item.s.." "..serverIndex;
+		end
 	end
 end
 
@@ -852,7 +1076,7 @@ local function LootLink_CheckNumeric(string)
 	return hasNumber;
 end
 
-local function LootLink_NameFromLink(link)
+--[[local function LootLink_NameFromLink(link)
 	local name;
 	if( not link ) then
 		return nil;
@@ -861,11 +1085,7 @@ local function LootLink_NameFromLink(link)
 		return name;
 	end
 	return nil;
-end
-
-local function LootLink_MoneyToggle()
-	--@todo Telo: candidate for removal
-end
+end]]--
 
 local function LootLink_MatchType(left, right)
 	local lt = LocationTypes[left];
@@ -877,7 +1097,7 @@ local function LootLink_MatchType(left, right)
 		
 		-- Check for weapon override of base type
 		if( WeaponSubtypes[right] ) then
-			_type = TYPE_WEAPON;
+			_type = LL.TYPE_WEAPON;
 			subtypes = WeaponSubtypes;
 		else
 			_type = lt.type;
@@ -892,10 +1112,10 @@ local function LootLink_MatchType(left, right)
 		return nil, lt.i, _type, subtype;
 	end
 	
-	return 1, nil, TYPE_MISC, nil;
+	return 1, nil, LL.TYPE_MISC, nil;
 end
 
-local function LootLink_SetTooltipMoney(frame, count, money, stack)
+--[[local function LootLink_SetTooltipMoney(frame, count, money, stack)
 	if( not InRepairMode() and (not MerchantFrame or not MerchantFrame:IsVisible()) ) then
 		local text;
 		
@@ -920,7 +1140,7 @@ local function LootLink_SetTooltipMoney(frame, count, money, stack)
 		moneyFrame:SetPoint("LEFT", moneyLineName, "RIGHT", 4, 0);
 		frame:SetMinimumWidth(moneyFrame:GetWidth() + moneyLineText:GetWidth() - 10);
 	end
-end
+end]]--
 
 --
 -- Functions that are dependent on preceding local functions, ordered appropriately
@@ -930,42 +1150,42 @@ local function LootLink_InitSizes(serverIndex)
 	local index;
 	local value;
 
-	lItemLinksSizeTotal = 0;
-	lItemLinksSizeServer = 0;
+	LL.lItemLinksSizeTotal = 0;
+	LL.lItemLinksSizeServer = 0;
 	
 	for index, value in pairs(ItemLinks) do
-		lItemLinksSizeTotal = lItemLinksSizeTotal + 1;
+		LL.lItemLinksSizeTotal = LL.lItemLinksSizeTotal + 1;
 		if( LootLink_CheckItemServer(value, serverIndex) ) then
-			lItemLinksSizeServer = lItemLinksSizeServer + 1;
+			LL.lItemLinksSizeServer = LL.lItemLinksSizeServer + 1;
 		end
 	end
 end
 
 local function LootLink_GetSize(serverIndex)
 	if( not serverIndex ) then
-		return lItemLinksSizeTotal;
+		return LL.lItemLinksSizeTotal;
 	end
-	return lItemLinksSizeServer;
+	return LL.lItemLinksSizeServer;
 end
 
 local function LootLink_Status()
 	DEFAULT_CHAT_FRAME:AddMessage(format(LOOTLINK_STATUS_HEADER, LOOTLINK_VERSION / 100));
 	if( LootLinkState ) then
-		DEFAULT_CHAT_FRAME:AddMessage(format(LOOTLINK_DATA_VERSION, LootLink_GetSize(), LootLink_GetSize(lServerIndex), lServer, LootLink_GetDataVersion() / 100));
-		if( LootLinkState.HideInfo ) then
-			DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_INFO_HIDDEN);
-		else
-			DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_INFO_SHOWN);
-		end
+		DEFAULT_CHAT_FRAME:AddMessage(format(LOOTLINK_DATA_VERSION, LootLink_GetSize(), LootLink_GetSize(LL.lServerIndex), LL.lServer, LootLink_GetDataVersion() / 100));
 		if( LootLinkState.LightMode ) then
 			DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_LIGHT_MODE);
 		else
 			DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_FULL_MODE);
 		end
+		if( LootLinkState.AutoCompleteDisabled ) then
+			DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_AUTOCOMPLETE_DISABLED);
+		else
+			DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_AUTOCOMPLETE_ENABLED);
+		end
 	else
 		DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_INFO_SHOWN);
 	end
-	if( lScanAuction ) then
+	if( LL.lScanAuction ) then
 		DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_SCHEDULED_AUCTION_SCAN);
 	end
 end
@@ -1030,10 +1250,10 @@ local function LootLink_BuildSearchData(name, value)
 	-- this should only be called when we know that the tooltip will be valid
 
 	-- Protect money frame while we set hidden tooltip
-	LootLink_MoneyToggle();
+--[[	LootLink_MoneyToggle();
 	LLHiddenTooltip:SetOwner(UIParent, "ANCHOR_NONE");
 	LLHiddenTooltip:SetHyperlink(itemLink);
-	LootLink_MoneyToggle();
+	LootLink_MoneyToggle();]]--
 	
 	for index = 1, 30, 1 do
 		field = getglobal("LLHiddenTooltipTextLeft"..index);
@@ -2120,7 +2340,7 @@ local function LootLink_ScanInventory()
 	end
 end
 
-local function LootLink_ScanSellPrices()
+--[[local function LootLink_ScanSellPrices()
 	local bagid;
 	local size;
 	local slotid;
@@ -2160,7 +2380,7 @@ local function LootLink_ScanMerchant()
 			end
 		end
 	end
-end
+end]]--
 
 local function LootLink_ScanQuest(questState)
 	local fQuestLog;
@@ -2552,7 +2772,8 @@ function LootLink_OnLoad()
 	end
 	
 	-- Hook our hidden tooltip's OnTooltipAddMoney
-	LLHiddenTooltip:HookScript("OnTooltipAddMoney", LootLink_OnTooltipAddMoney);
+	LLHiddenTooltip:SetScript("OnTooltipAddMoney", nil);
+	LLHiddenTooltip:SetScript("OnTooltipCleared", nil);
 	
 	-- Hook the quest item update function
 	-- hooksecurefunc("QuestFrameItems_Update", LootLink_ScanQuest);
@@ -3501,7 +3722,7 @@ function LootLink_AddItem(name, item, color)
 
 		if( not ItemLinks[name] ) then
 			ItemLinks[name] = { };
-			lItemLinksSizeTotal = lItemLinksSizeTotal + 1;
+			LL.lItemLinksSizeTotal = LL.lItemLinksSizeTotal + 1;
 		else
 			ItemLinks[name].d = nil;
 			ItemLinks[name].t = nil;
@@ -3512,7 +3733,7 @@ function LootLink_AddItem(name, item, color)
 		LootLink_BuildSearchData(name, ItemLinks[name]);
 		if( not LootLink_CheckItemServerRaw(ItemLinks[name], lServerIndex) ) then
 			LootLink_AddItemServer(ItemLinks[name], lServerIndex);
-			lItemLinksSizeServer = lItemLinksSizeServer + 1;
+			LL.lItemLinksSizeServer = LL.lItemLinksSizeServer + 1;
 		end
 	end
 end
@@ -3533,7 +3754,7 @@ function LootLink_ProcessLinks(text)
 					ItemLinks[name] = { };
 					ItemLinks[name].c = color;
 					ItemLinks[name].i = link;
-					lItemLinksSizeTotal = lItemLinksSizeTotal + 1;
+					LL.lItemLinksSizeTotal = LL.lItemLinksSizeTotal + 1;
 
 					if( LootLink_GetDataVersion() < 110 ) then
 						-- Set a flag to indicate that this item is new and should be skipped on a makehome
@@ -3552,7 +3773,7 @@ function LootLink_ProcessLinks(text)
 					LootLink_BuildSearchData(name, ItemLinks[name]);
 					if( not LootLink_CheckItemServerRaw(ItemLinks[name], lServerIndex) ) then
 						LootLink_AddItemServer(ItemLinks[name], lServerIndex);
-						lItemLinksSizeServer = lItemLinksSizeServer + 1;
+						LL.lItemLinksSizeServer = LL.lItemLinksSizeServer + 1;
 					end
 				end
 
@@ -3568,7 +3789,7 @@ function LootLink_ProcessLinks(text)
 					ItemLinks[name] = { };
 					ItemLinks[name].c = "ff40ffc0";
 					ItemLinks[name].i = string.gsub(item, "^(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+)$", "%1:0:0:0:0:%6:%7:%8:%9");
-					lItemLinksSizeTotal = lItemLinksSizeTotal + 1;
+					LL.lItemLinksSizeTotal = LL.lItemLinksSizeTotal + 1;
 
 					if( LootLink_GetDataVersion() < 110 ) then
 						-- Set a flag to indicate that this item is new and should be skipped on a makehome
@@ -3577,7 +3798,7 @@ function LootLink_ProcessLinks(text)
 					
 					if( not LootLink_CheckItemServerRaw(ItemLinks[name], lServerIndex) ) then
 						LootLink_AddItemServer(ItemLinks[name], lServerIndex);
-						lItemLinksSizeServer = lItemLinksSizeServer + 1;
+						LL.lItemLinksSizeServer = LL.lItemLinksSizeServer + 1;
 					end
 
 					LootLink_BuildSearchData(name, ItemLinks[name]);
