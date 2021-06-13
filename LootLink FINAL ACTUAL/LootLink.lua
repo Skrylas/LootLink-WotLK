@@ -230,8 +230,8 @@ local lLightModeNeedsConfirm;
 local lDisableVersionReminder;
 
 -- The current server name and index
-local lServer;
-local lServerIndex;
+--local LL.lServer;
+--local LL.lServerIndex;
 
 -- The number of items in the database, total and for this server
 --local LL.lItemLinksSizeTotal;
@@ -1190,30 +1190,31 @@ local function LootLink_Status()
 	end
 end
 
-local function LootLink_GetHyperlink(name)
-	local itemLink = ItemLinks[name];
-		
-	if( itemLink and itemLink.i and LootLink_CheckItemServer(itemLink, lServerIndex) ) then
-		local item;
+local function LootLink_UpgradeLink(itemLink)
 		if( string.find(itemLink.i, "^%d+:%d+:%d+:%d+$") ) then
 			-- Upgrade old links, removing instance-specific data
 			item = string.gsub(itemLink.i, "^(%d+):(%d+):(%d+):(%d+)$", "%1:0:0:0:0:0:%3:%4:1");
 		elseif( string.find(itemLink.i, "^%d+:%d+:%d+:%d+:%d+:%d+:%d+:%d+$") ) then
 			-- Upgrade old V2.x links, 
-			
-			item = string.gsub(itemLink.i, "^(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+)$", "%1:%2:%3:%4:%5:%6:%7:%8:1");
+			item = string.gsub(itemLink.i, "^(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+)$", "%1:%2:%3:%4:%5:%6:%7:%8:9");
 		else
 			-- Remove instance-specific data that we captured from the link we return (2nd is enchantment, 3rd-5th are sockets)
-			item = string.gsub(itemLink.i, "(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+)", "%1:0:0:0:0:%6:%7:%8:%9");
+			item = string.gsub(itemLink.i, "(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+)", "%1:0:0:0:0:%6:%7:%8:1");
 		end
-		return "item:"..item;
+end
+
+local function LootLink_GetHyperlink(llid)
+	local itemLink = ItemLinks[llid];
+	if( itemLink and itemLink.i and LootLink_CheckItemServer(itemLink, LL.lServerIndex) ) then
+		LootLink_UpgradeLink(itemLink);
+		return "item:"..itemLink.i;
 	end
 	return nil;
 end
 
 local function LootLink_GetLink(name)
 	local itemLink = ItemLinks[name];
-	if( itemLink and itemLink.c and itemLink.i and LootLink_CheckItemServer(itemLink, lServerIndex) ) then
+	if( itemLink and itemLink.c and itemLink.i and LootLink_CheckItemServer(itemLink, LL.lServerIndex) ) then
 		local link = "|c"..itemLink.c.."|H"..LootLink_GetHyperlink(name).."|h["..name.."]|h|r";
 		return link;
 	end
@@ -1222,7 +1223,7 @@ end
 
 local function LootLink_BuildSearchData(name, value)
 	local itemLink;
-	local state = STATE_NAME;
+	local state = LL.STATE_NAME;
 	local loop;
 	local index;
 	local field;
@@ -1241,19 +1242,20 @@ local function LootLink_BuildSearchData(name, value)
 		value.t = "";
 	end
 	
-	itemLink = LootLink_GetHyperlink(name);
+	itemLink = LootLink_GetHyperlink(llid);
 	if( not itemLink ) then
 		return nil;
 	end
 	
-	-- This is the only place the tooltip hyperlink is set directly, therefore
-	-- this should only be called when we know that the tooltip will be valid
-
-	-- Protect money frame while we set hidden tooltip
---[[	LootLink_MoneyToggle();
+	local _, _, _, iLevel = GetItemInfo(itemLink);
+	if( iLevel ) then
+		value.d = value.d.."il"..iLevel.."·";
+	end
+		
+	-- We'll use our own tooltip to parse the information to avoid
+	-- picking up any changes made by other mods to the tooltip text
 	LLHiddenTooltip:SetOwner(UIParent, "ANCHOR_NONE");
 	LLHiddenTooltip:SetHyperlink(itemLink);
-	LootLink_MoneyToggle();]]--
 	
 	for index = 1, 30, 1 do
 		field = getglobal("LLHiddenTooltipTextLeft"..index);
@@ -1287,7 +1289,7 @@ local function LootLink_BuildSearchData(name, value)
 		
 		loop = 1;
 		while( loop ) do
-			if( state == STATE_NAME ) then
+			if( state == LL.STATE_NAME ) then
 				state = STATE_BOUND;
 				loop = nil;
 			elseif( state == STATE_BOUND ) then
@@ -1513,7 +1515,7 @@ end
 
 local function LootLink_SetTitle()
 	local lootLinkTitle = getglobal("LootLinkTitleText");
-	local total = LootLink_GetSize(lServerIndex);
+	local total = LootLink_GetSize(LL.lServerIndex);
 	local size;
 	
 	if( not DisplayIndices ) then
@@ -1537,7 +1539,7 @@ local function LootLink_SetTitle()
 end
 
 local function LootLink_MatchesSearch(name, value, ud)
-	if( not value or not LootLink_CheckItemServer(value, lServerIndex) ) then
+	if( not value or not LootLink_CheckItemServer(value, LL.lServerIndex) ) then
 		return nil;
 	end
 	if( not LootLinkFrame.SearchParams or not name ) then
@@ -2053,7 +2055,7 @@ local function LootLink_Reset()
 
 	LootLink_SetDataVersion(110);	-- version 1.10
 
-	LootLink_InitSizes(lServerIndex);
+	LootLink_InitSizes(LL.lServerIndex);
 	
 	if( DisplayIndices ) then
 		LootLink_BuildDisplayIndices();
@@ -2070,14 +2072,14 @@ local function LootLink_MakeHome()
 	for index, value in pairs(ItemLinks) do
 		if( not value._ ) then
 			-- If this item predates multiple server support, mark it as seen on this server
-			LootLink_AddItemServer(value, lServerIndex);
+			LootLink_AddItemServer(value, LL.lServerIndex);
 		else
 			-- Otherwise just wipe the flag since it only applies to pre-1.10 data
 			value._ = nil;
 		end
 	end
 
-	LootLink_InitSizes(lServerIndex);
+	LootLink_InitSizes(LL.lServerIndex);
 end
 
 local function LootLink_LightMode()
@@ -2685,12 +2687,12 @@ local function LootLink_VariablesLoaded()
 		LootLink_Reset();
 	end
 	
-	lServer = GetCVar("realmName");
-	lServerIndex = LootLink_AddServer(lServer);
+	LL.lServer = GetCVar("realmName");
+	LL.lServerIndex = LootLink_AddServer(LL.lServer);
 	
 	LootLink_UpgradeData();
 	
-	LootLink_InitSizes(lServerIndex);
+	LootLink_InitSizes(LL.lServerIndex);
 end
 
 --------------------------------------------------------------------------------------------------
@@ -3731,8 +3733,8 @@ function LootLink_AddItem(name, item, color)
 		ItemLinks[name].i = item;
 
 		LootLink_BuildSearchData(name, ItemLinks[name]);
-		if( not LootLink_CheckItemServerRaw(ItemLinks[name], lServerIndex) ) then
-			LootLink_AddItemServer(ItemLinks[name], lServerIndex);
+		if( not LootLink_CheckItemServerRaw(ItemLinks[name], LL.lServerIndex) ) then
+			LootLink_AddItemServer(ItemLinks[name], LL.lServerIndex);
 			LL.lItemLinksSizeServer = LL.lItemLinksSizeServer + 1;
 		end
 	end
@@ -3771,8 +3773,8 @@ function LootLink_ProcessLinks(text)
 				
 				if( ItemLinks[name] ) then
 					LootLink_BuildSearchData(name, ItemLinks[name]);
-					if( not LootLink_CheckItemServerRaw(ItemLinks[name], lServerIndex) ) then
-						LootLink_AddItemServer(ItemLinks[name], lServerIndex);
+					if( not LootLink_CheckItemServerRaw(ItemLinks[name], LL.lServerIndex) ) then
+						LootLink_AddItemServer(ItemLinks[name], LL.lServerIndex);
 						LL.lItemLinksSizeServer = LL.lItemLinksSizeServer + 1;
 					end
 				end
@@ -3796,8 +3798,8 @@ function LootLink_ProcessLinks(text)
 						ItemLinks[name]._ = 1;
 					end
 					
-					if( not LootLink_CheckItemServerRaw(ItemLinks[name], lServerIndex) ) then
-						LootLink_AddItemServer(ItemLinks[name], lServerIndex);
+					if( not LootLink_CheckItemServerRaw(ItemLinks[name], LL.lServerIndex) ) then
+						LootLink_AddItemServer(ItemLinks[name], LL.lServerIndex);
 						LL.lItemLinksSizeServer = LL.lItemLinksSizeServer + 1;
 					end
 
@@ -4120,12 +4122,12 @@ end
 
 -- Use this function to get the current server name from LootLink's perspective
 function LootLink_GetCurrentServerName()
-	return lServer;
+	return LL.lServer;
 end
 
 -- Use this function to get the current server index
 function LootLink_GetCurrentServerIndex()
-	return lServerIndex;
+	return LL.lServerIndex;
 end
 
 -- Use this function to map a server name to the server index for the ItemLinks[name].servers array
