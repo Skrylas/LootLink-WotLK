@@ -1,8 +1,7 @@
 --[[
 
 	LootLink 3.51: An in-game item database
-		copyright 2004 by Telo
-		updated for WoW 3.0 by Tegran
+		copyright 2004 by Telo updated for WoW 3.0 by Tegran
 		
 	- Watches all chat links you see to cache link color and link data
 	- Automatically extracts data from items already in or added to your inventory
@@ -10,9 +9,6 @@
 	- Automatically inspects your target and extracts data for each of their equipped items
 	- Automatically gets link data from your auction queries
 	- Can perform a fully automatic scan of the entire auction house inventory
-	- Stores sell prices for items that you've had in inventory when you've talked to a merchant
-	  and displays them in the tooltips for stacks of items that you are looting, stacks of items
-	  in your inventory and entries in the LootLink browse window
 	- Provides a browsable, searchable window that allows you to find any item in the cache
 	- Allows you to shift-click items in the browse window to insert links in the chat edit box
 	
@@ -24,6 +20,7 @@
 
 BINDING_HEADER_LOOTLINK = "LootLink Buttons";
 BINDING_NAME_TOGGLELOOTLINK = "Toggle LootLink";
+
 LOOTLINK_TITLE = "LootLink";
 LOOTLINK_SEARCH_TITLE = "LootLink Search";
 LOOTLINK_TITLE_FORMAT_SINGULAR = "LootLink - 1 item total";
@@ -36,18 +33,14 @@ LOOTLINK_RESET_LABEL = "Reset";
 LOOTLINK_AUCTION_SCAN_START = "LootLink: scanning page 1...";
 LOOTLINK_AUCTION_PAGE_N = "LootLink: scanning page %d of %d...";
 LOOTLINK_AUCTION_SCAN_DONE = "LootLink: auction scanning finished";
-LOOTLINK_SELL_PRICE = "Sell price:";
-LOOTLINK_SELL_PRICE_N = "Sell price for %d:";
-LOOTLINK_SELL_PRICE_EACH = "Sell price, each:";
 LOOTLINK_SCHEDULED_AUCTION_SCAN = "LootLink: will perform a full auction scan the next time you talk to an auctioneer.";
+LOOTLINK_ITEM_RENAMED = "<item was renamed since last seen>";
 
 LOOTLINK_HELP = "help";			-- must be lowercase; command to display help
 LOOTLINK_STATUS = "status";		-- must be lowercase; command to display status
+LOOTLINK_AUTOCOMPLETE = "autocomplete";	-- must be lowercase; command to toggle autocompletion support
 LOOTLINK_AUCTION = "auction";	-- must be lowercase; command to scan auctions
 LOOTLINK_SCAN = "scan";			-- must be lowercase; alias for command to scan auctions
-LOOTLINK_SHOWINFO = "showinfo";	-- must be lowercase; command to show extra info on tooltips
-LOOTLINK_HIDEINFO = "hideinfo";	-- must be lowercase; command to hide extra info on tooltips
-LOOTLINK_MAKEHOME = "makehome";	-- must be lowercase; command to make the current server your home
 LOOTLINK_RESET = "reset";		-- must be lowercase; command to reset the database
 LOOTLINK_LIGHTMODE = "light";	-- must be lowercase; command to disable full-text search, using less memory
 LOOTLINK_FULLMODE = "full";		-- must be lowercase; command to enable full-text search, using more memory
@@ -56,19 +49,16 @@ LOOTLINK_CONFIRM = "confirm";	-- must be lowercase; confirmation of MAKEHOME, RE
 LOOTLINK_RESET_NEEDS_CONFIRM = "|cffff0000LootLink: Warning!  This will irreversibly erase all LootLink data.  If you really want to do this, use /lootlink or /ll with the following command: "..LOOTLINK_RESET.." "..LOOTLINK_CONFIRM.."|r";
 LOOTLINK_RESET_ABORTED = "|cff00ff00LootLink: Data erase was NOT confirmed and will not be done.|r";
 LOOTLINK_RESET_DONE = "|cffffff00LootLink: All data erased.|r";
-LOOTLINK_MAKEHOME_NEEDS_CONFIRM = "|cffff0000LootLink: Warning!  This will irreversibly mark all LootLink data that predates multiple server support as having been seen on "..GetCVar("realmName")..".  If you really want to do this, use /lootlink or /ll with the following command: "..LOOTLINK_MAKEHOME.." "..LOOTLINK_CONFIRM.."|r";
-LOOTLINK_MAKEHOME_ABORTED = "|cff00ff00LootLink: Home server was NOT confirmed and no changes will be made.|r";
-LOOTLINK_MAKEHOME_DONE = "|cffffff00LootLink: Existing data that predated multiple server support was marked as seen on "..GetCVar("realmName")..". Multiple server support is fully enabled.|r";
 LOOTLINK_LIGHTMODE_NEEDS_CONFIRM = "|cffff0000LootLink: Warning!  This will disable full-text search, losing known text for all items, but using less memory.  If you really want to do this, use /lootlink or /ll with the following command: "..LOOTLINK_LIGHTMODE.." "..LOOTLINK_CONFIRM.."|r";
 LOOTLINK_LIGHTMODE_ABORTED = "|cff00ff00LootLink: Light mode was NOT confirmed and no changes will be made.|r";
 LOOTLINK_LIGHTMODE_DONE = "|cffffff00LootLink: Light mode enabled.  Full-text search is disabled and memory is no longer used for item descriptions.|r";
 
 LOOTLINK_STATUS_HEADER = "|cffffff00LootLink (version %.2f) status:|r";
 LOOTLINK_DATA_VERSION = "LootLink: %d items known [%d on %s], data version %.2f";
-LOOTLINK_INFO_HIDDEN = "LootLink: extra tooltip information hidden";
-LOOTLINK_INFO_SHOWN = "LootLink: extra tooltip information shown";
 LOOTLINK_FULL_MODE = "LootLink: full mode; full-text search is enabled";
 LOOTLINK_LIGHT_MODE = "LootLink: light mode; full-text search is disabled";
+LOOTLINK_AUTOCOMPLETE_ENABLED = "LootLink: chat autocomplete is enabled";
+LOOTLINK_AUTOCOMPLETE_DISABLED = "LootLink: chat autocomplete is disabled";																 
 
 LOOTLINK_HELP_TEXT0 = " ";
 LOOTLINK_HELP_TEXT1 = "|cffffff00LootLink command help:|r";
@@ -76,22 +66,19 @@ LOOTLINK_HELP_TEXT2 = "|cff00ff00Use |r|cffffffff/lootlink|r|cff00ff00 or |r|cff
 LOOTLINK_HELP_TEXT3 = "|cff00ff00Use |r|cffffffff/lootlink <command>|r|cff00ff00 or |r|cffffffff/ll <command>|r|cff00ff00 to perform the following commands:|r";
 LOOTLINK_HELP_TEXT4 = "|cffffffff"..LOOTLINK_HELP.."|r|cff00ff00: displays this message.|r";
 LOOTLINK_HELP_TEXT5 = "|cffffffff"..LOOTLINK_STATUS.."|r|cff00ff00: displays status information for data and current options.|r";
-LOOTLINK_HELP_TEXT6 = "|cffffffff"..LOOTLINK_AUCTION.."|r|cff00ff00 or |r|cffffffff"..LOOTLINK_SCAN.."|r|cff00ff00: starts or schedules an automatic scan of all items in the auction house.|r";
-LOOTLINK_HELP_TEXT7 = "|cffffffff"..LOOTLINK_SHOWINFO.."|r|cff00ff00: shows extra information, including known sell prices, on all tooltips.|r";
-LOOTLINK_HELP_TEXT8 = "|cffffffff"..LOOTLINK_HIDEINFO.."|r|cff00ff00: stops showing extra information on tooltips.|r";
-LOOTLINK_HELP_TEXT9 = "|cffffffff"..LOOTLINK_FULLMODE.."|r|cff00ff00: enables full-text search. This is the default mode..|r";
-LOOTLINK_HELP_TEXT10 = "|cffffffff"..LOOTLINK_LIGHTMODE.."|r|cff00ff00: disables full-text search, using less memory.|r";
-LOOTLINK_HELP_TEXT11 = " ";
-LOOTLINK_HELP_TEXT12 = "|cff00ff00For example: |r|cffffffff/lootlink scan|r|cff00ff00 will start an auction house scan if the auction window is open.|r";
+LOOTLINK_HELP_TEXT6 = "|cffffffff"..LOOTLINK_AUTOCOMPLETE.."|r|cff00ff00: toggles chat autocomplete support.|r";
+LOOTLINK_HELP_TEXT7 = "|cffffffff"..LOOTLINK_AUCTION.."|r|cff00ff00 or |r|cffffffff"..LOOTLINK_SCAN.."|r|cff00ff00: starts or schedules an automatic scan of all items in the auction house.|r";
+LOOTLINK_HELP_TEXT8 = "|cffffffff"..LOOTLINK_FULLMODE.."|r|cff00ff00: enables full-text search. This is the default mode.|r";
+LOOTLINK_HELP_TEXT9 = "|cffffffff"..LOOTLINK_LIGHTMODE.."|r|cff00ff00: disables full-text search, using less memory.|r";
+LOOTLINK_HELP_TEXT10 = " ";
+LOOTLINK_HELP_TEXT11 = "|cff00ff00For example: |r|cffffffff/lootlink scan|r|cff00ff00 will start an auction house scan if the auction window is open.|r";
 
-LOOTLINK_DATA_UPGRADE_HELP_TEXT0 = "|cffffff00LootLink needs action from you to upgrade its data for full multiple server support.  Use one of the following commands to do so:|r";
-LOOTLINK_DATA_UPGRADE_HELP_TEXT1 = "|cffffffff"..LOOTLINK_MAKEHOME.."|r|cff00ff00: makes the current server your home.  This will mark all existing items that predate multiple server support as having been seen on the current server.|r";
-LOOTLINK_DATA_UPGRADE_HELP_TEXT2 = "|cffffffff"..LOOTLINK_RESET.."|r|cff00ff00: resets and wipes the existing database.  This is the safest thing to do if you've ever played on more than one server, but you will lose your existing data.|r";
+LOOTLINK_DATA_UPGRADE_HELP_TEXT0 = "|cffffff00LootLink's data format has significantly changed and your existing data could not be upgraded.|r";
+LOOTLINK_DATA_UPGRADE_HELP_TEXT1 = "|cffffff00LootLink's data format has changed; your existing data has been upgraded to the new format automatically.|r";
 
 LOOTLINK_DATA_UPGRADE_HELP = {
 	{ version = 110, text = LOOTLINK_DATA_UPGRADE_HELP_TEXT0, },
-	{ version = 110, text = LOOTLINK_DATA_UPGRADE_HELP_TEXT1, },
-	{ version = 110, text = LOOTLINK_DATA_UPGRADE_HELP_TEXT2, },
+	{ version = 201, minVersion = 110, text = LOOTLINK_DATA_UPGRADE_HELP_TEXT1, },
 };
 
 LLS_TEXT = "All text:";
@@ -103,14 +90,18 @@ LLS_USABLE = "Usable?";
 LLS_LOCATION = "Equip location:";
 LLS_MINIMUM_LEVEL = "Minimum level:";
 LLS_MAXIMUM_LEVEL = "Maximum level:";
+LLS_MINIMUM_ILEVEL = "Minimum iLevel:";
+LLS_MAXIMUM_ILEVEL = "Maximum iLevel:";									   			   
 LLS_TYPE = "Type:";
 LLS_SUBTYPE_ARMOR = "Armor subtype:";
 LLS_SUBTYPE_GEM = "Slot type:";
+LLS_SUBTYPE_GLYPH = "Glyph type:"									   
 LLS_SUBTYPE_WEAPON = "Weapon subtype:";
 LLS_SUBTYPE_SHIELD = "Shield subtype:";
 LLS_SUBTYPE_RECIPE = "Recipe subtype:";
 LLS_MINIMUM_DAMAGE = "Min. low damage:";
 LLS_MAXIMUM_DAMAGE = "Min. high damage:";
+LLS_MINIMUM_SPEED = "Minimum speed:";									 
 LLS_MAXIMUM_SPEED = "Maximum speed:";
 LLS_MINIMUM_DPS = "Minimum DPS:";
 LLS_MINIMUM_ARMOR = "Minimum armor:";
@@ -120,75 +111,86 @@ LLS_MINIMUM_SKILL = "Minimum skill:";
 LLS_MAXIMUM_SKILL = "Maximum skill:";
 LLS_TEXT_DISABLED = "(full-text search is disabled)";
 
-ANY = "Any";
-POOR = "Poor";
-COMMON = "Common";
-UNCOMMON = "Uncommon";
-RARE = "Rare";
-EPIC = "Epic";
-LEGENDARY = "Legendary";
-DOES_NOT = "Does Not";
-ON_EQUIP = "On Equip";
-ON_PICKUP = "On Pickup";
-ON_USE = "On Use";
---ARMOR = "Armor"; -- already in globalstrings
-WEAPON = "Weapon";
-SHIELD = "Shield";
-CONTAINER = "Container";
-OTHER = "Other";
-RECIPE = "Recipe";
-GEM = "Gem";
-CLOTH = "Cloth";
-LEATHER = "Leather";
-MAIL = "Mail";
-PLATE = "Plate";
-AXE = "Axe";
-BOW = "Bow";
-DAGGER = "Dagger";
-MACE = "Mace";
-STAFF = "Staff";
-SWORD = "Sword";
-GUN = "Gun";
-WAND = "Wand";
-POLEARM = "Polearm";
-FIST_WEAPON = "Fist Weapon";
-CROSSBOW = "Crossbow";
-THROWN = "Thrown";
-BUCKLER = "Buckler";
-ALCHEMY = "Alchemy";
-BLACKSMITHING = "Blacksmithing";
-COOKING = "Cooking";
-ENCHANTING = "Enchanting";
-ENGINEERING = "Engineering";
-LEATHERWORKING = "Leatherworking";
-TAILORING = "Tailoring";
-JEWELCRAFTING = "Jewelcrafting";
-RED = "Red";
-YELLOW = "Yellow";
-BLUE = "Blue";
-META = "Meta";
+local LL = { };
+
+LL.ANY = "Any";
+LL.POOR = "Poor";
+LL.COMMON = "Common";
+LL.UNCOMMON = "Uncommon";
+LL.RARE = "Rare";
+LL.EPIC = "Epic";
+LL.LEGENDARY = "Legendary";
+LL.HEIRLOOM = "Heirloom";
+LL.ARTIFCAT = "Artifact";
+LL.DOES_NOT = "Does Not";
+LL.ON_EQUIP = "On Equip";
+LL.ON_PICKUP = "On Pickup";
+LL.ON_USE = "On Use";
+LL.TO_ACCOUNT = "To Account";
+LL.ARMOR = "Armor";
+LL.WEAPON = "Weapon";
+LL.SHIELD = "Shield";
+LL.CONTAINER = "Container";
+LL.OTHER = "Other";
+LL.RECIPE = "Recipe";
+LL.GEM = "Gem";
+LL.GLYPH = "Glyph";
+LL.CLOTH = "Cloth";
+LL.LEATHER = "Leather";
+LL.MAIL = "Mail";
+LL.PLATE = "Plate";
+LL.AXE = "Axe";
+LL.BOW = "Bow";
+LL.DAGGER = "Dagger";
+LL.MACE = "Mace";
+LL.STAFF = "Staff";
+LL.SWORD = "Sword";
+LL.GUN = "Gun";
+LL.WAND = "Wand";
+LL.POLEARM = "Polearm";
+LL.FIST_WEAPON = "Fist Weapon";
+LL.CROSSBOW = "Crossbow";
+LL.THROWN = "Thrown";
+LL.BUCKLER = "Buckler";
+LL.ALCHEMY = "Alchemy";
+LL.BLACKSMITHING = "Blacksmithing";
+LL.COOKING = "Cooking";
+LL.ENCHANTING = "Enchanting";
+LL.ENGINEERING = "Engineering";
+LL.LEATHERWORKING = "Leatherworking";
+LL.TAILORING = "Tailoring";
+LL.JEWELCRAFTING = "Jewelcrafting";
+LL.INSCRIPTION = "Inscription";
+LL.RED = "Red";
+LL.YELLOW = "Yellow";
+LL.BLUE = "Blue";
+LL.META = "Meta";
 
 -- For sorting
-SORT_NAME = "Name";
-SORT_RARITY = "Rarity";
-SORT_BINDS = "Binds";
-SORT_UNIQUE = "Unique";
-SORT_LOCATION = "Location";
-SORT_TYPE = "Type";
-SORT_SUBTYPE = "Subtype";
-SORT_MINDAMAGE = "Min Damage";
-SORT_MAXDAMAGE = "Max Damage";
-SORT_SPEED = "Speed";
-SORT_DPS = "DPS";
-SORT_ARMOR = "Armor";
-SORT_BLOCK = "Block";
-SORT_SLOTS = "Slots";
-SORT_LEVEL = "Level";
-SORT_SKILL = "Skill Level";
+LL.SORT_NAME = "Name";
+LL.SORT_RARITY = "Rarity";
+LL.SORT_ILEVEL = "iLevel";
+LL.SORT_BINDS = "Binds";
+LL.SORT_UNIQUE = "Unique";
+LL.SORT_LOCATION = "Location";
+LL.SORT_TYPE = "Type";
+LL.SORT_SUBTYPE = "Subtype";
+LL.SORT_MINDAMAGE = "Min Damage";
+LL.SORT_MAXDAMAGE = "Max Damage";
+LL.SORT_SPEED = "Speed";
+LL.SORT_DPS = "DPS";
+LL.SORT_ARMOR = "Armor";
+LL.SORT_BLOCK = "Block";
+LL.SORT_SLOTS = "Slots";
+LL.SORT_LEVEL = "Level";
+LL.SORT_SKILL = "Skill Level";
 
 --------------------------------------------------------------------------------------------------
 -- Local LootLink variables
 --------------------------------------------------------------------------------------------------
+
+-- The SimpleDropDown library
+local sdd = LibStub:GetLibrary("SimpleDropDown-1.0");
 
 -- Function hooks
 local lOriginal_CanSendAuctionQuery;
@@ -226,45 +228,56 @@ local lServerIndex;
 local lItemLinksSizeTotal;
 local lItemLinksSizeServer;
 
-local STATE_NAME = 0;
-local STATE_BOUND = 1;
-local STATE_UNIQUE = 2;
-local STATE_LOCATION = 3;
-local STATE_TYPE = 4;
-local STATE_DAMAGE = 5;
-local STATE_DPS = 6;
-local STATE_ARMOR = 7;
-local STATE_BLOCK = 8;
-local STATE_CONTAINER = 9;
-local STATE_MATCHES = 10;
-local STATE_REQUIRES = 11;
-local STATE_FINISH = 12;
+LL.STATE_NAME = 0;
+LL.STATE_HEROIC = 1;
+LL.STATE_BOUND = 2;
+LL.STATE_UNIQUE = 3;
+LL.STATE_LOCATION = 4;
+LL.STATE_TYPE = 5;
+LL.STATE_DAMAGE = 6;
+LL.STATE_DPS = 7;
+LL.STATE_ARMOR = 8;
+LL.STATE_BLOCK = 9;
+LL.STATE_GLYPH = 10;
+LL.STATE_CONTAINER = 11;
+LL.STATE_MATCHES = 12;
+LL.STATE_REQUIRES = 13;
+LL.STATE_FINISH = 14;
 
-local BINDS_DOES_NOT_BIND = 0;
-local BINDS_EQUIP = 1;
-local BINDS_PICKUP = 2;
-local BINDS_USED = 3;
 
-local TYPE_ARMOR = 0;
-local TYPE_WEAPON = 1;
-local TYPE_SHIELD = 2;
-local TYPE_RECIPE = 3;
-local TYPE_CONTAINER = 4;
-local TYPE_MISC = 5;
-local TYPE_GEM = 6;
+LL.BINDS_DOES_NOT_BIND = 0;
+LL.BINDS_EQUIP = 1;
+LL.BINDS_PICKUP = 2;
+LL.BINDS_USED = 3;
+LL.BINDS_ACCOUNT = 4;
 
-local SUBTYPE_ARMOR_CLOTH = 0;
-local SUBTYPE_ARMOR_LEATHER = 1;
-local SUBTYPE_ARMOR_MAIL = 2;
-local SUBTYPE_ARMOR_PLATE = 3;
+LL.UNIQUE_NOT_UNIQUE = 0;
+LL.UNIQUE_GENERIC = 1;
+LL.UNIQUE_EQUIPPED = 2;
+
+LL.TYPE_ARMOR = 0;
+LL.TYPE_WEAPON = 1;
+LL.TYPE_SHIELD = 2;
+LL.TYPE_RECIPE = 3;
+LL.TYPE_CONTAINER = 4;
+LL.TYPE_MISC = 5;
+LL.TYPE_GEM = 6;
+LL.TYPE_GLYPH = 7;
+
+LL.SUBTYPE_ARMOR_CLOTH = 0;
+LL.SUBTYPE_ARMOR_LEATHER = 1;
+LL.SUBTYPE_ARMOR_MAIL = 2;
+LL.SUBTYPE_ARMOR_PLATE = 3;
 
 local lColorSortTable = { };
-lColorSortTable["ffff8000"] = 1;	-- legendary, orange
-lColorSortTable["ffa335ee"] = 2;	-- epic, purple
-lColorSortTable["ff0070dd"] = 3;	-- rare, blue
-lColorSortTable["ff1eff00"] = 4;	-- uncommon, green
-lColorSortTable["ffffffff"] = 5;	-- common, white
-lColorSortTable["ff9d9d9d"] = 6;	-- poor, gray
+lColorSortTable["ffe6cc80"] = 1;	-- artifact, tan
+lColorSortTable["ffe6cc80"] = 2;	-- heirloom, tan
+lColorSortTable["ffff8000"] = 3;	-- legendary, orange
+lColorSortTable["ffa335ee"] = 4;	-- epic, purple
+lColorSortTable["ff0070dd"] = 5;	-- rare, blue
+lColorSortTable["ff1eff00"] = 6;	-- uncommon, green
+lColorSortTable["ffffffff"] = 7;	-- common, white
+lColorSortTable["ff9d9d9d"] = 8;	-- poor, gray
 lColorSortTable["ff40ffc0"] = 100;	-- unknown, teal
 
 local ArmorSubtypes = { };
@@ -273,141 +286,144 @@ ArmorSubtypes["Leather"] = SUBTYPE_ARMOR_LEATHER;
 ArmorSubtypes["Mail"] = SUBTYPE_ARMOR_MAIL;
 ArmorSubtypes["Plate"] = SUBTYPE_ARMOR_PLATE;
 
-local SUBTYPE_GEM_META = 0;
-local SUBTYPE_GEM_RED = 1;
-local SUBTYPE_GEM_YELLOW = 2;
-local SUBTYPE_GEM_BLUE = 4;
+LL.SUBTYPE_GEM_META = 0;
+LL.SUBTYPE_GEM_RED = 1;
+LL.SUBTYPE_GEM_YELLOW = 2;
+LL.SUBTYPE_GEM_BLUE = 4;
 
 local GemSubtypes = { };
-GemSubtypes["Meta"] = SUBTYPE_GEM_META;
-GemSubtypes["Red"] = SUBTYPE_GEM_RED;
-GemSubtypes["Yellow"] = SUBTYPE_GEM_YELLOW;
-GemSubtypes["Blue"] = SUBTYPE_GEM_BLUE;
+GemSubtypes["Meta"] = LL.SUBTYPE_GEM_META;
+GemSubtypes["Red"] = LL.SUBTYPE_GEM_RED;
+GemSubtypes["Yellow"] = LL.SUBTYPE_GEM_YELLOW;
+GemSubtypes["Blue"] = LL.SUBTYPE_GEM_BLUE;
 
-local SUBTYPE_WEAPON_AXE = 0;
-local SUBTYPE_WEAPON_BOW = 1;
-local SUBTYPE_WEAPON_DAGGER = 2;
-local SUBTYPE_WEAPON_MACE = 3;
+LL.SUBTYPE_WEAPON_AXE = 0;
+LL.SUBTYPE_WEAPON_BOW = 1;
+LL.SUBTYPE_WEAPON_DAGGER = 2;
+LL.SUBTYPE_WEAPON_MACE = 3;
 -- 4 is available
-local SUBTYPE_WEAPON_STAFF = 5;
-local SUBTYPE_WEAPON_SWORD = 6;
-local SUBTYPE_WEAPON_GUN = 7;
-local SUBTYPE_WEAPON_WAND = 8;
-local SUBTYPE_WEAPON_THROWN = 9;
-local SUBTYPE_WEAPON_POLEARM = 10;
-local SUBTYPE_WEAPON_FIST_WEAPON = 11;
-local SUBTYPE_WEAPON_CROSSBOW = 12;
+LL.SUBTYPE_WEAPON_STAFF = 5;
+LL.SUBTYPE_WEAPON_SWORD = 6;
+LL.SUBTYPE_WEAPON_GUN = 7;
+LL.SUBTYPE_WEAPON_WAND = 8;
+LL.SUBTYPE_WEAPON_THROWN = 9;
+LL.SUBTYPE_WEAPON_POLEARM = 10;
+LL.SUBTYPE_WEAPON_FIST_WEAPON = 11;
+LL.SUBTYPE_WEAPON_CROSSBOW = 12;
 
 local WeaponSubtypes = { };
-WeaponSubtypes["Axe"] = SUBTYPE_WEAPON_AXE;
-WeaponSubtypes["Bow"] = SUBTYPE_WEAPON_BOW;
-WeaponSubtypes["Dagger"] = SUBTYPE_WEAPON_DAGGER;
-WeaponSubtypes["Mace"] = SUBTYPE_WEAPON_MACE;
-WeaponSubtypes["Staff"] = SUBTYPE_WEAPON_STAFF;
-WeaponSubtypes["Sword"] = SUBTYPE_WEAPON_SWORD;
-WeaponSubtypes["Gun"] = SUBTYPE_WEAPON_GUN;
-WeaponSubtypes["Wand"] = SUBTYPE_WEAPON_WAND;
-WeaponSubtypes["Thrown"] = SUBTYPE_WEAPON_THROWN;
-WeaponSubtypes["Polearm"] = SUBTYPE_WEAPON_POLEARM;
-WeaponSubtypes["Fist Weapon"] = SUBTYPE_WEAPON_FIST_WEAPON;
-WeaponSubtypes["Crossbow"] = SUBTYPE_WEAPON_CROSSBOW;
+WeaponSubtypes["Axe"] = LL.SUBTYPE_WEAPON_AXE;
+WeaponSubtypes["Bow"] = LL.SUBTYPE_WEAPON_BOW;
+WeaponSubtypes["Dagger"] = LL.SUBTYPE_WEAPON_DAGGER;
+WeaponSubtypes["Mace"] = LL.SUBTYPE_WEAPON_MACE;
+WeaponSubtypes["Staff"] = LL.SUBTYPE_WEAPON_STAFF;
+WeaponSubtypes["Sword"] = LL.SUBTYPE_WEAPON_SWORD;
+WeaponSubtypes["Gun"] = LL.SUBTYPE_WEAPON_GUN;
+WeaponSubtypes["Wand"] = LL.SUBTYPE_WEAPON_WAND;
+WeaponSubtypes["Thrown"] = LL.SUBTYPE_WEAPON_THROWN;
+WeaponSubtypes["Polearm"] = LL.SUBTYPE_WEAPON_POLEARM;
+WeaponSubtypes["Fist Weapon"] = LL.SUBTYPE_WEAPON_FIST_WEAPON;
+WeaponSubtypes["Crossbow"] = LL.SUBTYPE_WEAPON_CROSSBOW;
 
-local SUBTYPE_SHIELD_BUCKLER = 0;
-local SUBTYPE_SHIELD_SHIELD = 1;
+LL.SUBTYPE_SHIELD_BUCKLER = 0;
+LL.SUBTYPE_SHIELD_SHIELD = 1;
 
 local ShieldSubtypes = { };
-ShieldSubtypes["Buckler"] = SUBTYPE_SHIELD_BUCKLER;
-ShieldSubtypes["Shield"] = SUBTYPE_SHIELD_SHIELD;
+ShieldSubtypes["Buckler"] = LL.SUBTYPE_SHIELD_BUCKLER;
+ShieldSubtypes["Shield"] = LL.SUBTYPE_SHIELD_SHIELD;
 
-local SUBTYPE_RECIPE_ALCHEMY = 0;
-local SUBTYPE_RECIPE_BLACKSMITHING = 1;
-local SUBTYPE_RECIPE_COOKING = 2;
-local SUBTYPE_RECIPE_ENCHANTING = 3;
-local SUBTYPE_RECIPE_ENGINEERING = 4;
-local SUBTYPE_RECIPE_LEATHERWORKING = 5;
-local SUBTYPE_RECIPE_TAILORING = 6;
-local SUBTYPE_RECIPE_FIRST_AID = 7;
-local SUBTYPE_RECIPE_FISHING = 8;
-local SUBTYPE_RECIPE_JEWELCRAFTING = 9;
+LL.SUBTYPE_RECIPE_ALCHEMY = 0;
+LL.SUBTYPE_RECIPE_BLACKSMITHING = 1;
+LL.SUBTYPE_RECIPE_COOKING = 2;
+LL.SUBTYPE_RECIPE_ENCHANTING = 3;
+LL.SUBTYPE_RECIPE_ENGINEERING = 4;
+LL.SUBTYPE_RECIPE_LEATHERWORKING = 5;
+LL.SUBTYPE_RECIPE_TAILORING = 6;
+LL.SUBTYPE_RECIPE_FIRST_AID = 7;
+LL.SUBTYPE_RECIPE_FISHING = 8;
+LL.SUBTYPE_RECIPE_JEWELCRAFTING = 9;
+LL.SUBTYPE_RECIPE_INSCRIPTION = 10;
 
 local RecipeSubtypes = { };
-RecipeSubtypes["Alchemy"] = SUBTYPE_RECIPE_ALCHEMY;
-RecipeSubtypes["Blacksmithing"] = SUBTYPE_RECIPE_BLACKSMITHING;
-RecipeSubtypes["Cooking"] = SUBTYPE_RECIPE_COOKING;
-RecipeSubtypes["Enchanting"] = SUBTYPE_RECIPE_ENCHANTING;
-RecipeSubtypes["Engineering"] = SUBTYPE_RECIPE_ENGINEERING;
-RecipeSubtypes["Leatherworking"] = SUBTYPE_RECIPE_LEATHERWORKING;
-RecipeSubtypes["Tailoring"] = SUBTYPE_RECIPE_TAILORING;
-RecipeSubtypes["First Aid"] = SUBTYPE_RECIPE_FIRST_AID;
-RecipeSubtypes["Fishing"] = SUBTYPE_RECIPE_FISHING;
-RecipeSubtypes["Jewelcrafting"] = SUBTYPE_RECIPE_JEWELCRAFTING;
+RecipeSubtypes["Alchemy"] = LL.SUBTYPE_RECIPE_ALCHEMY;
+RecipeSubtypes["Blacksmithing"] = LL.SUBTYPE_RECIPE_BLACKSMITHING;
+RecipeSubtypes["Cooking"] = LL.SUBTYPE_RECIPE_COOKING;
+RecipeSubtypes["Enchanting"] = LL.SUBTYPE_RECIPE_ENCHANTING;
+RecipeSubtypes["Engineering"] = LL.SUBTYPE_RECIPE_ENGINEERING;
+RecipeSubtypes["Leatherworking"] = LL.SUBTYPE_RECIPE_LEATHERWORKING;
+RecipeSubtypes["Tailoring"] = LL.SUBTYPE_RECIPE_TAILORING;
+RecipeSubtypes["First Aid"] = LL.SUBTYPE_RECIPE_FIRST_AID;
+RecipeSubtypes["Fishing"] = LL.SUBTYPE_RECIPE_FISHING;
+RecipeSubtypes["Jewelcrafting"] = LL.SUBTYPE_RECIPE_JEWELCRAFTING;
+RecipeSubtypes["Inscription"] = LL.SUBTYPE_RECIPE_INSCRIPTION;
 
 local lTypeAndSubtypeToSkill = { };
-lTypeAndSubtypeToSkill[TYPE_ARMOR] = { };
-lTypeAndSubtypeToSkill[TYPE_ARMOR][SUBTYPE_ARMOR_CLOTH] = "Cloth";
-lTypeAndSubtypeToSkill[TYPE_ARMOR][SUBTYPE_ARMOR_LEATHER] = "Leather";
-lTypeAndSubtypeToSkill[TYPE_ARMOR][SUBTYPE_ARMOR_MAIL] = "Mail";
-lTypeAndSubtypeToSkill[TYPE_ARMOR][SUBTYPE_ARMOR_PLATE] = "Plate Mail";
-lTypeAndSubtypeToSkill[TYPE_WEAPON] = { };
-lTypeAndSubtypeToSkill[TYPE_WEAPON][SUBTYPE_WEAPON_AXE] = { }
-lTypeAndSubtypeToSkill[TYPE_WEAPON][SUBTYPE_WEAPON_AXE][0] = "Axes";
-lTypeAndSubtypeToSkill[TYPE_WEAPON][SUBTYPE_WEAPON_AXE][1] = "Two-Handed Axes";
-lTypeAndSubtypeToSkill[TYPE_WEAPON][SUBTYPE_WEAPON_BOW] = "Bows";
-lTypeAndSubtypeToSkill[TYPE_WEAPON][SUBTYPE_WEAPON_DAGGER] = "Daggers";
-lTypeAndSubtypeToSkill[TYPE_WEAPON][SUBTYPE_WEAPON_MACE] = { }
-lTypeAndSubtypeToSkill[TYPE_WEAPON][SUBTYPE_WEAPON_MACE][0] = "Maces";
-lTypeAndSubtypeToSkill[TYPE_WEAPON][SUBTYPE_WEAPON_MACE][1] = "Two-Handed Maces";
-lTypeAndSubtypeToSkill[TYPE_WEAPON][SUBTYPE_WEAPON_STAFF] = "Staves";
-lTypeAndSubtypeToSkill[TYPE_WEAPON][SUBTYPE_WEAPON_SWORD] = { };
-lTypeAndSubtypeToSkill[TYPE_WEAPON][SUBTYPE_WEAPON_SWORD][0] = "Swords";
-lTypeAndSubtypeToSkill[TYPE_WEAPON][SUBTYPE_WEAPON_SWORD][1] = "Two-Handed Swords";
-lTypeAndSubtypeToSkill[TYPE_WEAPON][SUBTYPE_WEAPON_GUN] = "Guns";
-lTypeAndSubtypeToSkill[TYPE_WEAPON][SUBTYPE_WEAPON_WAND] = "Wands";
-lTypeAndSubtypeToSkill[TYPE_WEAPON][SUBTYPE_WEAPON_THROWN] = "Thrown";
-lTypeAndSubtypeToSkill[TYPE_WEAPON][SUBTYPE_WEAPON_POLEARM] = "Polearms";		--@todo Telo: unconfirmed
-lTypeAndSubtypeToSkill[TYPE_WEAPON][SUBTYPE_WEAPON_FIST_WEAPON] = "Unarmed";
-lTypeAndSubtypeToSkill[TYPE_WEAPON][SUBTYPE_WEAPON_CROSSBOW] = "Crossbows";
-lTypeAndSubtypeToSkill[TYPE_SHIELD] = { };
-lTypeAndSubtypeToSkill[TYPE_SHIELD][SUBTYPE_SHIELD_BUCKLER] = "Shield";			--@todo Telo: deprecated subtype, should remove
-lTypeAndSubtypeToSkill[TYPE_SHIELD][SUBTYPE_SHIELD_SHIELD] = "Shield";
-lTypeAndSubtypeToSkill[TYPE_RECIPE] = { };
-lTypeAndSubtypeToSkill[TYPE_RECIPE][SUBTYPE_RECIPE_ALCHEMY] = "Alchemy";
-lTypeAndSubtypeToSkill[TYPE_RECIPE][SUBTYPE_RECIPE_BLACKSMITHING] = "Blacksmithing";
-lTypeAndSubtypeToSkill[TYPE_RECIPE][SUBTYPE_RECIPE_COOKING] = "Cooking";
-lTypeAndSubtypeToSkill[TYPE_RECIPE][SUBTYPE_RECIPE_ENCHANTING] = "Enchanting";
-lTypeAndSubtypeToSkill[TYPE_RECIPE][SUBTYPE_RECIPE_ENGINEERING] = "Engineering";
-lTypeAndSubtypeToSkill[TYPE_RECIPE][SUBTYPE_RECIPE_LEATHERWORKING] = "Leatherworking";
-lTypeAndSubtypeToSkill[TYPE_RECIPE][SUBTYPE_RECIPE_TAILORING] = "Tailoring";
-lTypeAndSubtypeToSkill[TYPE_RECIPE][SUBTYPE_RECIPE_FIRST_AID] = "First Aid";
-lTypeAndSubtypeToSkill[TYPE_RECIPE][SUBTYPE_RECIPE_FISHING] = "Fishing";
-lTypeAndSubtypeToSkill[TYPE_RECIPE][SUBTYPE_RECIPE_JEWELCRAFTING] = "Jewelcrafting";
+lTypeAndSubtypeToSkill[LL.TYPE_ARMOR] = { };
+lTypeAndSubtypeToSkill[LL.TYPE_ARMOR][LL.SUBTYPE_ARMOR_CLOTH] = "Cloth";
+lTypeAndSubtypeToSkill[LL.TYPE_ARMOR][LL.SUBTYPE_ARMOR_LEATHER] = "Leather";
+lTypeAndSubtypeToSkill[LL.TYPE_ARMOR][LL.SUBTYPE_ARMOR_MAIL] = "Mail";
+lTypeAndSubtypeToSkill[LL.TYPE_ARMOR][LL.SUBTYPE_ARMOR_PLATE] = "Plate Mail";
+lTypeAndSubtypeToSkill[LL.TYPE_WEAPON] = { };
+lTypeAndSubtypeToSkill[LL.TYPE_WEAPON][LL.SUBTYPE_WEAPON_AXE] = { }
+lTypeAndSubtypeToSkill[LL.TYPE_WEAPON][LL.SUBTYPE_WEAPON_AXE][0] = "Axes";
+lTypeAndSubtypeToSkill[LL.TYPE_WEAPON][LL.SUBTYPE_WEAPON_AXE][1] = "Two-Handed Axes";
+lTypeAndSubtypeToSkill[LL.TYPE_WEAPON][LL.SUBTYPE_WEAPON_BOW] = "Bows";
+lTypeAndSubtypeToSkill[LL.TYPE_WEAPON][LL.SUBTYPE_WEAPON_DAGGER] = "Daggers";
+lTypeAndSubtypeToSkill[LL.TYPE_WEAPON][LL.SUBTYPE_WEAPON_MACE] = { }
+lTypeAndSubtypeToSkill[LL.TYPE_WEAPON][LL.SUBTYPE_WEAPON_MACE][0] = "Maces";
+lTypeAndSubtypeToSkill[LL.TYPE_WEAPON][LL.SUBTYPE_WEAPON_MACE][1] = "Two-Handed Maces";
+lTypeAndSubtypeToSkill[LL.TYPE_WEAPON][LL.SUBTYPE_WEAPON_STAFF] = "Staves";
+lTypeAndSubtypeToSkill[LL.TYPE_WEAPON][LL.SUBTYPE_WEAPON_SWORD] = { };
+lTypeAndSubtypeToSkill[LL.TYPE_WEAPON][LL.SUBTYPE_WEAPON_SWORD][0] = "Swords";
+lTypeAndSubtypeToSkill[LL.TYPE_WEAPON][LL.SUBTYPE_WEAPON_SWORD][1] = "Two-Handed Swords";
+lTypeAndSubtypeToSkill[LL.TYPE_WEAPON][LL.SUBTYPE_WEAPON_GUN] = "Guns";
+lTypeAndSubtypeToSkill[LL.TYPE_WEAPON][LL.SUBTYPE_WEAPON_WAND] = "Wands";
+lTypeAndSubtypeToSkill[LL.TYPE_WEAPON][LL.SUBTYPE_WEAPON_THROWN] = "Thrown";
+lTypeAndSubtypeToSkill[LL.TYPE_WEAPON][LL.SUBTYPE_WEAPON_POLEARM] = "Polearms";
+lTypeAndSubtypeToSkill[LL.TYPE_WEAPON][LL.SUBTYPE_WEAPON_FIST_WEAPON] = "Fist Weapons";
+lTypeAndSubtypeToSkill[LL.TYPE_WEAPON][LL.SUBTYPE_WEAPON_CROSSBOW] = "Crossbows";
+lTypeAndSubtypeToSkill[LL.TYPE_SHIELD] = { };
+lTypeAndSubtypeToSkill[LL.TYPE_SHIELD][LL.SUBTYPE_SHIELD_BUCKLER] = "Shield";			--@todo Telo: deprecated subtype, should remove
+lTypeAndSubtypeToSkill[LL.TYPE_SHIELD][LL.SUBTYPE_SHIELD_SHIELD] = "Shield";
+lTypeAndSubtypeToSkill[LL.TYPE_RECIPE] = { };
+lTypeAndSubtypeToSkill[LL.TYPE_RECIPE][LL.SUBTYPE_RECIPE_ALCHEMY] = "Alchemy";
+lTypeAndSubtypeToSkill[LL.TYPE_RECIPE][LL.SUBTYPE_RECIPE_BLACKSMITHING] = "Blacksmithing";
+lTypeAndSubtypeToSkill[LL.TYPE_RECIPE][LL.SUBTYPE_RECIPE_COOKING] = "Cooking";
+lTypeAndSubtypeToSkill[LL.TYPE_RECIPE][LL.SUBTYPE_RECIPE_ENCHANTING] = "Enchanting";
+lTypeAndSubtypeToSkill[LL.TYPE_RECIPE][LL.SUBTYPE_RECIPE_ENGINEERING] = "Engineering";
+lTypeAndSubtypeToSkill[LL.TYPE_RECIPE][LL.SUBTYPE_RECIPE_LEATHERWORKING] = "Leatherworking";
+lTypeAndSubtypeToSkill[LL.TYPE_RECIPE][LL.SUBTYPE_RECIPE_TAILORING] = "Tailoring";
+lTypeAndSubtypeToSkill[LL.TYPE_RECIPE][LL.SUBTYPE_RECIPE_FIRST_AID] = "First Aid";
+lTypeAndSubtypeToSkill[LL.TYPE_RECIPE][LL.SUBTYPE_RECIPE_FISHING] = "Fishing";
+lTypeAndSubtypeToSkill[LL.TYPE_RECIPE][LL.SUBTYPE_RECIPE_JEWELCRAFTING] = "Jewelcrafting";
+lTypeAndSubtypeToSkill[LL.TYPE_RECIPE][LL.SUBTYPE_RECIPE_INSCRIPTION] = "Inscription";
 
 local LocationTypes = { };
-LocationTypes["Held In Off-hand"]		= { i = 0, type = TYPE_MISC };
-LocationTypes["Back"]					= { i = 1, type = TYPE_ARMOR, subtypes = ArmorSubtypes };
-LocationTypes["One-Hand"]				= { i = 2, type = TYPE_WEAPON, subtypes = WeaponSubtypes };
-LocationTypes["Two-Hand"]				= { i = 3, type = TYPE_WEAPON, subtypes = WeaponSubtypes };
-LocationTypes["Off Hand"]				= { i = 4, type = TYPE_SHIELD, subtypes = ShieldSubtypes };
-LocationTypes["Wrist"]					= { i = 5, type = TYPE_ARMOR, subtypes = ArmorSubtypes };
-LocationTypes["Chest"]					= { i = 6, type = TYPE_ARMOR, subtypes = ArmorSubtypes };
-LocationTypes["Legs"]					= { i = 7, type = TYPE_ARMOR, subtypes = ArmorSubtypes };
-LocationTypes["Feet"]					= { i = 8, type = TYPE_ARMOR, subtypes = ArmorSubtypes };
-LocationTypes["Shirt"]					= { i = 9, type = TYPE_MISC };
-LocationTypes["Ranged"]					= { i = 10, type = TYPE_WEAPON, subtypes = WeaponSubtypes };
-LocationTypes["Main Hand"]				= { i = 11, type = TYPE_WEAPON, subtypes = WeaponSubtypes };
-LocationTypes["Waist"]					= { i = 12, type = TYPE_ARMOR, subtypes = ArmorSubtypes };
-LocationTypes["Head"]					= { i = 13, type = TYPE_ARMOR, subtypes = ArmorSubtypes };
-LocationTypes["Gun"]					= { i = 14, type = TYPE_WEAPON, subtype = SUBTYPE_WEAPON_GUN };
-LocationTypes["Finger"]					= { i = 15, type = TYPE_MISC };
-LocationTypes["Hands"]					= { i = 16, type = TYPE_ARMOR, subtypes = ArmorSubtypes };
-LocationTypes["Shoulder"]				= { i = 17, type = TYPE_ARMOR, subtypes = ArmorSubtypes };
-LocationTypes["Wand"]					= { i = 18, type = TYPE_WEAPON, subtype = SUBTYPE_WEAPON_WAND };
-LocationTypes["Trinket"]				= { i = 19, type = TYPE_MISC };
-LocationTypes["Tabard"]					= { i = 20, type = TYPE_MISC };
-LocationTypes["Neck"]					= { i = 21, type = TYPE_MISC };
-LocationTypes["Thrown"]					= { i = 22, type = TYPE_WEAPON, subtype = SUBTYPE_WEAPON_THROWN };
-LocationTypes["Crossbow"]				= { i = 23, type = TYPE_WEAPON, subtype = SUBTYPE_WEAPON_CROSSBOW };
-LocationTypes["Relic"]					= { i = 24, type = TYPE_MISC };
+LocationTypes["Held In Off-hand"]		= { i = 0, type = LL.TYPE_MISC };
+LocationTypes["Back"]					= { i = 1, type = LL.TYPE_ARMOR, subtypes = ArmorSubtypes };
+LocationTypes["One-Hand"]				= { i = 2, type = LL.TYPE_WEAPON, subtypes = WeaponSubtypes };
+LocationTypes["Two-Hand"]				= { i = 3, type = LL.TYPE_WEAPON, subtypes = WeaponSubtypes };
+LocationTypes["Off Hand"]				= { i = 4, type = LL.TYPE_SHIELD, subtypes = ShieldSubtypes };
+LocationTypes["Wrist"]					= { i = 5, type = LL.TYPE_ARMOR, subtypes = ArmorSubtypes };
+LocationTypes["Chest"]					= { i = 6, type = LL.TYPE_ARMOR, subtypes = ArmorSubtypes };
+LocationTypes["Legs"]					= { i = 7, type = LL.TYPE_ARMOR, subtypes = ArmorSubtypes };
+LocationTypes["Feet"]					= { i = 8, type = LL.TYPE_ARMOR, subtypes = ArmorSubtypes };
+LocationTypes["Shirt"]					= { i = 9, type = LL.TYPE_MISC };
+LocationTypes["Ranged"]					= { i = 10, type = LL.TYPE_WEAPON, subtypes = WeaponSubtypes };
+LocationTypes["Main Hand"]				= { i = 11, type = LL.TYPE_WEAPON, subtypes = WeaponSubtypes };
+LocationTypes["Waist"]					= { i = 12, type = LL.TYPE_ARMOR, subtypes = ArmorSubtypes };
+LocationTypes["Head"]					= { i = 13, type = LL.TYPE_ARMOR, subtypes = ArmorSubtypes };
+LocationTypes["Gun"]					= { i = 14, type = LL.TYPE_WEAPON, subtype = LL.SUBTYPE_WEAPON_GUN };
+LocationTypes["Finger"]					= { i = 15, type = LL.TYPE_MISC };
+LocationTypes["Hands"]					= { i = 16, type = LL.TYPE_ARMOR, subtypes = ArmorSubtypes };
+LocationTypes["Shoulder"]				= { i = 17, type = LL.TYPE_ARMOR, subtypes = ArmorSubtypes };
+LocationTypes["Wand"]					= { i = 18, type = LL.TYPE_WEAPON, subtype = LL.SUBTYPE_WEAPON_WAND };
+LocationTypes["Trinket"]				= { i = 19, type = LL.TYPE_MISC };
+LocationTypes["Tabard"]					= { i = 20, type = LL.TYPE_MISC };
+LocationTypes["Neck"]					= { i = 21, type = LL.TYPE_MISC };
+LocationTypes["Thrown"]					= { i = 22, type = LL.TYPE_WEAPON, subtype = LL.SUBTYPE_WEAPON_THROWN };
+LocationTypes["Crossbow"]				= { i = 23, type = LL.TYPE_WEAPON, subtype = LL.SUBTYPE_WEAPON_CROSSBOW };
+LocationTypes["Relic"]					= { i = 24, type = LL.TYPE_MISC };
 
 local INVENTORY_SLOT_LIST = {
 	{ name = "HeadSlot" },
@@ -436,115 +452,133 @@ local INVENTORY_SLOT_LIST = {
 };
 
 local ChatMessageTypes = {
-	"CHAT_MSG_SYSTEM",
-	"CHAT_MSG_SAY",
-	"CHAT_MSG_TEXT_EMOTE",
-	"CHAT_MSG_YELL",
-	"CHAT_MSG_WHISPER",
-	"CHAT_MSG_PARTY",
-	"CHAT_MSG_GUILD",
-	"CHAT_MSG_OFFICER",
+	"CHAT_MSG_BATTLEGROUND",
+	"CHAT_MSG_BATTLEGROUND_LEADER",
+	"CHAT_MSG_BN_WHISPER",
 	"CHAT_MSG_CHANNEL",
-	"CHAT_MSG_RAID",
+	"CHAT_MSG_GUILD",
 	"CHAT_MSG_LOOT",
+	"CHAT_MSG_OFFICER",
+	"CHAT_MSG_PARTY",
+	"CHAT_MSG_PARTY_LEADER",
+	"CHAT_MSG_RAID",
+	"CHAT_MSG_RAID_LEADER",
+	"CHAT_MSG_RAID_WARNING",
+	"CHAT_MSG_SAY",
+	"CHAT_MSG_SYSTEM",
+	"CHAT_MSG_TEXT_EMOTE",
+	"CHAT_MSG_WHISPER",
+	"CHAT_MSG_YELL",
 };
 
 local LOOTLINK_DROPDOWN_LIST = {
-	{ name = SORT_NAME, sortType = "name" },
-	{ name = SORT_RARITY, sortType = "rarity" },
-	{ name = SORT_LOCATION, sortType = "location" },
-	{ name = SORT_TYPE, sortType = "type" },
-	{ name = SORT_SUBTYPE, sortType = "subtype" },
-	{ name = SORT_LEVEL, sortType = "level" },
-	{ name = SORT_BINDS, sortType = "binds" },
-	{ name = SORT_UNIQUE, sortType = "unique" },
-	{ name = SORT_ARMOR, sortType = "armor" },
-	{ name = SORT_BLOCK, sortType = "block" },
-	{ name = SORT_MINDAMAGE, sortType = "minDamage" },
-	{ name = SORT_MAXDAMAGE, sortType = "maxDamage" },
-	{ name = SORT_DPS, sortType = "DPS" },
-	{ name = SORT_SPEED, sortType = "speed" },
-	{ name = SORT_SLOTS, sortType = "slots" },
-	{ name = SORT_SKILL, sortType = "skill" }
+	{ name = LL.SORT_NAME, sortType = "name" },
+	{ name = LL.SORT_RARITY, sortType = "rarity" },
+	{ name = LL.SORT_ILEVEL, sortType = "iLevel" },
+	{ name = LL.SORT_LOCATION, sortType = "location" },
+	{ name = LL.SORT_TYPE, sortType = "type" },
+	{ name = LL.SORT_SUBTYPE, sortType = "subtype" },
+	{ name = LL.SORT_LEVEL, sortType = "level" },
+	{ name = LL.SORT_BINDS, sortType = "binds" },
+	{ name = LL.SORT_UNIQUE, sortType = "unique" },
+	{ name = LL.SORT_ARMOR, sortType = "armor" },
+	{ name = LL.SORT_BLOCK, sortType = "block" },
+	{ name = LL.SORT_MINDAMAGE, sortType = "minDamage" },
+	{ name = LL.SORT_MAXDAMAGE, sortType = "maxDamage" },
+	{ name = LL.SORT_DPS, sortType = "DPS" },
+	{ name = LL.SORT_SPEED, sortType = "speed" },
+	{ name = LL.SORT_SLOTS, sortType = "slots" },
+	{ name = LL.SORT_SKILL, sortType = "skill" }
 };
 
 local LLS_RARITY_LIST = {
-	{ name = ANY, value = nil },
-	{ name = POOR, value = "ff9d9d9d", r = 157 / 255, g = 157 / 255, b = 157 / 255 },
-	{ name = COMMON, value = "ffffffff", r = 1, g = 1, b = 1 },
-	{ name = UNCOMMON, value = "ff1eff00", r = 30 / 255, g = 1, b = 0 },
-	{ name = RARE, value = "ff0070dd", r = 0, g = 70 / 255, b = 221 / 255 },
-	{ name = EPIC, value = "ffa335ee", r = 163 / 255, g = 53 / 255, b = 238 / 255 },
-	{ name = LEGENDARY, value = "ffff8000", r = 1, g = 128 / 255, b = 0 },
+	{ name = LL.ANY, value = nil },
+	{ name = LL.POOR, value = "ff9d9d9d", r = 157 / 255, g = 157 / 255, b = 157 / 255 },
+	{ name = LL.COMMON, value = "ffffffff", r = 1, g = 1, b = 1 },
+	{ name = LL.UNCOMMON, value = "ff1eff00", r = 30 / 255, g = 1, b = 0 },
+	{ name = LL.RARE, value = "ff0070dd", r = 0, g = 70 / 255, b = 221 / 255 },
+	{ name = LL.EPIC, value = "ffa335ee", r = 163 / 255, g = 53 / 255, b = 238 / 255 },
+	{ name = LL.LEGENDARY, value = "ffff8000", r = 1, g = 128 / 255, b = 0 },
+	{ name = LL.HEIRLOOM, value = "ffe6cc80", r = 230 / 255, g = 204 / 255, b = 128 / 255 },
+	{ name = LL.ARTIFACT, value = "ffe6cc80", r = 230 / 255, g = 204 / 255, b = 128 / 255 },
 };
 
 local LLS_BINDS_LIST = {
-	{ name = ANY, value = nil },
-	{ name = DOES_NOT, value = BINDS_DOES_NOT_BIND },
-	{ name = ON_EQUIP, value = BINDS_EQUIP },
-	{ name = ON_PICKUP, value = BINDS_PICKUP },
-	{ name = ON_USE, value = BINDS_USE },
+	{ name = LL.ANY, value = nil },
+	{ name = LL.DOES_NOT, value = LL.BINDS_DOES_NOT_BIND },
+	{ name = LL.ON_EQUIP, value = LL.BINDS_EQUIP },
+	{ name = LL.ON_PICKUP, value = LL.BINDS_PICKUP },
+	{ name = LL.ON_USE, value = LL.BINDS_USE },
+	{ name = LL.TO_ACCOUNT, value = LL.BINDS_ACCOUNT },
 };
 
 local LLS_TYPE_LIST = {
-	{ name = ANY, value = nil },
-	{ name = ARMOR, value = TYPE_ARMOR },
-	{ name = CONTAINER, value = TYPE_CONTAINER },
-	{ name = GEM, value = TYPE_GEM },
-	{ name = OTHER, value = TYPE_MISC },
-	{ name = RECIPE, value = TYPE_RECIPE },
-	{ name = SHIELD, value = TYPE_SHIELD },
-	{ name = WEAPON, value = TYPE_WEAPON },
+	{ name = LL.ANY, value = nil },
+	{ name = LL.ARMOR, value = LL.TYPE_ARMOR },
+	{ name = LL.CONTAINER, value = LL.TYPE_CONTAINER },
+	{ name = LL.GEM, value = LL.TYPE_GEM },
+	{ name = LL.GLYPH, value = LL.TYPE_GLYPH },
+	{ name = LL.OTHER, value = LL.TYPE_MISC },
+	{ name = LL.RECIPE, value = LL.TYPE_RECIPE },
+	{ name = LL.SHIELD, value = LL.TYPE_SHIELD },
+	{ name = LL.WEAPON, value = LL.TYPE_WEAPON },
 };
 
 local LLS_SUBTYPE_ARMOR_LIST = {
-	{ name = ANY, value = nil },
-	{ name = CLOTH, value = SUBTYPE_ARMOR_CLOTH },
-	{ name = LEATHER, value = SUBTYPE_ARMOR_LEATHER },
-	{ name = MAIL, value = SUBTYPE_ARMOR_MAIL },
-	{ name = PLATE, value = SUBTYPE_ARMOR_PLATE },
+	{ name = LL.ANY, value = nil },
+	{ name = LL.CLOTH, value = LL.SUBTYPE_ARMOR_CLOTH },
+	{ name = LL.LEATHER, value = LL.SUBTYPE_ARMOR_LEATHER },
+	{ name = LL.MAIL, value = LL.SUBTYPE_ARMOR_MAIL },
+	{ name = LL.PLATE, value = LL.SUBTYPE_ARMOR_PLATE },
 };
 
 local LLS_SUBTYPE_GEM_LIST = {
-	{ name = ANY, value = nil },
-	{ name = META, value = SUBTYPE_GEM_META },
-	{ name = RED, value = SUBTYPE_GEM_RED },
-	{ name = YELLOW, value = SUBTYPE_GEM_YELLOW },
-	{ name = BLUE, value = SUBTYPE_GEM_BLUE },
+	{ name = LL.ANY, value = nil },
+	{ name = LL.META, value = LL.SUBTYPE_GEM_META },
+	{ name = LL.RED, value = LL.SUBTYPE_GEM_RED },
+	{ name = LL.YELLOW, value = LL.SUBTYPE_GEM_YELLOW },
+	{ name = LL.BLUE, value = LL.SUBTYPE_GEM_BLUE },
+};
+
+local LLS_SUBTYPE_GLYPH_LIST = {
+	{ name = LL.ANY, value = nil },
+	{ name = LL.MAJOR, value = LL.SUBTYPE_GLYPH_MAJOR },
+	{ name = LL.MINOR, value = LL.SUBTYPE_GLYPH_MINOR },
 };
 
 local LLS_SUBTYPE_WEAPON_LIST = {
-	{ name = ANY, value = nil },
-	{ name = AXE, value = SUBTYPE_WEAPON_AXE },
-	{ name = BOW, value = SUBTYPE_WEAPON_BOW },
-	{ name = CROSSBOW, value = SUBTYPE_WEAPON_CROSSBOW },
-	{ name = DAGGER, value = SUBTYPE_WEAPON_DAGGER },
-	{ name = FIST_WEAPON, value = SUBTYPE_WEAPON_FIST_WEAPON },
-	{ name = GUN, value = SUBTYPE_WEAPON_GUN },
-	{ name = MACE, value = SUBTYPE_WEAPON_MACE },
-	{ name = POLEARM, value = SUBTYPE_WEAPON_POLEARM },
-	{ name = STAFF, value = SUBTYPE_WEAPON_STAFF },
-	{ name = SWORD, value = SUBTYPE_WEAPON_SWORD },
-	{ name = THROWN, value = SUBTYPE_WEAPON_THROWN },
-	{ name = WAND, value = SUBTYPE_WEAPON_WAND },
+	{ name = LL.ANY, value = nil },
+	{ name = LL.AXE, value = LL.SUBTYPE_WEAPON_AXE },
+	{ name = LL.BOW, value = LL.SUBTYPE_WEAPON_BOW },
+	{ name = LL.CROSSBOW, value = LL.SUBTYPE_WEAPON_CROSSBOW },
+	{ name = LL.DAGGER, value = LL.SUBTYPE_WEAPON_DAGGER },
+	{ name = LL.FIST_WEAPON, value = LL.SUBTYPE_WEAPON_FIST_WEAPON },
+	{ name = LL.GUN, value = LL.SUBTYPE_WEAPON_GUN },
+	{ name = LL.MACE, value = LL.SUBTYPE_WEAPON_MACE },
+	{ name = LL.POLEARM, value = LL.SUBTYPE_WEAPON_POLEARM },
+	{ name = LL.STAFF, value = LL.SUBTYPE_WEAPON_STAFF },
+	{ name = LL.SWORD, value = LL.SUBTYPE_WEAPON_SWORD },
+	{ name = LL.THROWN, value = LL.SUBTYPE_WEAPON_THROWN },
+	{ name = LL.WAND, value = LL.SUBTYPE_WEAPON_WAND },
 };
 
 local LLS_SUBTYPE_SHIELD_LIST = {
-	{ name = ANY, value = nil },
-	{ name = BUCKLER, value = SUBTYPE_SHIELD_BUCKLER },
-	{ name = SHIELD, value = SUBTYPE_SHIELD_SHIELD },
+	{ name = LL.ANY, value = nil },
+	{ name = LL.BUCKLER, value = LL.SUBTYPE_SHIELD_BUCKLER },
+	{ name = LL.SHIELD, value = LL.SUBTYPE_SHIELD_SHIELD },
 };
 
 local LLS_SUBTYPE_RECIPE_LIST = {
-	{ name = ANY, value = nil },
-	{ name = ALCHEMY, value = SUBTYPE_RECIPE_ALCHEMY },
-	{ name = BLACKSMITHING, value = SUBTYPE_RECIPE_BLACKSMITHING },
-	{ name = COOKING, value = SUBTYPE_RECIPE_COOKING },
-	{ name = ENCHANTING, value = SUBTYPE_RECIPE_ENCHANTING },
-	{ name = ENGINEERING, value = SUBTYPE_RECIPE_ENGINEERING },
-	{ name = JEWELCRAFTING, value = SUBTYPE_RECIPE_JEWELCRAFTING },
-	{ name = LEATHERWORKING, value = SUBTYPE_RECIPE_LEATHERWORKING },
-	{ name = TAILORING, value = SUBTYPE_RECIPE_TAILORING },
+	{ name = LL.ANY, value = nil },
+	{ name = LL.ALCHEMY, value = LL.SUBTYPE_RECIPE_ALCHEMY },
+	{ name = LL.BLACKSMITHING, value = LL.SUBTYPE_RECIPE_BLACKSMITHING },
+	{ name = LL.COOKING, value = LL.SUBTYPE_RECIPE_COOKING },
+	{ name = LL.ENCHANTING, value = LL.SUBTYPE_RECIPE_ENCHANTING },
+	{ name = LL.ENGINEERING, value = LL.SUBTYPE_RECIPE_ENGINEERING },
+	{ name = LL.INSCRIPTION, value = LL.SUBTYPE_RECIPE_INSCRIPTION },
+	{ name = LL.JEWELCRAFTING, value = LL.SUBTYPE_RECIPE_JEWELCRAFTING },
+	{ name = LL.LEATHERWORKING, value = LL.SUBTYPE_RECIPE_LEATHERWORKING },
+	{ name = LL.TAILORING, value = LL.SUBTYPE_RECIPE_TAILORING },
 };
 
 local LLS_LOCATION_LIST = {
@@ -592,6 +626,11 @@ lMagicCharacters["-"] = 1;
 lMagicCharacters["?"] = 1;
 
 local lBankBagIDs = { BANK_CONTAINER, 5, 6, 7, 8, 9, 10, };
+
+local LOOTLINK_AUTOCOMPLETE_BUTTON_COUNT = 10;
+
+-- Any UNIT_INVENTORY_CHANGED events after the first that happen within this time will be ignored
+local LOOTLINK_SELF_SCAN_BUFFER_TIME = 0.5;
 
 --------------------------------------------------------------------------------------------------
 -- Global LootLink variables
@@ -2537,6 +2576,14 @@ function LootLink_AuctionFrameBrowse_OnEvent()
 	-- Intentionally empty; don't allow the auction UI to update while we're scanning
 end
 
+local function LootLink_DoInitialWork()
+		if( not LL.lAtlasLootLoaded and type(AtlasLoot_LoadAllModules) == "function" ) then
+			AtlasLoot_LoadAllModules();
+			LL.lAtlasLootLoaded = true;
+		end
+		LootLink_ScanSelf();
+	end
+
 function LootLink_OnTooltipSetItem()
 	local name, link = this:GetItem();
 	LootLink_AddTooltipInfo(name, this);
@@ -3348,6 +3395,69 @@ function LootLinkSearchFrame_Okay()
 	LootLinkSearchFrame:Hide();
 	LootLinkSearch_SaveValues();
 	LootLink_DoSearch();
+end
+
+function LootLinkSearchFrame_OnTab(self, backwards)
+	local index;
+	local value;
+	local field;
+	
+	-- Find the currently selected field
+	-- SKRAY- Currently giving LUA errors, table expected, got nil.  Might be fixed elsewhere.
+	for index, value in ipairs(LootLinkFrame.BaseSearchEditFields) do
+		if( value == self ) then
+			if( backwards ) then
+				index = index - 1;
+				
+				if( index < 1 ) then
+					if( #LootLinkFrame.TypeSearchEditFields > 0 ) then
+						field = LootLinkFrame.TypeSearchEditFields[#LootLinkFrame.TypeSearchEditFields];
+					else
+						field = LootLinkFrame.BaseSearchEditFields[#LootLinkFrame.BaseSearchEditFields];
+					end
+				else
+					field = LootLinkFrame.BaseSearchEditFields[index];
+				end
+			else
+				index = index + 1;
+				if( index > #LootLinkFrame.BaseSearchEditFields ) then
+					if( #LootLinkFrame.TypeSearchEditFields > 0 ) then
+						field = LootLinkFrame.TypeSearchEditFields[1];
+					else
+						field = LootLinkFrame.BaseSearchEditFields[1];
+					end
+				else
+					field = LootLinkFrame.BaseSearchEditFields[index];
+				end
+			end
+
+			field:SetFocus();
+			return;
+		end
+	end
+	for index, value in ipairs(LootLinkFrame.TypeSearchEditFields) do
+		if( value == self ) then
+			if( backwards ) then
+				index = index - 1;
+				
+				if( index < 1 ) then
+					field = LootLinkFrame.BaseSearchEditFields[#LootLinkFrame.BaseSearchEditFields];
+				else
+					field = LootLinkFrame.TypeSearchEditFields[index];
+				end
+			else
+				index = index + 1;
+				if( index > #LootLinkFrame.TypeSearchEditFields ) then
+					field = LootLinkFrame.BaseSearchEditFields[1];
+				else
+					field = LootLinkFrame.TypeSearchEditFields[index];
+				end
+			end
+
+			field:SetFocus();
+			return;
+		end
+	end
 end
 
 --------------------------------------------------------------------------------------------------

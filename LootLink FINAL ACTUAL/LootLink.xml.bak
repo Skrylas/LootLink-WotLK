@@ -773,16 +773,16 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		</Frames>
 		<Scripts>
 			<OnLoad>
-				LootLink_OnLoad(self);
+				LootLink_OnLoad();
 			</OnLoad>
 			<OnEvent>
-				LootLink_OnEvent(self, event, ...);
+				LootLink_OnEvent();
 			</OnEvent>
 			<OnShow>
-				LootLink_OnShow(self);
+				LootLink_OnShow();
 			</OnShow>
 			<OnHide>
-				LootLink_OnHide(self);
+				LootLink_OnHide();
 			</OnHide>
 		</Scripts>
 	</Frame>
