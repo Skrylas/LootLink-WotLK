@@ -201,42 +201,6 @@ local LootLinkPanelLayout = {
 -- The SimpleDropDown library
 local sdd = LibStub:GetLibrary("SimpleDropDown-1.0");
 
--- Function hooks
-local lOriginal_CanSendAuctionQuery;
-local lOriginal_AuctionFrameBrowse_OnEvent;
-
--- Have we done the initial inventory scan?
-local lInitialScanDone;
-
--- If non-nil, kick off a full auction scan next time auctioneer is used
-local lScanAuction;
-
--- Used for scanning inventory items for their sell prices at a merchant
-local lBagID;
-local lSlotID;
-
--- If non-nil, don't add extra information to the tooltip
-local lSuppressInfoAdd;
-
--- Cache of auction item information
-local lAuctionItemInfo;
-
--- Used to remember that confirmation is needed of irreversible commands
-local lResetNeedsConfirm;
-local lMakeHomeNeedsConfirm;
-local lLightModeNeedsConfirm;
-
--- If non-nil, the data version upgrade reminder is not displayed on every /lootlink or /ll command
-local lDisableVersionReminder;
-
--- The current server name and index
---local LL.lServer;
---local LL.lServerIndex;
-
--- The number of items in the database, total and for this server
---local LL.lItemLinksSizeTotal;
---local LL.lItemLinksSizeServer;
-
 LL.STATE_NAME = 0;
 LL.STATE_HEROIC = 1;
 LL.STATE_BOUND = 2;
@@ -1076,17 +1040,6 @@ local function LootLink_CheckNumeric(string)
 	return hasNumber;
 end
 
---[[local function LootLink_NameFromLink(link)
-	local name;
-	if( not link ) then
-		return nil;
-	end
-	for name in string.gmatch(link, "|c%x+|Hitem:%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+|h%[(.-)%]|h|r") do
-		return name;
-	end
-	return nil;
-end]]--
-
 local function LootLink_MatchType(left, right)
 	local lt = LocationTypes[left];
 	local _type;
@@ -1186,16 +1139,16 @@ local function LootLink_GetHyperlink(llid)
 end
 
 --Skray this breaks need to update at some point.  Get Name function.
-local function LootLink_GetLink(name)
+--[[local function LootLink_GetLink(name)
 	local itemLink = ItemLinks[name];
 	if( itemLink and itemLink.c and itemLink.i and LootLink_CheckItemServer(itemLink, LL.lServerIndex) ) then
 		local link = "|c"..itemLink.c.."|H"..LootLink_GetHyperlink(name).."|h["..name.."]|h|r";
 		return link;
 	end
 	return nil;
-end
+end]]--
 
---[[local function LootLink_GetLink(llid)
+local function LootLink_GetLink(llid)
 	local itemLink = ItemLinks[llid];
 	if( itemLink and itemLink.c and LootLink_CheckItemServer(itemLink, LL.lServerIndex) ) then
 		local hyperlink = LootLink_GetHyperlink(llid);
@@ -1205,7 +1158,7 @@ end
 		end
 	end
 	return nil;
-end]]--
+end
 
 local function LootLink_BuildSearchData(llid, value)
 	local itemLink;
@@ -1463,51 +1416,31 @@ local function LootLink_InternalAddItem(itemid, name, color, itemString)
 end
 
 local function BuildUsabilityData(data)
-	local nSkills;
-	local iSkill;
-	local HeaderData = { };
-	local name, header, isExpanded, rank;
-	local Collapse = { };
-	local nToCollapse = 0;
-	local iCollapse;
+	local localizedClassName;
 
-	data.class = UnitClass("player");
+	localizedClassName, data.class = UnitClass("player");
 	data.race = UnitRace("player");
 	data.level = UnitLevel("player");
 	data.skills = { };
-	
-	-- We need to expand all of the skills, but first want to save off their state
-	nSkills = GetNumSkillLines();
-	for iSkill = 1, nSkills do
-		local name, header, isExpanded, rank = GetSkillLineInfo(iSkill);
-		if( header and not isExpanded ) then
-			-- Since we don't know the final index for this item yet, we'll store it by name
-			HeaderData[name] = 0;
+
+	local skillName, minLevel;
+	for skillName, minLevel in pairs(lClassSkills[data.class]) do
+		if( data.level >= minLevel ) then
+			data.skills[skillName] = 0;
 		end
 	end
-	
-	-- Now expand everything and save off our known skills
-	ExpandSkillHeader(0);
-	nSkills = GetNumSkillLines()
-	for iSkill = 1, nSkills do
-		local name, header, isExpanded, rank = GetSkillLineInfo(iSkill);
-		if( not header ) then
-			data.skills[name] = rank;
-		elseif( HeaderData[name] ) then
-			-- We now know the final index for this header item
-			HeaderData[name] = iSkill;
-		end
-	end
-	
-	-- Finally, return the skills page to its original state
-	for name, iSkill in pairs(HeaderData) do
-		Collapse[nToCollapse + 1] = iSkill;
-		nToCollapse = nToCollapse + 1;
-	end
-	if( nToCollapse > 0 ) then
-		table.sort(Collapse);
-		for iCollapse = nToCollapse, 1, -1 do
-			CollapseSkillHeader(Collapse[iCollapse]);
+
+	local skillIds;
+	skillIds = { };
+	skillIds[1], skillIds[2], skillIds[3], skillIds[4], skillIds[5], skillIds[6] = GetProfessions();
+
+	local skillIndex;
+	for skillIndex = 1, 6 do
+		if( skillIds[skillIndex] ) then
+			local name, _, rank = GetProfessionInfo(skillIds[skillIndex]);
+			if (name and rank) then
+				data.skills[name] = rank;
+			end
 		end
 	end
 end
@@ -1567,11 +1500,11 @@ local function LootLink_SetTitle()
 	end
 end
 
-local function LootLink_MatchesSearch(name, value, ud)
+local function LootLink_MatchesSearch(llid, value, ud)
 	if( not value or not LootLink_CheckItemServer(value, LL.lServerIndex) ) then
 		return nil;
 	end
-	if( not LootLinkFrame.SearchParams or not name ) then
+	if( not LootLinkFrame.SearchParams or not llid ) then
 		return 1;
 	end
 	
@@ -1588,7 +1521,7 @@ local function LootLink_MatchesSearch(name, value, ud)
 		end
 		
 		if( sp.name ) then
-			if( not string.find(string.lower(name), string.lower(sp.name), 1, sp.plain) ) then
+			if( not string.find(string.lower(LootLink_GetName(llid)), string.lower(sp.name), 1, sp.plain) ) then
 				return nil;
 			end
 		end
@@ -1606,7 +1539,7 @@ local function LootLink_MatchesSearch(name, value, ud)
 		end
 		
 		if( sp.unique ) then
-			if( sp.unique ~= LootLink_SearchData(value, "un") ) then
+			if( not LootLink_SearchData(value, "un") ) then
 				return nil;
 			end
 		end
@@ -1628,7 +1561,7 @@ local function LootLink_MatchesSearch(name, value, ud)
 			end
 			
 			-- Check for the required class
-			if( value.t and string.find(value.t, "\183Class") and not string.find(value.t, "\183Class.*"..UnitClass("player")) ) then
+			if( value.t and string.find(value.t, "·Class") and not string.find(value.t, "·Class.*"..UnitClass("player")) ) then
 				return nil;
 			end
 			
@@ -1666,6 +1599,20 @@ local function LootLink_MatchesSearch(name, value, ud)
 			end
 		end
 		
+		if( sp.miniLevel ) then
+			local iLevel = LootLink_SearchData(value, "il");
+			if( not iLevel or iLevel < sp.miniLevel ) then
+				return nil;
+			end
+		end
+		
+		if( sp.maxiLevel ) then
+			local iLevel = LootLink_SearchData(value, "il");
+			if( iLevel and iLevel > sp.maxiLevel ) then
+				return nil;
+			end
+		end
+		
 		if( sp.type ) then
 			local _type = LLS_TYPE_LIST[sp.type].value;
 			if( _type ~= LootLink_SearchData(value, "ty") ) then
@@ -1673,34 +1620,36 @@ local function LootLink_MatchesSearch(name, value, ud)
 			end
 			if( sp.subtype ) then
 				local subtype;
-				if( _type == TYPE_ARMOR ) then
+				if( _type == LL.TYPE_ARMOR ) then
 					subtype = LLS_SUBTYPE_ARMOR_LIST[sp.subtype].value;
-				elseif( _type == TYPE_SHIELD ) then
+				elseif( _type == LL.TYPE_SHIELD ) then
 					subtype = LLS_SUBTYPE_SHIELD_LIST[sp.subtype].value;
-				elseif( _type == TYPE_WEAPON ) then
+				elseif( _type == LL.TYPE_WEAPON ) then
 					subtype = LLS_SUBTYPE_WEAPON_LIST[sp.subtype].value;
-				elseif( _type == TYPE_RECIPE ) then
+				elseif( _type == LL.TYPE_RECIPE ) then
 					subtype = LLS_SUBTYPE_RECIPE_LIST[sp.subtype].value;
+				elseif( _type == LL.TYPE_GLYPH ) then
+					subtype = LLS_SUBTYPE_GLYPH_LIST[sp.subtype].value;
 				end
-				if( _type == TYPE_GEM ) then
+				if( _type == LL.TYPE_GEM ) then
 					subtype = LLS_SUBTYPE_GEM_LIST[sp.subtype].value;
 					if( subtype ) then
 						local valueSubtype = LootLink_SearchData(value, "su");
-						if( (valueSubtype == SUBTYPE_GEM_META or subtype == SUBTYPE_GEM_META) or
-							 valueSubtype == SUBTYPE_GEM_RED or valueSubtype == SUBTYPE_GEM_YELLOW or valueSubtype == SUBTYPE_GEM_BLUE ) then
+						if( (valueSubtype == LL.SUBTYPE_GEM_META or subtype == LL.SUBTYPE_GEM_META) or
+							 valueSubtype == LL.SUBTYPE_GEM_RED or valueSubtype == LL.SUBTYPE_GEM_YELLOW or valueSubtype == LL.SUBTYPE_GEM_BLUE ) then
 							if( subtype ~= valueSubtype ) then
 								return nil;
 							end
-						elseif( valueSubtype == (SUBTYPE_GEM_RED + SUBTYPE_GEM_YELLOW) ) then
-							if( subtype == SUBTYPE_GEM_BLUE ) then
+						elseif( valueSubtype == (LL.SUBTYPE_GEM_RED + LL.SUBTYPE_GEM_YELLOW) ) then
+							if( subtype == LL.SUBTYPE_GEM_BLUE ) then
 								return nil;
 							end
-						elseif( valueSubtype == (SUBTYPE_GEM_RED + SUBTYPE_GEM_BLUE) ) then
-							if( subtype == SUBTYPE_GEM_YELLOW ) then
+						elseif( valueSubtype == (LL.SUBTYPE_GEM_RED + LL.SUBTYPE_GEM_BLUE) ) then
+							if( subtype == LL.SUBTYPE_GEM_YELLOW ) then
 								return nil;
 							end
-						elseif( valueSubtype == (SUBTYPE_GEM_YELLOW + SUBTYPE_GEM_BLUE) ) then
-							if( subtype == SUBTYPE_GEM_RED ) then
+						elseif( valueSubtype == (LL.SUBTYPE_GEM_YELLOW + LL.SUBTYPE_GEM_BLUE) ) then
+							if( subtype == LL.SUBTYPE_GEM_RED ) then
 								return nil;
 							end
 						end
@@ -1712,7 +1661,7 @@ local function LootLink_MatchesSearch(name, value, ud)
 				end
 			end
 			
-			if( _type == TYPE_WEAPON ) then
+			if( _type == LL.TYPE_WEAPON ) then
 				if( sp.minMinDamage ) then
 					local damage = LootLink_SearchData(value, "mi");
 					if( not damage or damage < sp.minMinDamage ) then
@@ -1723,6 +1672,13 @@ local function LootLink_MatchesSearch(name, value, ud)
 				if( sp.minMaxDamage ) then
 					local damage = LootLink_SearchData(value, "ma");
 					if( not damage or damage < sp.minMaxDamage ) then
+						return nil;
+					end
+				end
+				
+				if( sp.minSpeed ) then
+					local speed = LootLink_SearchData(value, "sp");
+					if( not speed or speed < sp.minSpeed ) then
 						return nil;
 					end
 				end
@@ -1740,7 +1696,7 @@ local function LootLink_MatchesSearch(name, value, ud)
 						return nil;
 					end
 				end
-			elseif( _type == TYPE_ARMOR or _type == TYPE_SHIELD ) then
+			elseif( _type == LL.TYPE_ARMOR or _type == LL.TYPE_SHIELD ) then
 				if( sp.minArmor ) then
 					local armor = LootLink_SearchData(value, "ar");
 					if( not armor or armor < sp.minArmor ) then
@@ -1748,7 +1704,7 @@ local function LootLink_MatchesSearch(name, value, ud)
 					end
 				end
 				
-				if( _type == TYPE_SHIELD ) then
+				if( _type == LL.TYPE_SHIELD ) then
 					if( sp.minBlock ) then
 						local block = LootLink_SearchData(value, "bl");
 						if( not block or block < sp.minBlock ) then
@@ -1756,14 +1712,14 @@ local function LootLink_MatchesSearch(name, value, ud)
 						end
 					end
 				end
-			elseif( _type == TYPE_CONTAINER ) then
+			elseif( _type == LL.TYPE_CONTAINER ) then
 				if( sp.minSlots ) then
 					local slots = LootLink_SearchData(value, "sl");
 					if( not slots or slots < sp.minSlots ) then
 						return nil;
 					end
 				end
-			elseif( _type == TYPE_RECIPE ) then
+			elseif( _type == LL.TYPE_RECIPE ) then
 				if( sp.minSkill ) then
 					local skill = LootLink_SearchData(value, "sk");
 					if( not skill or skill < sp.minSkill ) then
@@ -1785,6 +1741,10 @@ local function LootLink_MatchesSearch(name, value, ud)
 
 	return 1;
 end
+
+--local function LootLink_NameComparison(elem1, elem2)
+--	return LootLink_GetName(elem1) < LootLink_GetName(elem2);
+--end
 
 local function LootLink_ColorComparison(elem1, elem2)
 	local color1;
@@ -1832,6 +1792,19 @@ local function LootLink_GenericComparison(elem1, elem2, v1, v2)
 		return tonumber(v1) < tonumber(v2);
 	end
 	return v1 < v2;
+end
+
+local function LootLink_iLevelComparison(elem1, elem2)
+	local v1, v2;
+	
+	if( ItemLinks[elem1] and ItemLinks[elem1].d ) then
+		v1 = LootLink_SearchData(ItemLinks[elem1], "il");
+	end
+	if( ItemLinks[elem2] and ItemLinks[elem2].d ) then
+		v2 = LootLink_SearchData(ItemLinks[elem2], "il");
+	end
+	
+	return LootLink_GenericComparison(elem1, elem2, v1, v2);
 end
 
 local function LootLink_BindsComparison(elem1, elem2)
@@ -2017,41 +1990,41 @@ local function LootLink_LevelComparison(elem1, elem2)
 end
 
 local function LootLink_Sort()
-	if( LOOTLINK_DROPDOWN_LIST[UIDropDownMenu_GetSelectedID(LootLinkFrameDropDown)].sortType ) then
-		local sortType = LOOTLINK_DROPDOWN_LIST[UIDropDownMenu_GetSelectedID(LootLinkFrameDropDown)].sortType;
-		if( sortType == "name" ) then
-			table.sort(DisplayIndices);
-		elseif( sortType == "rarity" ) then
-			table.sort(DisplayIndices, LootLink_ColorComparison);
-		elseif( sortType == "binds" ) then
-			table.sort(DisplayIndices, LootLink_BindsComparison);
-		elseif( sortType == "unique" ) then
-			table.sort(DisplayIndices, LootLink_UniqueComparison);
-		elseif( sortType == "location" ) then
-			table.sort(DisplayIndices, LootLink_LocationComparison);
-		elseif( sortType == "type" ) then
-			table.sort(DisplayIndices, LootLink_TypeComparison);
-		elseif( sortType == "subtype" ) then
-			table.sort(DisplayIndices, LootLink_SubtypeComparison);
-		elseif( sortType == "minDamage" ) then
-			table.sort(DisplayIndices, LootLink_MinDamageComparison);
-		elseif( sortType == "maxDamage" ) then
-			table.sort(DisplayIndices, LootLink_MaxDamageComparison);
-		elseif( sortType == "speed" ) then
-			table.sort(DisplayIndices, LootLink_SpeedComparison);
-		elseif( sortType == "DPS" ) then
-			table.sort(DisplayIndices, LootLink_DPSComparison);
-		elseif( sortType == "armor" ) then
-			table.sort(DisplayIndices, LootLink_ArmorComparison);
-		elseif( sortType == "block" ) then
-			table.sort(DisplayIndices, LootLink_BlockComparison);
-		elseif( sortType == "slots" ) then
-			table.sort(DisplayIndices, LootLink_SlotsComparison);
-		elseif( sortType == "skill" ) then
-			table.sort(DisplayIndices, LootLink_SkillComparison);
-		elseif( sortType == "level" ) then
-			table.sort(DisplayIndices, LootLink_LevelComparison);
-		end
+	local sortType = LOOTLINK_DROPDOWN_LIST[sdd:GetSelectedID(LootLinkFrameDropDown) or 1].sortType;
+	if( sortType == "name" ) then
+		table.sort(DisplayIndices, LootLink_NameComparison);
+	elseif( sortType == "rarity" ) then
+		table.sort(DisplayIndices, LootLink_ColorComparison);
+	elseif( sortType == "iLevel" ) then
+		table.sort(DisplayIndices, LootLink_iLevelComparison);
+	elseif( sortType == "binds" ) then
+		table.sort(DisplayIndices, LootLink_BindsComparison);
+	elseif( sortType == "unique" ) then
+		table.sort(DisplayIndices, LootLink_UniqueComparison);
+	elseif( sortType == "location" ) then
+		table.sort(DisplayIndices, LootLink_LocationComparison);
+	elseif( sortType == "type" ) then
+		table.sort(DisplayIndices, LootLink_TypeComparison);
+	elseif( sortType == "subtype" ) then
+		table.sort(DisplayIndices, LootLink_SubtypeComparison);
+	elseif( sortType == "minDamage" ) then
+		table.sort(DisplayIndices, LootLink_MinDamageComparison);
+	elseif( sortType == "maxDamage" ) then
+		table.sort(DisplayIndices, LootLink_MaxDamageComparison);
+	elseif( sortType == "speed" ) then
+		table.sort(DisplayIndices, LootLink_SpeedComparison);
+	elseif( sortType == "DPS" ) then
+		table.sort(DisplayIndices, LootLink_DPSComparison);
+	elseif( sortType == "armor" ) then
+		table.sort(DisplayIndices, LootLink_ArmorComparison);
+	elseif( sortType == "block" ) then
+		table.sort(DisplayIndices, LootLink_BlockComparison);
+	elseif( sortType == "slots" ) then
+		table.sort(DisplayIndices, LootLink_SlotsComparison);
+	elseif( sortType == "skill" ) then
+		table.sort(DisplayIndices, LootLink_SkillComparison);
+	elseif( sortType == "level" ) then
+		table.sort(DisplayIndices, LootLink_LevelComparison);
 	end
 end
 
@@ -2074,7 +2047,6 @@ local function LootLink_BuildDisplayIndices()
 		end
 	end
 	DisplayIndices.onePastEnd = iNew;
-	LootLink_SetDataVersion(100); -- version 1.00
 	LootLink_Sort();
 	LootLink_SetTitle();
 end
@@ -2082,7 +2054,7 @@ end
 local function LootLink_Reset()
 	ItemLinks = { };
 
-	LootLink_SetDataVersion(110);	-- version 1.10
+	LootLink_SetDataVersion(LOOTLINK_CURRENT_DATA_VERSION);
 
 	LootLink_InitSizes(LL.lServerIndex);
 	
@@ -2090,25 +2062,6 @@ local function LootLink_Reset()
 		LootLink_BuildDisplayIndices();
 		LootLink_Update();
 	end
-end
-
-local function LootLink_MakeHome()
-	local index;
-	local value;
-
-	LootLink_SetDataVersion(110);	-- version 1.10
-	
-	for index, value in pairs(ItemLinks) do
-		if( not value._ ) then
-			-- If this item predates multiple server support, mark it as seen on this server
-			LootLink_AddItemServer(value, LL.lServerIndex);
-		else
-			-- Otherwise just wipe the flag since it only applies to pre-1.10 data
-			value._ = nil;
-		end
-	end
-
-	LootLink_InitSizes(LL.lServerIndex);
 end
 
 local function LootLink_LightMode()
@@ -2125,6 +2078,7 @@ end
 -- Uncategorized functions; will sort later
 --
 
+--Skray, need simpledropdown to work here.  Without SDD these don't seem to work.
 local function LootLinkFrameDropDown_Initialize()
 	local info;
 	for i = 1, #LOOTLINK_DROPDOWN_LIST, 1 do
@@ -2241,89 +2195,128 @@ end
 local function LootLink_SetupTypeUI(iType, iSubtype)
 	local _type = LLS_TYPE_LIST[iType].value;
 	
-	if( not iSubtype ) then
-		iSubtype = 1;
-	end
-
 	-- Hide all of the variable labels and fields to start
-	getglobal("LLS_SubtypeLabel"):Hide();
-	getglobal("LLS_SubtypeDropDown"):Hide();
-	getglobal("LLS_MinimumArmorLabel"):Hide();
-	getglobal("LLS_MinimumBlockLabel"):Hide();
-	getglobal("LLS_MinimumDamageLabel"):Hide();
-	getglobal("LLS_MaximumDamageLabel"):Hide();
-	getglobal("LLS_MaximumSpeedLabel"):Hide();
-	getglobal("LLS_MinimumDPSLabel"):Hide();
-	getglobal("LLS_MinimumSlotsLabel"):Hide();
-	getglobal("LLS_MinimumSkillLabel"):Hide();
-	getglobal("LLS_MaximumSkillLabel"):Hide();
-	getglobal("LLS_MinimumArmorEditBox"):Hide();
-	getglobal("LLS_MinimumBlockEditBox"):Hide();
-	getglobal("LLS_MinimumDamageEditBox"):Hide();
-	getglobal("LLS_MaximumDamageEditBox"):Hide();
-	getglobal("LLS_MaximumSpeedEditBox"):Hide();
-	getglobal("LLS_MinimumDPSEditBox"):Hide();
-	getglobal("LLS_MinimumSlotsEditBox"):Hide();
-	getglobal("LLS_MinimumSkillEditBox"):Hide();
-	getglobal("LLS_MaximumSkillEditBox"):Hide();
+	_G["LLS_SubtypeLabel"]:Hide();
+	_G["LLS_SubtypeDropDown"]:Hide();
+	_G["LLS_MinimumArmorLabel"]:Hide();
+	_G["LLS_MinimumBlockLabel"]:Hide();
+	_G["LLS_MinimumDamageLabel"]:Hide();
+	_G["LLS_MaximumDamageLabel"]:Hide();
+	_G["LLS_MinimumSpeedLabel"]:Hide();
+	_G["LLS_MaximumSpeedLabel"]:Hide();
+	_G["LLS_MinimumDPSLabel"]:Hide();
+	_G["LLS_MinimumSlotsLabel"]:Hide();
+	_G["LLS_MinimumSkillLabel"]:Hide();
+	_G["LLS_MaximumSkillLabel"]:Hide();
+	_G["LLS_MinimumArmorEditBox"]:Hide();
+	_G["LLS_MinimumBlockEditBox"]:Hide();
+	_G["LLS_MinimumDamageEditBox"]:Hide();
+	_G["LLS_MaximumDamageEditBox"]:Hide();
+	_G["LLS_MinimumSpeedEditBox"]:Hide();
+	_G["LLS_MaximumSpeedEditBox"]:Hide();
+	_G["LLS_MinimumDPSEditBox"]:Hide();
+	_G["LLS_MinimumSlotsEditBox"]:Hide();
+	_G["LLS_MinimumSkillEditBox"]:Hide();
+	_G["LLS_MaximumSkillEditBox"]:Hide();
 	
-	if( _type == TYPE_ARMOR or _type == TYPE_SHIELD or _type == TYPE_WEAPON or _type == TYPE_RECIPE or _type == TYPE_GEM ) then
-		local label = getglobal("LLS_SubtypeLabel");
-		local dropdown = getglobal("LLS_SubtypeDropDown");
+	LootLinkFrame.TypeSearchEditFields = { };
+	local fields = LootLinkFrame.TypeSearchEditFields;
+	
+	if( _type == LL.TYPE_ARMOR or _type == LL.TYPE_SHIELD or _type == LL.TYPE_WEAPON or _type == LL.TYPE_RECIPE or _type == LL.TYPE_GEM or _type == LL.TYPE_GLYPH ) then
+		local label = _G["LLS_SubtypeLabel"];
+		local dropdown = _G["LLS_SubtypeDropDown"];
 		local initfunc;
 		
 		-- Show the dropdown and its label
 		label:Show();
 		dropdown:Show();
 		
-		if( _type == TYPE_ARMOR ) then
+		if( _type == LL.TYPE_ARMOR ) then
 			label:SetText(LLS_SUBTYPE_ARMOR);
 			initfunc = LLS_SubtypeDropDownArmor_Initialize;
 			
-			getglobal("LLS_MinimumArmorLabel"):Show();
-			getglobal("LLS_MinimumArmorEditBox"):Show();
-		elseif( _type == TYPE_GEM ) then
+			_G["LLS_MinimumArmorLabel"]:Show();
+			
+			field =_G["LLS_MinimumArmorEditBox"];
+			field:Show();
+			tinsert(fields, field);
+		elseif( _type == LL.TYPE_GEM ) then
 			label:SetText(LLS_SUBTYPE_GEM);
 			initfunc = LLS_SubtypeDropDownGem_Initialize;
-		elseif( _type == TYPE_SHIELD ) then
+		elseif( _type == LL.TYPE_GLYPH ) then
+			label:SetText(LLS_SUBTYPE_GLYPH);
+			initfunc = LLS_SubtypeDropDownGlyph_Initialize;
+		elseif( _type == LL.TYPE_SHIELD ) then
 			label:SetText(LLS_SUBTYPE_SHIELD);
 			initfunc = LLS_SubtypeDropDownShield_Initialize;
 
-			getglobal("LLS_MinimumArmorLabel"):Show();
-			getglobal("LLS_MinimumBlockLabel"):Show();
-			getglobal("LLS_MinimumArmorEditBox"):Show();
-			getglobal("LLS_MinimumBlockEditBox"):Show();
-		elseif( _type == TYPE_WEAPON ) then
+			_G["LLS_MinimumArmorLabel"]:Show();
+			_G["LLS_MinimumBlockLabel"]:Show();
+			
+			field = _G["LLS_MinimumArmorEditBox"];
+			field:Show();
+			tinsert(fields, field);
+			
+			field = _G["LLS_MinimumBlockEditBox"];
+			field:Show();
+			tinsert(fields, field);
+		elseif( _type == LL.TYPE_WEAPON ) then
 			label:SetText(LLS_SUBTYPE_WEAPON);
 			initfunc = LLS_SubtypeDropDownWeapon_Initialize;
 			
-			getglobal("LLS_MinimumDamageLabel"):Show();
-			getglobal("LLS_MaximumDamageLabel"):Show();
-			getglobal("LLS_MaximumSpeedLabel"):Show();
-			getglobal("LLS_MinimumDPSLabel"):Show();
-			getglobal("LLS_MinimumDamageEditBox"):Show();
-			getglobal("LLS_MaximumDamageEditBox"):Show();
-			getglobal("LLS_MaximumSpeedEditBox"):Show();
-			getglobal("LLS_MinimumDPSEditBox"):Show();
+			_G["LLS_MinimumDamageLabel"]:Show();
+			_G["LLS_MaximumDamageLabel"]:Show();
+			_G["LLS_MinimumSpeedLabel"]:Show();
+			_G["LLS_MaximumSpeedLabel"]:Show();
+			_G["LLS_MinimumDPSLabel"]:Show();
+			
+			field =_G["LLS_MinimumDamageEditBox"];
+			field:Show();
+			tinsert(fields, field);
+			
+			field = _G["LLS_MaximumDamageEditBox"];
+			field:Show();
+			tinsert(fields, field);
+
+			field =_G["LLS_MinimumSpeedEditBox"];
+			field:Show();
+			tinsert(fields, field);
+
+			field = _G["LLS_MaximumSpeedEditBox"];
+			field:Show();
+			tinsert(fields, field);
+
+			field = _G["LLS_MinimumDPSEditBox"];
+			field:Show();
+			tinsert(fields, field);
 		else
 			label:SetText(LLS_SUBTYPE_RECIPE);
 			initfunc = LLS_SubtypeDropDownRecipe_Initialize;
 
-			getglobal("LLS_MinimumSkillLabel"):Show();
-			getglobal("LLS_MaximumSkillLabel"):Show();
-			getglobal("LLS_MinimumSkillEditBox"):Show();
-			getglobal("LLS_MaximumSkillEditBox"):Show();
+			_G["LLS_MinimumSkillLabel"]:Show();
+			_G["LLS_MaximumSkillLabel"]:Show();
+			
+			field = _G["LLS_MinimumSkillEditBox"];
+			field:Show();
+			tinsert(fields, field);
+
+			field = _G["LLS_MaximumSkillEditBox"];
+			field:Show();
+			tinsert(fields, field);
 		end
 		
-		UIDropDownMenu_Initialize(dropdown, initfunc);
-		UIDropDownMenu_SetSelectedID(LLS_SubtypeDropDown, iSubtype);
-	elseif( _type == TYPE_CONTAINER ) then
-		getglobal("LLS_MinimumSlotsLabel"):Show();
-		getglobal("LLS_MinimumSlotsEditBox"):Show();
+		sdd:Initialize(dropdown, initfunc);
+		sdd:SetSelectedID(dropdown, iSubtype or 1);
+	elseif( _type == LL.TYPE_CONTAINER ) then
+		_G["LLS_MinimumSlotsLabel"]:Show();
+
+		field = _G["LLS_MinimumSlotsEditBox"];
+		field:Show();
+		tinsert(fields, field);
 	end
 end
 
-local function LootLink_InspectSlot(unit, id)
+--[[local function LootLink_InspectSlot(unit, id)
 	local link = GetInventoryItemLink(unit, id);
 	if( link ) then
 		local name = LootLink_ProcessLinks(link);
@@ -2335,13 +2328,29 @@ local function LootLink_InspectSlot(unit, id)
 			LootLink_Event_InspectSlot(name, count, ItemLinks[name], unit, id);
 		end
 	end
+end]]--
+
+local function LootLink_InspectSlot(unit, id)
+	local link = GetInventoryItemLink(unit, id);
+	if( link ) then
+		local llid = LootLink_ProcessLinks(link);
+		if( llid and ItemLinks[llid] ) then
+			LootLink_Event_InspectSlot(LootLink_GetName(llid), 1, ItemLinks[llid], unit, id);
+			LootLink_Event_InspectSlotId(llid, 1, ItemLinks[llid], unit, id);
+		end
+	end
 end
 
 local function LootLink_Inspect(who)
-	local index;
-	
-	for index = 1, #INVENTORY_SLOT_LIST, 1 do
-		LootLink_InspectSlot(who, INVENTORY_SLOT_LIST[index].id)
+	if (CanInspect(who)) then
+		NotifyInspect(who);
+
+		local index;
+		for index = 1, #INVENTORY_SLOT_LIST, 1 do
+			LootLink_InspectSlot(who, INVENTORY_SLOT_LIST[index].id)
+		end
+
+		ClearInspectPlayer();
 	end
 end
 
@@ -2350,20 +2359,17 @@ local function LootLink_ScanInventory()
 	local size;
 	local slotid;
 	local link;
-
+	
 	for bagid = 0, 4, 1 do
 		size = GetContainerNumSlots(bagid);
 		if( size ) then
 			for slotid = size, 1, -1 do
 				link = GetContainerItemLink(bagid, slotid);
 				if( link ) then
-					local name = LootLink_ProcessLinks(link);
-					if( name and ItemLinks[name] ) then
-						local texture, count, locked, quality, readable = GetContainerItemInfo(bagid, slotid);
-						if( count > 1 ) then
-							ItemLinks[name].x = 1;
-						end
-						LootLink_Event_ScanInventory(name, count, ItemLinks[name], bagid, slotid);
+					local llid = LootLink_ProcessLinks(link);
+					if( llid and ItemLinks[llid] ) then
+						LootLink_Event_ScanInventory(LootLink_GetName(llid), 1, ItemLinks[llid], bagid, slotid);
+						LootLink_Event_ScanInventoryId(llid, 1, ItemLinks[llid], bagid, slotid);
 					end
 				end
 			end
@@ -2371,56 +2377,39 @@ local function LootLink_ScanInventory()
 	end
 end
 
---[[local function LootLink_ScanSellPrices()
-	local bagid;
-	local size;
-	local slotid;
-	local link;
-	
-	LootLink_MoneyToggle();
-
-	for bagid = 0, 4, 1 do
-		lBagID = bagid;
-		size = GetContainerNumSlots(bagid);
-		if( size ) then
-			for slotid = size, 1, -1 do
-				lSlotID = slotid;
-				LLHiddenTooltip:SetBagItem(bagid, slotid);
-			end
-		end
+local function LootLink_ScanSelf()
+	if( not LL.lastSelfScanTime or GetTime() - LL.lastSelfScanTime > LOOTLINK_SELF_SCAN_BUFFER_TIME ) then
+		LootLink_ScanInventory();
+		LootLink_Inspect("player");
+		LL.lastSelfScanTime = GetTime();
 	end
-	
-	lBagID = nil;
-	lSlotID = nil;
-	
-	LootLink_MoneyToggle();
 end
 
 local function LootLink_ScanMerchant()
 	local cItems = GetMerchantNumItems();
 	local iItem;
-	local link;
-	local name;
 	
 	for iItem = 1, cItems, 1 do
-		link = GetMerchantItemLink(iItem);
+		local link = GetMerchantItemLink(iItem);
 		if( link ) then
-			name = LootLink_ProcessLinks(link);
-			if( name and ItemLinks[name] ) then
-				LootLink_Event_ScanMerchant(name, ItemLinks[name], iItem);
+			local llid = LootLink_ProcessLinks(link);
+			if( llid and ItemLinks[llid] ) then
+				LootLink_Event_ScanMerchant(LootLink_GetName(llid), ItemLinks[llid], iItem);
+				LootLink_Event_ScanMerchantId(llid, ItemLinks[llid], iItem);
 			end
 		end
 	end
-end]]--
+end
 
-local function LootLink_ScanQuest(questState)
+local function LootLink_ScanQuest()
 	local fQuestLog;
 	local cQuestChoices;
 	local cQuestRewards;
 	local iItem;
 	local link;
-	local name;
+	local llid;
 	
+	-- QuestInfoFrame.questLog is a Cata function
 	fQuestLog = (questState == "QuestLog");
 	if( fQuestLog ) then
 		cQuestChoices = GetNumQuestLogChoices();
@@ -2437,9 +2426,10 @@ local function LootLink_ScanQuest(questState)
 			link = GetQuestItemLink("choice", iItem);
 		end
 		if( link ) then
-			name = LootLink_ProcessLinks(link);
-			if( name and ItemLinks[name] ) then
-				LootLink_Event_ScanQuest(name, ItemLinks[name], fQuestLog, "choice", iItem);
+			llid = LootLink_ProcessLinks(link);
+			if( llid and ItemLinks[llid] ) then
+				LootLink_Event_ScanQuest(LootLink_GetName(llid), ItemLinks[llid], fQuestLog, "choice", iItem);
+				LootLink_Event_ScanQuestId(llid, ItemLinks[llid], fQuestLog, "choice", iItem);
 			end
 		end
 	end
@@ -2451,40 +2441,228 @@ local function LootLink_ScanQuest(questState)
 			link = GetQuestItemLink("reward", iItem);
 		end
 		if( link ) then
-			name = LootLink_ProcessLinks(link);
-			if( name and ItemLinks[name] ) then
-				LootLink_Event_ScanQuest(name, ItemLinks[name], fQuestLog, "reward", iItem);
+			llid = LootLink_ProcessLinks(link);
+			if( llid and ItemLinks[llid] ) then
+				LootLink_Event_ScanQuest(LootLink_GetName(llid), ItemLinks[llid], fQuestLog, "reward", iItem);
+				LootLink_Event_ScanQuestId(llid, ItemLinks[llid], fQuestLog, "reward", iItem);
 			end
 		end
 	end
 end
 
+local function LootLinkAutoComplete_ShowTooltip(self)
+	if( not self.mouseTooltip ) then
+		local button = _G["LootLinkAutoCompleteButton"..self.index];
+		local link = LootLink_GetHyperlink(button.llid);
+		if( link ) then
+			LootLinkAutoCompleteTooltip:SetOwner(button, "ANCHOR_RIGHT");
+			LootLink_SetHyperlinkFromId(LootLinkAutoCompleteTooltip, button.llid, link);
+		end
+	end
+end
+
+local function LootLink_AutoComplete_SetIndex(self, newIndex)
+	local index;
+	for index = 1, LOOTLINK_AUTOCOMPLETE_BUTTON_COUNT do
+		_G["LootLinkAutoCompleteButton"..index]:UnlockHighlight();
+	end
+	_G["LootLinkAutoCompleteButton"..newIndex]:LockHighlight();
+	
+	self.index = newIndex;
+	LootLinkAutoComplete_ShowTooltip(self);
+end
+
+local function LootLinkAutoComplete_Hide(self, reset)
+	if( reset ) then
+		self.editBox = nil;
+		self.last = nil;
+		LL.lAutoCompleteStartIndex = nil;
+	end
+
+	LootLinkAutoCompleteTooltip:Hide();
+	self:Hide();
+end
+
+local function LootLink_ChatEdit_OnTextChanged(self, userInput)
+	local text = self:GetText();
+	local length = string.len(text);
+	local frame = LootLinkAutoCompleteFrame;
+	
+	-- Check for cases where we don't have to do any work
+	if( not LootLinkState or
+		LootLinkState.AutoCompleteDisabled or
+		(frame.editBox and frame.editBox ~= self) or
+		frame.last == text )
+	then
+		return;
+	end
+
+	frame.editBox = self;
+	frame.last = text;
+	
+	if( LL.lAutoCompleteStartIndex ) then
+		if( string.sub(text, LL.lAutoCompleteStartIndex, LL.lAutoCompleteStartIndex) ~= "[" ) then
+			-- We've lost our start bracket and are in a weird state; reset ourselves
+			LootLinkAutoComplete_Hide(frame, true);
+		else
+			if( string.sub(text, length) == "]" ) then
+				-- Replace the bracketed text with our current autocomplete entry
+				LootLink_AutoCompleteButton_OnClick(_G["LootLinkAutoCompleteButton"..LootLinkAutoCompleteFrame.index]);
+			else
+				-- Update the autocomplete popup menu
+				
+				-- Move the frame first
+				frame:ClearAllPoints();
+				if( self:GetBottom() - frame.maxHeight <= 13 ) then
+					frame:SetPoint("BOTTOMLEFT", self, "TOPLEFT", frame.x, -3);
+				else
+					frame:SetPoint("TOPLEFT", self, "BOTTOMLEFT", frame.x, 3);
+				end
+				
+				-- Now find matching items
+				local count = 0;
+				local maxWidth = max(120, LootLinkAutoCompleteInstructions:GetStringWidth() + 30);
+				local pattern = LootLink_EscapePattern(string.lower(string.sub(text, LL.lAutoCompleteStartIndex + 1)));
+				
+				if( pattern ~= "" ) then
+					local itemid = string.match(pattern, "^(%-?%d+):");
+					local match;
+					local button;
+					
+					-- This could be a lot faster if we restricted ourselves to matches at the beginning of
+					-- the item name (store {name, llid} pairs in sorted table, binary search that table),
+					-- but being able to match anywhere in the item name is substantially more interesting.
+					
+					for llid, value in pairs(ItemLinks) do
+						if( itemid ) then
+							match = llid;
+						else
+							match = LootLink_GetName(llid);
+						end
+						if( string.match(string.lower(match), pattern) ) then
+							count = count + 1;
+							if( count > LOOTLINK_AUTOCOMPLETE_BUTTON_COUNT ) then
+								button = _G["LootLinkAutoCompleteButton"..LOOTLINK_AUTOCOMPLETE_BUTTON_COUNT];
+								button:SetText(CONTINUED);
+								maxWidth = max(maxWidth, button:GetFontString():GetWidth() + 30);
+								button:GetFontString():SetTextColor(0.5, 0.5, 0.5);
+								button.llid = nil;
+								button:Disable();
+								break;
+							else
+								button = _G["LootLinkAutoCompleteButton"..count];
+								button:SetText(LootLink_GetName(llid));
+								maxWidth = max(maxWidth, button:GetFontString():GetWidth() + 30);
+								button:GetFontString():SetTextColor(LootLink_GetRGBFromHexColor(ItemLinks[llid].c));
+								button:Enable();
+								button.llid = llid;
+								button:Show();
+							end
+						end
+					end
+				end
+				
+				-- Hide any unused buttons
+				local index;
+				
+				for index = count + 1, LOOTLINK_AUTOCOMPLETE_BUTTON_COUNT do
+					_G["LootLinkAutoCompleteButton"..index]:Hide();
+				end
+				
+				-- Now update the frame itself -- sizing, showing, setting selection and count, etc.
+				if( count > 0 ) then
+					LootLink_AutoComplete_SetIndex(frame, 1);
+					if( count > LOOTLINK_AUTOCOMPLETE_BUTTON_COUNT ) then
+						frame.count = LOOTLINK_AUTOCOMPLETE_BUTTON_COUNT - 1;
+						count = LOOTLINK_AUTOCOMPLETE_BUTTON_COUNT;
+					else
+						frame.count = count;
+					end
+					
+					-- Set the width of each of the buttons to the maxWidth to allow the highlight to size appropriately
+					for index = 1, count do
+						_G["LootLinkAutoCompleteButton"..index]:SetWidth(maxWidth);
+					end
+
+					frame:SetHeight(count * LootLinkAutoCompleteButton1:GetHeight() + 35);
+					frame:SetWidth(maxWidth);
+					frame:Show();
+				else
+					LootLinkAutoComplete_Hide(frame, false);
+				end
+			end
+		end
+	end
+
+	if( not LL.lAutoCompleteStartIndex ) then
+		-- No start bracket; check to see whether the current text ends in one
+		if( string.sub(text, length) == "[" ) then
+			LL.lAutoCompleteStartIndex = length;
+			
+			-- Figure out where to position the popup frame -- this is hacky :(
+			local left, _, _, _ = self:GetTextInsets();
+			local fontstring = _G["LootLinkAutoCompleteWidthTest"];
+			fontstring:SetText(text);
+			local width = fontstring:GetStringWidth();
+			fontstring:SetText("");
+			
+			frame.x = left + width - 15;
+		end
+	end
+end
+
+local function LootLink_ChatEdit_OnEscapePressed(self)
+	if( LootLinkAutoCompleteFrame.editBox == self and not self:IsShown() ) then
+		LootLinkAutoComplete_Hide(LootLinkAutoCompleteFrame, true);
+	end
+end
+
+local function LootLink_ChatEdit_CustomTabPressed(self)
+	local frame = LootLinkAutoCompleteFrame;
+	if( frame:IsShown() ) then
+		local index = frame.index;
+		local count = frame.count;
+		local newIndex;
+		if( IsShiftKeyDown() ) then
+			newIndex = index - 1;
+			if( newIndex < 1 ) then
+				newIndex = count;
+			end
+		else
+			newIndex = index + 1;
+			if( newIndex > count ) then
+				newIndex = 1;
+			end
+		end
+		LootLink_AutoComplete_SetIndex(frame, newIndex);
+		return true;
+	end
+	return LL.lOriginal_ChatEdit_CustomTabPressed(self);
+end
+
 local function LootLink_ScanLoot()
 	local cItems = GetNumLootItems();
 	local iItem;
-	local link;
-	local name;
 	
 	for iItem = 1, cItems, 1 do
-		link = GetLootSlotLink(iItem);
+		local link = GetLootSlotLink(iItem);
 		if( link ) then
-			name = LootLink_ProcessLinks(link);
-			if( name and ItemLinks[name] ) then
-				LootLink_Event_ScanLoot(name, ItemLinks[name], iItem);
+			local llid = LootLink_ProcessLinks(link);
+			if( llid and ItemLinks[llid] ) then
+				LootLink_Event_ScanLoot(LootLink_GetName(llid), ItemLinks[llid], iItem);
+				LootLink_Event_ScanLootId(llid, ItemLinks[llid], iItem);
 			end
 		end
 	end
 end
 
 local function LootLink_ScanRoll(id)
-	local link;
-	local name;
-	
-	link = GetLootRollItemLink(id);
+	local link = GetLootRollItemLink(id);
 	if( link ) then
-		name = LootLink_ProcessLinks(link);
-		if( name and ItemLinks[name] ) then
-			LootLink_Event_ScanRoll(name, ItemLinks[name], id);
+		local llid = LootLink_ProcessLinks(link);
+		if( llid and ItemLinks[llid] ) then
+			LootLink_Event_ScanRoll(LootLink_GetName(llid), ItemLinks[llid], id);
+			LootLink_Event_ScanRollId(llid, ItemLinks[llid], id);
 		end
 	end
 end
@@ -2572,21 +2750,17 @@ local function LootLink_ScanBank()
 	local bagid;
 	local size;
 	local slotid;
-	local link;
 	
 	for index, bagid in pairs(lBankBagIDs) do
 		size = GetContainerNumSlots(bagid);
 		if( size ) then
 			for slotid = size, 1, -1 do
-				link = GetContainerItemLink(bagid, slotid);
+				local link = GetContainerItemLink(bagid, slotid);
 				if( link ) then
-					local name = LootLink_ProcessLinks(link);
-					if( name and ItemLinks[name] ) then
-						local texture, count, locked, quality, readable = GetContainerItemInfo(bagid, slotid);
-						if( count > 1 ) then
-							ItemLinks[name].x = 1;
-						end
-						LootLink_Event_ScanBank(name, count, ItemLinks[name], bagid, slotid);
+					local llid = LootLink_ProcessLinks(link);
+					if( llid and ItemLinks[llid] ) then
+						LootLink_Event_ScanBank(LootLink_GetName(llid), 1, ItemLinks[llid], bagid, slotid);
+						LootLink_Event_ScanBankId(llid, 1, ItemLinks[llid], bagid, slotid);
 					end
 				end
 			end
@@ -2594,20 +2768,18 @@ local function LootLink_ScanBank()
 	end
 end
 
-local function LootLink_ScanSellPrice(price)
-	local link = GetContainerItemLink(lBagID, lSlotID);
-	local texture, itemCount, locked, quality, readable = GetContainerItemInfo(lBagID, lSlotID);
-	local name;
-	
-	if( itemCount and itemCount > 1 ) then
-		price = price / itemCount;
-	end
-	
-	name = LootLink_NameFromLink(link);
-	if( name and ItemLinks[name] ) then
-		ItemLinks[name].p = price;
-		if( itemCount and itemCount > 1 ) then
-			ItemLinks[name].x = 1;
+local function LootLink_ScanGuildBankTab()
+	local slotid;
+	local currentTab = GetCurrentGuildBankTab();
+
+	for slotid = 1, (MAX_GUILDBANK_SLOTS_PER_TAB or 98) do
+		local link = GetGuildBankItemLink(currentTab, slotid);
+		if( link ) then
+			local llid = LootLink_ProcessLinks(link);
+			if( llid and ItemLinks[llid] ) then
+				LootLink_Event_ScanGuildBank(LootLink_GetName(llid), 1, ItemLinks[llid], currentTab, slotid);
+				LootLink_Event_ScanGuildBankId(llid, 1, ItemLinks[llid], currentTab, slotid);
+			end
 		end
 	end
 end
@@ -2619,141 +2791,165 @@ local function LootLink_CheckVersionReminder()
 	
 	version = LootLink_GetDataVersion();
 	for index, value in pairs(LOOTLINK_DATA_UPGRADE_HELP) do
-		if( version < value.version ) then
+		if( version < value.version and (not value.minVersion or version >= value.minVersion) ) then
 			DEFAULT_CHAT_FRAME:AddMessage(value.text);
 		end
 	end
 end
 
 local function LootLink_UpgradeData()
-	local index;
+	local name;
 	local item;
 	
-	for index, item in pairs(ItemLinks) do
-		LootLink_ConvertServerFormat(item);
-		if( item.item ) then
-			item.i = item.item;
-			item.item = nil;
-		end
-		if( item.color ) then
-			item.c = item.color;
-			item.color = nil;
-		end
-		if( item.price ) then
-			item.p = item.price;
-			item.price = nil;
-		end
-		if( item.stack ) then
-			item.x = item.stack;
-			item.stack = nil;
-		end
-		
-		if( item.SearchData ) then
-			local data = "";
+	if( LootLink_GetDataVersion() < 200 ) then
+		local UpgradedItemLinks = { };
 
-			if( item.SearchData.type ) then
-				data = data.."ty"..item.SearchData.type.."\183";
+		for name, item in pairs(ItemLinks) do
+			LootLink_ConvertServerFormat(item);
+			if( item.item ) then
+				item.i = item.item;
+				item.item = nil;
 			end
-			if( item.SearchData.location ) then
-				data = data.."lo"..LocationTypes[item.SearchData.location].i.."\183";
+			if( item.i ) then
+				LootLink_UpgradeLink(item);
+
+				local itemid = string.match(item.i, "^(%-?%d+):");
+				if( itemid ) then
+					local llid = itemid..":"..name;
+					UpgradedItemLinks[llid] = item;
+				end
 			end
-			if( item.SearchData.subtype ) then
-				data = data.."su"..item.SearchData.subtype.."\183";
+			if( item.color ) then
+				item.c = item.color;
+				item.color = nil;
 			end
-			if( item.SearchData.binds ) then
-				data = data.."bi"..item.SearchData.binds.."\183";
-			end
-			if( item.SearchData.level ) then
-				data = data.."le"..item.SearchData.level.."\183";
-			end
-			if( item.SearchData.armor ) then
-				data = data.."ar"..item.SearchData.armor.."\183";
-			end
-			if( item.SearchData.minDamage ) then
-				data = data.."mi"..item.SearchData.minDamage.."\183";
-			end
-			if( item.SearchData.maxDamage ) then
-				data = data.."ma"..item.SearchData.maxDamage.."\183";
-			end
-			if( item.SearchData.speed ) then
-				data = data.."sp"..item.SearchData.speed.."\183";
-			end
-			if( item.SearchData.DPS ) then
-				data = data.."dp"..item.SearchData.DPS.."\183";
-			end
-			if( item.SearchData.unique ) then
-				data = data.."un"..item.SearchData.unique.."\183";
-			end
-			if( item.SearchData.block ) then
-				data = data.."bl"..item.SearchData.block.."\183";
-			end
-			if( item.SearchData.slots ) then
-				data = data.."sl"..item.SearchData.slots.."\183";
-			end
-			if( item.SearchData.skill ) then
-				data = data.."sk"..item.SearchData.skill.."\183";
-			end
+			item.price = nil;
+			item.stack = nil;
+
+			item.p = nil;
+			item.x = nil; -- stackable flag dropped in data version 2.01
 			
-			if( item.SearchData.text ) then
-				item.t = item.SearchData.text;
+			if( item.SearchData ) then
+				local data = "";
+
+				if( item.SearchData.type ) then
+					data = data.."ty"..item.SearchData.type.."·";
+				end
+				if( item.SearchData.location ) then
+					data = data.."lo"..LocationTypes[item.SearchData.location].i.."·";
+				end
+				if( item.SearchData.subtype ) then
+					data = data.."su"..item.SearchData.subtype.."·";
+				end
+				if( item.SearchData.binds ) then
+					data = data.."bi"..item.SearchData.binds.."·";
+				end
+				if( item.SearchData.level ) then
+					data = data.."le"..item.SearchData.level.."·";
+				end
+				if( item.SearchData.armor ) then
+					data = data.."ar"..item.SearchData.armor.."·";
+				end
+				if( item.SearchData.minDamage ) then
+					data = data.."mi"..item.SearchData.minDamage.."·";
+				end
+				if( item.SearchData.maxDamage ) then
+					data = data.."ma"..item.SearchData.maxDamage.."·";
+				end
+				if( item.SearchData.speed ) then
+					data = data.."sp"..item.SearchData.speed.."·";
+				end
+				if( item.SearchData.DPS ) then
+					data = data.."dp"..item.SearchData.DPS.."·";
+				end
+				if( item.SearchData.unique ) then
+					data = data.."un"..item.SearchData.unique.."·";
+				end
+				if( item.SearchData.block ) then
+					data = data.."bl"..item.SearchData.block.."·";
+				end
+				if( item.SearchData.slots ) then
+					data = data.."sl"..item.SearchData.slots.."·";
+				end
+				if( item.SearchData.skill ) then
+					data = data.."sk"..item.SearchData.skill.."·";
+				end
+				
+				if( item.SearchData.text ) then
+					item.t = item.SearchData.text;
+				end
+				
+				item.d = data;
+				item.SearchData = nil;
 			end
-			
-			item.d = data;
-			item.SearchData = nil;
+		end
+	
+		ItemLinks = UpgradedItemLinks;
+	elseif( LootLink_GetDataVersion() < 201 ) then
+		for name, item in pairs(ItemLinks) do
+			item.x = nil; -- stackable flag dropped in data version 2.01
 		end
 	end
+
+	LootLink_SetDataVersion(LOOTLINK_CURRENT_DATA_VERSION);
 end
 
 local function LootLink_VariablesLoaded()
-	local index;
-	local value;
-
-	if( not LootLinkState ) then
-		LootLinkState = { };
-	end
-	
-	if( not ItemLinks ) then
-		LootLink_Reset();
-	end
-	
 	LL.lServer = GetCVar("realmName");
 	LL.lServerIndex = LootLink_AddServer(LL.lServer);
 	
-	LootLink_UpgradeData();
-	
-	LootLink_InitSizes(LL.lServerIndex);
+	LL.lReady = true;
+
+	LootLink_CheckVersionReminder();
+	if( not ItemLinks or LootLink_GetDataVersion() < 110 ) then
+		LootLink_Reset();
+	else
+		LootLink_UpgradeData();
+		LootLink_InitSizes(LL.lServerIndex);
+	end
 end
 
 --------------------------------------------------------------------------------------------------
 -- OnFoo functions
 --------------------------------------------------------------------------------------------------
-function LootLink_OnLoad()
+function LootLink_OnLoad(self)
 	local index;
 	local value;
 
-	for index, value in pairs(ChatMessageTypes) do
-		this:RegisterEvent(value);
+	for index, value in pairs(LootLinkPanelLayout[self:GetName()]) do
+		self:SetAttribute("UIPanelLayout-"..index, value);
 	end
-	
+
+	for index, value in pairs(ChatMessageTypes) do
+		self:RegisterEvent(value);
+	end
+
 	for index = 1, #INVENTORY_SLOT_LIST, 1 do
 		INVENTORY_SLOT_LIST[index].id = GetInventorySlotInfo(INVENTORY_SLOT_LIST[index].name);
 	end
 	
-	this:RegisterEvent("PLAYER_TARGET_CHANGED");
-	this:RegisterEvent("UPDATE_MOUSEOVER_UNIT");
-	this:RegisterEvent("PLAYER_ENTERING_WORLD");
-	this:RegisterEvent("PLAYER_LEAVING_WORLD");
-	this:RegisterEvent("BANKFRAME_OPENED");
-	this:RegisterEvent("VARIABLES_LOADED");
-	this:RegisterEvent("ADDON_LOADED");
-	this:RegisterEvent("AUCTION_HOUSE_SHOW");
-	this:RegisterEvent("AUCTION_HOUSE_CLOSE");
-	this:RegisterEvent("AUCTION_ITEM_LIST_UPDATE");
-	this:RegisterEvent("MERCHANT_SHOW");
-	this:RegisterEvent("MERCHANT_UPDATE");
-	this:RegisterEvent("LOOT_OPENED");
-	this:RegisterEvent("START_LOOT_ROLL");
+	self:RegisterEvent("PLAYER_TARGET_CHANGED");
+	self:RegisterEvent("UPDATE_MOUSEOVER_UNIT");
+--	self:RegisterEvent("PLAYER_REGEN_ENABLED");
+	self:RegisterEvent("PLAYER_ENTERING_WORLD");
+	self:RegisterEvent("PLAYER_LEAVING_WORLD");
+	self:RegisterEvent("BANKFRAME_OPENED");
+--	self:RegisterEvent("GUILDBANKBAGSLOTS_CHANGED");
+	self:RegisterEvent("VARIABLES_LOADED");
+	self:RegisterEvent("ADDON_LOADED");
+	self:RegisterEvent("AUCTION_HOUSE_SHOW");
+	self:RegisterEvent("AUCTION_HOUSE_CLOSE");
+	self:RegisterEvent("AUCTION_ITEM_LIST_UPDATE");
+	self:RegisterEvent("MERCHANT_SHOW");
+	self:RegisterEvent("MERCHANT_UPDATE");
+	self:RegisterEvent("LOOT_OPENED");
+	self:RegisterEvent("START_LOOT_ROLL");
+--	self:RegisterEvent("PLAYER_LOGIN");
+--	self:RegisterEvent("ZONE_CHANGED_NEW_AREA");
 
+	LLHiddenTooltip:SetScript("OnTooltipAddMoney", nil);
+	LLHiddenTooltip:SetScript("OnTooltipCleared", nil);
+	
 	-- Register our slash command
 	SLASH_LOOTLINK1 = "/lootlink";
 	SLASH_LOOTLINK2 = "/ll";
@@ -2761,53 +2957,14 @@ function LootLink_OnLoad()
 		LootLink_SlashCommandHandler(msg);
 	end
 	
-	-- Hook the member functions of GameTooltip where items are set; can't just use OnTooltipSetItem
-	-- because I need quantities, which I have to extract based on the type of set being done
-	hooksecurefunc(GameTooltip, "SetAuctionItem", LootLink_SetAuctionItem);
-	hooksecurefunc(GameTooltip, "SetAuctionSellItem", LootLink_SetAuctionSellItem);
-	hooksecurefunc(GameTooltip, "SetBagItem", LootLink_SetBagItem);
-	hooksecurefunc(GameTooltip, "SetInventoryItem", LootLink_SetInventoryItem);
-	hooksecurefunc(GameTooltip, "SetLootItem", LootLink_SetLootItem);
-	hooksecurefunc(GameTooltip, "SetLootRollItem", LootLink_SetLootRollItem);
-	hooksecurefunc(GameTooltip, "SetQuestItem", LootLink_SetQuestItem);
-	hooksecurefunc(GameTooltip, "SetQuestLogItem", LootLink_SetQuestLogItem);
-	hooksecurefunc(GameTooltip, "SetTradePlayerItem", LootLink_SetTradePlayerItem);
-	hooksecurefunc(GameTooltip, "SetTradeTargetItem", LootLink_SetTradeTargetItem);
-	
-	-- Hook the remaining GameTooltip item set functions; quantities don't matter or aren't available for these
-	local remainingSetFunctions = {
-		"SetBuybackItem", "SetCraftItem", "SetHyperlink", "SetInboxItem", "SetMerchantCostItem",
-		"SetMerchantItem", "SetSendMailItem", "SetTradeSkillItem",
-	};
-	for index, value in pairs(remainingSetFunctions) do
-		if( type(GameTooltip[value]) == "function" ) then
-			hooksecurefunc(GameTooltip, value, LootLink_SetItem);
-		end
-	end
-	
-	-- Hook setting items into ItemRefTooltip and the comparison tooltips by any means, since I don't need quantities
-	if( ItemRefTooltip:GetScript("OnTooltipSetItem") ) then
-		ItemRefTooltip:HookScript("OnTooltipSetItem", LootLink_OnTooltipSetItem);
-	else
-		ItemRefTooltip:SetScript("OnTooltipSetItem", LootLink_OnTooltipSetItem);
-	end
-	if( ShoppingTooltip1:GetScript("OnTooltipSetItem") ) then
-		ShoppingTooltip1:HookScript("OnTooltipSetItem", LootLink_OnTooltipSetItemNoPrice);
-	else
-		ShoppingTooltip1:SetScript("OnTooltipSetItem", LootLink_OnTooltipSetItemNoPrice);
-	end
-	if( ShoppingTooltip2:GetScript("OnTooltipSetItem") ) then
-		ShoppingTooltip2:HookScript("OnTooltipSetItem", LootLink_OnTooltipSetItemNoPrice);
-	else
-		ShoppingTooltip2:SetScript("OnTooltipSetItem", LootLink_OnTooltipSetItemNoPrice);
-	end
-	
-	-- Hook our hidden tooltip's OnTooltipAddMoney
-	LLHiddenTooltip:SetScript("OnTooltipAddMoney", nil);
-	LLHiddenTooltip:SetScript("OnTooltipCleared", nil);
-	
 	-- Hook the quest item update function
-	-- hooksecurefunc("QuestFrameItems_Update", LootLink_ScanQuest);
+	hooksecurefunc("QuestInfo_ShowRewards", LootLink_ScanQuest);
+	
+	-- Hook the chat edit functions we need for auto completion
+	hooksecurefunc("ChatEdit_OnTextChanged", LootLink_ChatEdit_OnTextChanged);
+	hooksecurefunc("ChatEdit_OnEscapePressed", LootLink_ChatEdit_OnEscapePressed);
+	LL.lOriginal_ChatEdit_CustomTabPressed = ChatEdit_CustomTabPressed;
+	ChatEdit_CustomTabPressed = LootLink_ChatEdit_CustomTabPressed;
 
 	if( DEFAULT_CHAT_FRAME ) then
 		DEFAULT_CHAT_FRAME:AddMessage("Telo's LootLink AddOn loaded");
@@ -2815,8 +2972,8 @@ function LootLink_OnLoad()
 	UIErrorsFrame:AddMessage("Telo's LootLink AddOn loaded", 1.0, 1.0, 1.0, 1.0, UIERRORS_HOLD_TIME);
 end
 
-function LootLink_CanSendAuctionQuery()
-	local value = lOriginal_CanSendAuctionQuery();
+function LootLink_CanSendAuctionQuery(...)
+	local value = LL.lOriginal_CanSendAuctionQuery(...);
 	if( value ) then
 		LootLink_AuctionNextQuery();
 		return nil;
@@ -2824,148 +2981,79 @@ function LootLink_CanSendAuctionQuery()
 	return value;
 end
 
-function LootLink_AuctionFrameBrowse_OnEvent()
+function LootLink_AuctionFrameBrowse_OnEvent(self, event, ...)
 	-- Intentionally empty; don't allow the auction UI to update while we're scanning
 end
 
 local function LootLink_DoInitialWork()
+	if( LL.lReady and LL.lPlayerInWorld ) then
 		if( not LL.lAtlasLootLoaded and type(AtlasLoot_LoadAllModules) == "function" ) then
 			AtlasLoot_LoadAllModules();
 			LL.lAtlasLootLoaded = true;
 		end
 		LootLink_ScanSelf();
-	end
-
-function LootLink_OnTooltipSetItem()
-	local name, link = this:GetItem();
-	LootLink_AddTooltipInfo(name, this);
-end
-
-function LootLink_OnTooltipSetItemNoPrice()
-	local name, link = this:GetItem();
-	LootLink_AddTooltipInfo(name, this, 0);
-end
-
-function LootLink_SetItem(self)
-	local name, link = self:GetItem();
-	LootLink_AddTooltipInfo(name, self);
-end
-
-function LootLink_SetAuctionItem(self, type, index)
-	local name, _, count = GetAuctionItemInfo(type, index);
-	LootLink_AddTooltipInfo(name, self, count);
-end
-
-function LootLink_SetAuctionSellItem(self)
-	local name, _, count = GetAuctionSellItemInfo();
-	LootLink_AddTooltipInfo(name, self, count);
-end
-
-function LootLink_SetBagItem(self, bag, slot)
-	local _, count = GetContainerItemInfo(bag, slot);
-	local name, link = self:GetItem();
-	LootLink_AddTooltipInfo(name, self, count);
-end
-
-function LootLink_SetInventoryItem(self, unit, id)
-	local count;
-	if( id >= 20 and id <= 23 ) then
-		count = 1;
-	else
-		count = GetInventoryItemCount(unit, id);
-	end
-	local name, link = self:GetItem();
-	LootLink_AddTooltipInfo(name, self, count);
-end
-
-function LootLink_SetLootItem(self, slot)
-	local _, _, count = GetLootSlotInfo(slot);
-	local name, link = self:GetItem();
-	LootLink_AddTooltipInfo(name, self, count);
-end
-
-function LootLink_SetLootRollItem(self, id)
-	local _, name, count = GetLootRollItemInfo(id);
-	LootLink_AddTooltipInfo(name, self, count);
-end
-
-function LootLink_SetQuestItem(self, type, id)
-	local name, _, count = GetQuestItemInfo(type, id);
-	LootLink_AddTooltipInfo(name, self, count);
-end
-
-function LootLink_SetQuestLogItem(self, type, id)
-	local name, _, count;
-	if( type == "choice" ) then
-		name, _, count = GetQuestLogChoiceInfo(id);
-	elseif( type == "reward" ) then
-		name, _, count = GetQuestLogRewardInfo(id);
-	else
-		name, _, count = GetQuestItemInfo(type, id);
-	end
-	LootLink_AddTooltipInfo(name, self, count);
-end
-
-function LootLink_SetTradePlayerItem(self, id)
-	local name, _, count = GetTradePlayerItemInfo(id);
-	LootLink_AddTooltipInfo(name, self, count);
-end
-
-function LootLink_SetTradeTargetItem(self, id)
-	local name, _, count = GetTradeTargetItemInfo(id);
-	LootLink_AddTooltipInfo(name, self, count);
-end
-
-function LootLink_OnTooltipAddMoney()
-	if( lBagID and lSlotID ) then
-		LootLink_ScanSellPrice(arg1);
+		LL.lInitialWorkDone = true;
 	end
 end
 
-function LootLink_OnEvent()
+function LootLink_OnEvent(self, event, ...)
+	local arg1, arg2, arg3, arg4, arg5, arg6 = ...;
 	if( event == "PLAYER_TARGET_CHANGED" ) then
-		if( UnitIsUnit("target", "player") ) then
-			return;
-		elseif( UnitIsPlayer("target") ) then
+		if( not InCombatLockdown() and not UnitIsUnit("target", "player") and UnitIsPlayer("target") ) then
 			LootLink_Inspect("target");
 		end
 	elseif( event == "UPDATE_MOUSEOVER_UNIT" ) then
-		if( UnitIsPlayer("mouseover") ) then
+		if( not InCombatLockdown() and not UnitIsUnit("mouseover", "player") and UnitIsPlayer("mouseover") ) then
 			LootLink_Inspect("mouseover");
 		end
+	elseif( event == "PLAYER_LOGIN" or event == "ZONE_CHANGED_NEW_AREA" ) then
+		if( not LL.lUnitInventoryChangedRegistered ) then
+			-- At this point, it's safe to watch for inventory changes
+			self:RegisterEvent("UNIT_INVENTORY_CHANGED");
+			LL.lUnitInventoryChangedRegistered = true;
+		end
 	elseif( event == "PLAYER_ENTERING_WORLD" ) then
-		-- Now that we're in the world, we want to watch for inventory changes
-		this:RegisterEvent("UNIT_INVENTORY_CHANGED");
+		LL.lPlayerInWorld = true;
 
-		-- Check to see if the user needs to upgrade their database
-		LootLink_CheckVersionReminder();
-		
 		-- Do initial scan of inventory and equipped items if needed
-		if( not lInitialScanDone ) then
-			LootLink_ScanInventory();
-			LootLink_Inspect("player");
-			lInitialScanDone = true;
+		if( not LL.lInitialWorkDone ) then
+			LootLink_DoInitialWork();
+		end
+	elseif( event == "PLAYER_REGEN_ENABLED" ) then
+		if( LL.lScanInventoryAfterCombat ) then
+			LL.lScanInventoryAfterCombat = false;
+			LootLink_ScanSelf();
 		end
 	elseif( event == "PLAYER_LEAVING_WORLD" ) then
+		LL.lPlayerInWorld = false;
+		
 		-- When we leave the world, we don't need to watch for inventory changes,
 		-- especially since zoning will cause one UNIT_INVENTORY_CHANGED event for
 		-- each item in the player's inventory and that they have equipped
-		this:UnregisterEvent("UNIT_INVENTORY_CHANGED");
+		self:UnregisterEvent("UNIT_INVENTORY_CHANGED");
+		LL.lUnitInventoryChangedRegistered = false;
 	elseif( event == "UNIT_INVENTORY_CHANGED" ) then
 		if( arg1 == "player" ) then
-			LootLink_ScanInventory();
-			LootLink_Inspect("player");
+			if( InCombatLockdown() ) then
+				LL.lScanInventoryAfterCombat = true;
+			else
+				LootLink_ScanSelf();
+			end
 		end
 	elseif( event == "BANKFRAME_OPENED" ) then
 		LootLink_ScanBank();
+	elseif( event == "GUILDBANKBAGSLOTS_CHANGED" ) then
+		LootLink_ScanGuildBankTab();
 	elseif( event == "VARIABLES_LOADED" ) then
-	elseif( event == "ADDON_LOADED" ) then
-		if arg1:lower() == "lootlink" then
-			LootLink_VariablesLoaded();
+		LootLink_VariablesLoaded();
+
+		-- Do initial scan of inventory and equipped items if needed
+		if( not LL.lInitialWorkDone ) then
+			LootLink_DoInitialWork();
 		end
 	elseif( event == "AUCTION_HOUSE_SHOW" ) then
-		if( lScanAuction ) then
-				DEFAULT_CHAT_FRAME:AddMessage("Scanning auction");
+		if( LL.lScanAuction ) then
+			LL.lScanAuction = false;
 			LootLink_StartAuctionScan();
 		end
 	elseif( event == "AUCTION_HOUSE_CLOSED" ) then
@@ -2973,7 +3061,6 @@ function LootLink_OnEvent()
 	elseif( event == "AUCTION_ITEM_LIST_UPDATE" ) then
 		LootLink_ScanAuction();
 	elseif( event == "MERCHANT_SHOW" ) then
-		LootLink_ScanSellPrices();
 		LootLink_ScanMerchant();
 	elseif( event == "MERCHANT_UPDATE" ) then
 		LootLink_ScanMerchant();
@@ -2982,13 +3069,15 @@ function LootLink_OnEvent()
 	elseif( event == "START_LOOT_ROLL" ) then
 		LootLink_ScanRoll(arg1);
 	else
-		local name = LootLink_ProcessLinks(arg1);
-		if( name and ItemLinks[name] ) then
-			LootLink_Event_ScanChat(name, ItemLinks[name], arg1);
+		local llid = LootLink_ProcessLinks(arg1);
+		if( llid and ItemLinks[llid] ) then
+			LootLink_Event_ScanChat(LootLink_GetName(llid), ItemLinks[llid], arg1);
+			LootLink_Event_ScanChatId(llid, ItemLinks[llid], arg1);
 		end
 	end
 end
 
+-- can't change these for some reason.  llid instead of GetText isn't working.
 function LootLinkItemButton_OnClick(button)
 	if( button == "LeftButton" ) then
 		if( IsShiftKeyDown() ) then
@@ -3011,15 +3100,16 @@ function LootLinkItemButton_OnClick(button)
 	end
 end
 
-function LootLink_OnShow()
+function LootLink_OnShow(self)
 	PlaySound("igMainMenuOpen");
 	LootLink_Update();
 end
 
-function LootLink_OnHide()
+function LootLink_OnHide(self)
 	PlaySound("igMainMenuClose");
 end
 
+-- this disables tooltips.  Doesn't pull data from things, because of llid instead of name.
 function LootLinkItemButton_OnEnter()
 	local link = LootLink_GetHyperlink(this:GetText());
 	if( link ) then
@@ -3032,13 +3122,14 @@ function LootLinkItemButton_OnEnter()
 	end
 end
 
-function LootLinkItemButton_OnLeave()
+function LootLinkItemButton_OnLeave(self)
 	if( LootLinkFrame.TooltipButton ) then
 		LootLinkFrame.TooltipButton = nil;
 		GameTooltip:Hide();
 	end
 end
 
+-- Need to change for SDD
 function LootLinkFrameDropDown_OnLoad()
 	UIDropDownMenu_Initialize(LootLinkFrameDropDown, LootLinkFrameDropDown_Initialize);
 	LootLink_UIDropDownMenu_SetSelectedID(LootLinkFrameDropDown, 1, LOOTLINK_DROPDOWN_LIST);
@@ -3109,6 +3200,65 @@ function LLS_SubtypeDropDown_OnClick()
 	UIDropDownMenu_SetSelectedID(LLS_SubtypeDropDown, this:GetID());
 end
 
+function LootLink_AutoCompleteButton_OnClick(self)
+	local frame = self:GetParent();
+	
+	if( frame:IsShown() ) then
+		local editBox = frame.editBox;
+		
+		if( not InCombatLockdown() and LL.lAutoCompleteStartIndex ) then
+			local link = LootLink_GetLink(self.llid);
+			local newText;
+			if( link and GetItemInfo(LootLink_GetItemId(self.llid)) ) then
+				newText = string.sub(editBox:GetText(), 1, LL.lAutoCompleteStartIndex - 1)..link;
+			else
+				newText = string.sub(editBox:GetText(), 1, LL.lAutoCompleteStartIndex)..self:GetText().."]";
+			end
+			editBox:SetText(newText);
+			editBox:SetCursorPosition(strlen(newText));
+		end
+
+		LootLinkAutoComplete_Hide(frame, true);
+	else
+		LL.lAutoCompleteStartIndex = nil;
+	end
+end
+
+function LootLinkAutoCompleteButton_OnEnter(self)
+	LootLinkAutoCompleteTooltip:Hide();
+
+	if( self.llid ) then
+		local link = LootLink_GetHyperlink(self.llid);
+		if( link ) then
+			LootLinkAutoCompleteFrame.mouseTooltip = true;
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+			local cached = LootLink_SetHyperlinkFromId(GameTooltip, self.llid, link);
+			if( IsShiftKeyDown() and (cached or IsControlKeyDown()) ) then
+				LootLink_ShowCompareItem(link);
+			end
+		end
+	end
+end
+
+function LootLinkAutoCompleteButton_OnLeave(self)
+	LootLinkAutoCompleteFrame.mouseTooltip = false;
+	GameTooltip:Hide();
+	
+	local frame = LootLinkAutoCompleteFrame;
+	if( frame:IsShown() ) then
+		LootLinkAutoComplete_ShowTooltip(frame);
+	end
+end
+
+function LootLink_AutoComplete_OnLoad(self)
+	self:SetBackdropBorderColor(TOOLTIP_DEFAULT_COLOR.r, TOOLTIP_DEFAULT_COLOR.g, TOOLTIP_DEFAULT_COLOR.b);
+	self:SetBackdropColor(TOOLTIP_DEFAULT_BACKGROUND_COLOR.r, TOOLTIP_DEFAULT_BACKGROUND_COLOR.g, TOOLTIP_DEFAULT_BACKGROUND_COLOR.b);
+	
+	self.maxHeight = LOOTLINK_AUTOCOMPLETE_BUTTON_COUNT * LootLinkAutoCompleteButton1:GetHeight();
+	
+	LootLinkAutoCompleteInstructions:SetText("|cffbbbbbb"..PRESS_TAB.."|r");
+end
+
 --------------------------------------------------------------------------------------------------
 -- Callback functions
 --------------------------------------------------------------------------------------------------
@@ -3122,11 +3272,10 @@ end
 
 function LootLink_SlashCommandHandler(msg)
 	local reset;
-	local makehome;
 	local light;
 	local aborted;
 
-	if( not lDisableVersionReminder ) then
+	if( not LL.lDisableVersionReminder ) then
 		LootLink_CheckVersionReminder();
 	end
 	if( not msg or msg == "" ) then
@@ -3135,40 +3284,24 @@ function LootLink_SlashCommandHandler(msg)
 		local command = string.lower(msg);
 		if( command == LOOTLINK_HELP ) then
 			local index = 0;
-			local value = getglobal("LOOTLINK_HELP_TEXT"..index);
+			local value = _G["LOOTLINK_HELP_TEXT"..index];
 			while( value ) do
 				DEFAULT_CHAT_FRAME:AddMessage(value);
 				index = index + 1;
-				value = getglobal("LOOTLINK_HELP_TEXT"..index);
+				value = _G["LOOTLINK_HELP_TEXT"..index];
 			end
 		elseif( command == LOOTLINK_STATUS ) then
 			LootLink_Status();
+		elseif( command == LOOTLINK_AUTOCOMPLETE ) then
+			LootLinkState.AutoCompleteDisabled = not LootLinkState.AutoCompleteDisabled;
+			LootLink_Status();
 		elseif( command == LOOTLINK_AUCTION or command == LOOTLINK_SCAN ) then
 			if( AuctionFrame and AuctionFrame:IsVisible() ) then
-				local iButton;
-				local button;
-
-				-- Hide the UI from any current results, show the no results text so we can use it
-				BrowseNoResultsText:Show();
-				for iButton = 1, NUM_BROWSE_TO_DISPLAY do
-					button = getglobal("BrowseButton"..iButton);
-					button:Hide();
-				end
-				BrowsePrevPageButton:Hide();
-				BrowseNextPageButton:Hide();
-				BrowseSearchCountText:Hide();
-
 				LootLink_StartAuctionScan();
 			else
-				lScanAuction = 1;
+				LL.lScanAuction = true;
 				LootLink_Status();
 			end
-		elseif( command == LOOTLINK_SHOWINFO ) then
-			LootLinkState.HideInfo = nil;
-			LootLink_Status();
-		elseif( command == LOOTLINK_HIDEINFO ) then
-			LootLinkState.HideInfo = 1;
-			LootLink_Status();
 		elseif( command == LOOTLINK_FULLMODE ) then
 			LootLinkState.LightMode = nil;
 			LootLink_Status();
@@ -3180,65 +3313,44 @@ function LootLink_SlashCommandHandler(msg)
 			iStart, iEnd, command, args = string.find(command, "^(%w+)%s*(.*)$");
 	
 			if( command == LOOTLINK_RESET ) then
-				if( lResetNeedsConfirm ) then
+				if( LL.lResetNeedsConfirm ) then
 					if( args == LOOTLINK_CONFIRM ) then
 						LootLink_Reset();
-						lResetNeedsConfirm = nil;
-						lDisableVersionReminder = nil
+						LL.lResetNeedsConfirm = nil;
+						LL.lDisableVersionReminder = nil
 						DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_RESET_DONE);
 					end
 				else
 					reset = 1;
-					lResetNeedsConfirm = 1;
-					lDisableVersionReminder = 1;
-				end
-			elseif( LootLink_GetDataVersion() < 110 and command == LOOTLINK_MAKEHOME ) then
-				if( lMakeHomeNeedsConfirm ) then
-					if( args == LOOTLINK_CONFIRM ) then
-						LootLink_MakeHome();
-						lMakeHomeNeedsConfirm = nil;
-						lDisableVersionReminder = nil;
-						DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_MAKEHOME_DONE);
-					end
-				else
-					makehome = 1;
-					lMakeHomeNeedsConfirm = 1;
-					lDisableVersionReminder = 1;
+					LL.lResetNeedsConfirm = 1;
+					LL.lDisableVersionReminder = 1;
 				end
 			elseif( command == LOOTLINK_LIGHTMODE ) then
-				if( lLightModeNeedsConfirm ) then
+				if( LL.lLightModeNeedsConfirm ) then
 					if( args == LOOTLINK_CONFIRM ) then
 						LootLink_LightMode();
-						lLightModeNeedsConfirm = nil;
+						LL.lLightModeNeedsConfirm = nil;
 						DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_LIGHTMODE_DONE);
 					end
 				else
 					light = 1;
-					lLightModeNeedsConfirm = 1;
+					LL.lLightModeNeedsConfirm = 1;
 				end
 			end
 		end
 	end
 	
 	if( not reset ) then
-		if( lResetNeedsConfirm ) then
+		if( LL.lResetNeedsConfirm ) then
 			aborted = 1;
-			lResetNeedsConfirm = nil;
+			LL.lResetNeedsConfirm = nil;
 			DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_RESET_ABORTED);
 		end
 	end
 	
-	if( not makehome ) then
-		if( lMakeHomeNeedsConfirm ) then
-			aborted = 1;
-			lMakeHomeNeedsConfirm = nil;
-			DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_MAKEHOME_ABORTED);
-		end
-	end
-	
 	if( not light ) then
-		if( lLightModeNeedsConfirm ) then
-			lLightModeNeedsConfirm = nil;
+		if( LL.lLightModeNeedsConfirm ) then
+			LL.lLightModeNeedsConfirm = nil;
 			DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_LIGHTMODE_ABORTED);
 		end
 	end
@@ -3247,16 +3359,12 @@ function LootLink_SlashCommandHandler(msg)
 		DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_RESET_NEEDS_CONFIRM);
 	end
 	
-	if( makehome ) then
-		DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_MAKEHOME_NEEDS_CONFIRM);
-	end
-	
 	if( light ) then
 		DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_LIGHTMODE_NEEDS_CONFIRM);
 	end
 	
-	if( aborted and not reset and not makehome ) then
-		lDisableVersionReminder = nil
+	if( aborted and not reset ) then
+		LL.lDisableVersionReminder = nil
 	end
 end
 
@@ -3310,7 +3418,7 @@ end
 
 function LootLink_Refresh()
 	FauxScrollFrame_SetOffset(LootLinkListScrollFrame, 0);
-	getglobal("LootLinkListScrollFrameScrollBar"):SetValue(0);
+	_G["LootLinkListScrollFrameScrollBar"]:SetValue(0);
 	LootLink_BuildDisplayIndices();
 	LootLink_Update();
 end
@@ -3628,6 +3736,12 @@ function LootLinkSearch_SaveValues()
 	end
 end
 
+function LootLinkSearchFrame_OnLoad(self)
+	for index, value in pairs(LootLinkPanelLayout[self:GetName()]) do
+		self:SetAttribute("UIPanelLayout-"..index, value);
+	end
+end
+
 function LootLinkSearchFrame_SaveSearchParams()
 	LootLinkSearchFrame.OldSearchParams = LootLinkFrame.SearchParams;
 end
@@ -3716,10 +3830,49 @@ end
 -- External functions
 --------------------------------------------------------------------------------------------------
 
+-- Extract the item id from a LootLink id
+function LootLink_GetItemId(llid)
+	if( llid ) then
+		return string.match(llid, "^(%-?%d+):");
+	end
+	return nil;
+end
+
+-- Extract the name from a LootLink id
+function LootLink_GetName(llid)
+	if( llid ) then
+		return string.match(llid, "^%-?%d+:(.+)$");
+	end
+	return nil;
+end
+
+-- Find the LootLink id for an item by name (or at least the first one)
+function LootLink_GetLootLinkIdFromName(name)
+	if( LL.lReady ) then
+		for index, value in pairs(ItemLinks) do
+			if( LootLink_GetName(index) == name ) then
+				return value;
+			end
+		end
+	end
+	return nil;
+end
+
 -- Look up an item from LootLink's cache, by name
 function LootLink_GetItem(name)
-	if( name ) then
-		return ItemLinks[name];
+	if( LL.lReady ) then
+		local llid = LootLink_GetLootLinkIdFromName(name);
+		if( llid ) then
+			return ItemLinks[llid];
+		end
+	end
+	return nil;
+end
+
+-- Look up an item from LootLink's cache, by LootLink id
+function LootLink_GetItemById(llid)
+	if( LL.lReady ) then
+		return ItemLinks[llid];
 	end
 	return nil;
 end
@@ -3728,11 +3881,11 @@ end
 --  bi -> binds; un -> unique; ty -> type; su -> subtype; le -> level; sk -> skill; lo -> location;
 --  mi -> min damage; ma -> max damage; sp -> speed; dp -> dps; ar -> armor; bl -> block; sl -> # slots
 function LootLink_SearchData(item, tag)
-	if( item.d ) then
+	if( LL.lReady and item and item.d ) then
 		local s, e;
 		local value;
 
-		s, e, value = string.find(item.d, tag.."(.-)\183")
+		s, e, value = string.find(item.d, tag.."(.-)·")
 		if( value ) then
 			return tonumber(value);
 		end
@@ -3774,312 +3927,483 @@ function LootLink_ProcessLinks(text)
 	local color;
 	local item;
 	local name;
-	local link;
-	local lastName;
+	local itemString;
+	local lastLLid;
+	local valid;
 
-	if( text ) then
+	if( LL.lReady and text ) then
 	for color, item, name in string.gmatch(text, "|c(%x+)|Hitem:(%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+)|h%[(.-)%]|h|r") do
 			if( color and item and name and name ~= "" ) then
-				link = string.gsub(item, "^(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+)$", "%1:0:0:0:0:%6:%7:%8:%9");
-				if( not ItemLinks[name] ) then
-					ItemLinks[name] = { };
-					ItemLinks[name].c = color;
-					ItemLinks[name].i = link;
-					LL.lItemLinksSizeTotal = LL.lItemLinksSizeTotal + 1;
+				itemString, valid = string.gsub(item, "^(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+)$", "%1:0:0:0:0:%6:%7:%8:%9");
 
-					if( LootLink_GetDataVersion() < 110 ) then
-						-- Set a flag to indicate that this item is new and should be skipped on a makehome
-						ItemLinks[name]._ = 1;
-					end
-				else
-					-- Replace the existing data
-					ItemLinks[name].c = color;
-					ItemLinks[name].i = link;
-					ItemLinks[name].d = nil;
-					ItemLinks[name].t = nil;
-				end
-				
-				
-				if( ItemLinks[name] ) then
-					LootLink_BuildSearchData(name, ItemLinks[name]);
-					if( not LootLink_CheckItemServerRaw(ItemLinks[name], LL.lServerIndex) ) then
-						LootLink_AddItemServer(ItemLinks[name], LL.lServerIndex);
-						LL.lItemLinksSizeServer = LL.lItemLinksSizeServer + 1;
-					end
-				end
+				if( valid and valid == 1) then
+					local itemid = string.match(itemString, "^(%-?%d+):");
 
-				
-				lastName = name;
-			end
-		end
-		
-		-- Now do a secondary pass for items without color; only store if we have no information for them
-		for item, name in string.gmatch(text, "|Hitem:(%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+)|h%[(.-)%]|h") do
-			if( item and name and name ~= "" ) then
-				if( not ItemLinks[name] ) then
-					ItemLinks[name] = { };
-					ItemLinks[name].c = "ff40ffc0";
-					ItemLinks[name].i = string.gsub(item, "^(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+)$", "%1:0:0:0:0:%6:%7:%8:%9");
-					LL.lItemLinksSizeTotal = LL.lItemLinksSizeTotal + 1;
-
-					if( LootLink_GetDataVersion() < 110 ) then
-						-- Set a flag to indicate that this item is new and should be skipped on a makehome
-						ItemLinks[name]._ = 1;
+					if( itemid ) then
+						lastLLid = LootLink_InternalAddItem(itemid, name, color, itemString);
 					end
-					
-					if( not LootLink_CheckItemServerRaw(ItemLinks[name], LL.lServerIndex) ) then
-						LootLink_AddItemServer(ItemLinks[name], LL.lServerIndex);
-						LL.lItemLinksSizeServer = LL.lItemLinksSizeServer + 1;
-					end
-
-					LootLink_BuildSearchData(name, ItemLinks[name]);
 				end
 			end
 		end
 	end
 	
-	return lastName;
+	return lastLLid;
+end
+
+-- Tries to find a zone name for a given data source name and type
+local function LootLink_FindAtlasLootZoneName(table, dataSource, expectedType, grandparentKey, parentKey)
+	local result;
+	
+	if( table and type(table) == "table" ) then
+		if( table[2] == dataSource and table[3] == expectedType ) then
+			if( type(grandparentKey) == "string" ) then
+				result = grandparentKey..": "..table[1];
+			else
+				result = table[1];
+			end
+		else
+			for k, v in pairs(table) do
+				result = LootLink_FindAtlasLootZoneName(v, dataSource, expectedType, parentKey, k);
+				if( result ) then
+					break;
+				end
+			end
+		end
+	end
+	
+	return result;
+end
+
+-- Tries to get source information for an item from AtlasLoot
+local function LootLink_AddSourceInfo(tooltip, itemid)
+	local dataSource;
+	local sourceName;
+	local zoneName;
+	local isHeroic;
+	local is25Man;
+
+	-- Make sure we're working with a number (or nil) for the itemid	
+	if( type(itemid) ~= "number" ) then
+		itemid = tonumber(itemid);
+	end
+	
+	if( type(itemid) == "number" and itemid ~= 0 and AtlasLoot_Data ) then
+		-- First, we'll try to find the data table that contains this item
+		local tableName, lootTable;
+		for tableName, lootTable in pairs(AtlasLoot_Data) do
+			local _, item;
+			for _, item in ipairs(lootTable) do
+				if( item[2] == itemid ) then
+					dataSource = tableName;
+					break;
+				end
+			end
+			
+			if( dataSource ) then
+				break;
+			end
+		end
+		
+		-- We hopefully have the data table name in dataSource
+		if( dataSource ) then
+			-- Get the source name, if possible
+			if( AtlasLoot_TableNames and AtlasLoot_TableNames[dataSource] ) then
+				sourceName = AtlasLoot_TableNames[dataSource][1];
+			end
+			
+			-- Parse out the heroic and 25 man flags
+			if( string.sub(dataSource, -6) == "HEROIC" ) then
+				isHeroic = true;
+				dataSource = string.sub(dataSource, 1, string.len(dataSource) - 6);
+			end
+			if( string.sub(dataSource, -5) == "25Man" ) then
+				is25Man = true;
+				dataSource = string.sub(dataSource, 1, string.len(dataSource) - 5);
+			end
+			
+			local try;
+			for try = 1, 2 do
+				-- Now try to find the zone name
+				local expectedType = "Table";
+				
+				-- First, we check the subtables for the parent table entry that actually is associated with the zone name
+				if( AtlasLoot_DewDropDown_SubTables ) then
+					local parentName, parentEntry;
+					for parentName, parentEntry in pairs(AtlasLoot_DewDropDown_SubTables) do
+						local _, subEntry;
+						for _, subEntry in ipairs(parentEntry) do
+							if( subEntry[2] == dataSource ) then
+								dataSource = parentName;
+								expectedType = "Submenu";
+								break;
+							end
+						end
+					end
+				end
+				
+				-- Then we try to find the zone name that matches the appropriate table name
+				zoneName = LootLink_FindAtlasLootZoneName(AtlasLoot_DewDropDown, dataSource, expectedType);
+				
+				if( zoneName ) then
+					break;
+				else
+					dataSource = dataSource.."HEROIC";
+				end
+			end
+		end
+	
+		-- Construct the text we're going to add
+		local text;
+		
+		if( sourceName and zoneName ) then
+			text = "Source: "..sourceName..", "..zoneName;
+		elseif( sourceName ) then
+			text = "Source: "..sourceName;
+		elseif( zoneName ) then
+			text = "Source: "..zoneName;
+		end
+		
+		if( text ) then
+			if( is25Man ) then
+				if( isHeroic ) then
+					text = text.." (25 Player Heroic)";
+				else
+					text = text.." (25 Player)";
+				end
+			elseif( isHeroic ) then
+				text = text.." (Heroic)";
+			end
+		end
+		
+		-- Add the text to the tooltip
+		if( text ) then
+			tooltip:AddLine(text, 0.2, 0.8, 0.6, true);
+		end
+	end
 end
 
 -- Sets up a tooltip from a hyperlink, building a facsimile from the LootLink data if necessary 
 function LootLink_SetHyperlink(tooltip, name, link)
+	if( link ) then
+		local _, _, itemid = string.find(link, "item:(%-?%d+):");
+		
+		if( itemid and name ) then
+			LootLink_SetHyperlinkFromId(tooltip, itemid..":"..name, link);
+		end
+	end
+end
+
+-- Sets up a tooltip from a hyperlink, building a facsimile from the LootLink data if necessary 
+function LootLink_SetHyperlinkFromId(tooltip, llid, link)
 	if( tooltip and tooltip["GetObjectType"] and type(tooltip["GetObjectType"]) == "function" and tooltip:GetObjectType() == "GameTooltip" ) then
+		local value = ItemLinks[llid];
+
 		-- If the link isn't in the local cache, it may not be valid
 		if( not GetItemInfo(link) ) then
-			-- To avoid disconnects, we'll create our own tooltip for these
-			local value = ItemLinks[name];
-			if( value ) then
-				local extraSkip = 0;
-				local lines = 1;
-				local usabilityData;
-
-		
-				-- Name, in rarity color
-				tooltip:SetText("|c"..value.c..name.."|r");
-				
-				-- Binds on equip, binds on pickup
-				local binds = LootLink_SearchData(value, "bi");
-				if( binds == BINDS_EQUIP ) then
-					tooltip:AddLine("Binds when equipped", 1, 1, 1);
-					lines = lines + 1;
-				elseif( binds == BINDS_PICKUP ) then
-					tooltip:AddLine("Binds when picked up", 1, 1, 1);
-					lines = lines + 1;
-				elseif( binds == BINDS_USED ) then
-					tooltip:AddLine("Binds when used", 1, 1, 1);
-					lines = lines + 1;
-				end
-				
-				-- Unique?
-				local unique = LootLink_SearchData(value, "un");
-				if( unique ) then
-					tooltip:AddLine("Unique", 1, 1, 1);
-					lines = lines + 1;
-				end
-				
-				local _type = LootLink_SearchData(value, "ty");
-				local subtype = LootLink_SearchData(value, "su");
-
-				-- Equip location and type/subtype
-				local location = LootLink_SearchData(value, "lo");
-				if( location ) then
-					local subtypes;
-					local name;
-					for i, v in pairs(LocationTypes) do
-						if( v.i == location ) then
-							name = i;
-							subtypes = v.subtypes;
-							break;
+			if( LL.lReady ) then
+				-- To avoid disconnects, we'll create our own tooltip for these
+				if( value ) then
+					local extraSkip = 0;
+					local lines = 1;
+					local usabilityData;
+					
+					-- Name, in rarity color
+					tooltip:SetText("|c"..value.c..LootLink_GetName(llid).."|r");
+					
+					-- Heroic
+					local heroic = LootLink_SearchData(value, "he");
+					if( heroic ) then
+						tooltip:AddLine("Heroic", 0, 1, 0, 1, 1);
+						lines = lines + 1;
+					end
+					
+					-- Binds on equip, binds on pickup
+					local binds = LootLink_SearchData(value, "bi");
+					if( binds == LL.BINDS_EQUIP ) then
+						tooltip:AddLine("Binds when equipped", 1, 1, 1);
+						lines = lines + 1;
+					elseif( binds == LL.BINDS_PICKUP ) then
+						tooltip:AddLine("Binds when picked up", 1, 1, 1);
+						lines = lines + 1;
+					elseif( binds == LL.BINDS_USED ) then
+						tooltip:AddLine("Binds when used", 1, 1, 1);
+						lines = lines + 1;
+					elseif( binds == LL.BINDS_ACCOUNT ) then
+						tooltip:AddLine("Binds to account", 1, 1, 1);
+						lines = lines + 1;
+					end
+					
+					-- Unique?
+					local unique = LootLink_SearchData(value, "un");
+					if( unique ) then
+						if( unique == LL.UNIQUE_GENERIC ) then
+							tooltip:AddLine("Unique", 1, 1, 1);
+							lines = lines + 1;
+						elseif( unique == LL.UNIQUE_EQUIPPED ) then
+							tooltip:AddLine("Unique-Equipped", 1, 1, 1);
+							lines = lines + 1;
 						end
 					end
-					if( name ) then
-						tooltip:AddLine(name, 1, 1, 1);
-						lines = lines + 1;
-						if( subtype ) then
-							if( _type == TYPE_WEAPON ) then
-								subtypes = WeaponSubtypes;
-							end
-							if( subtypes ) then
-								for i, v in pairs(subtypes) do
-									if( v == subtype ) then
-										if( i == name ) then
-											local line = getglobal(tooltip:GetName().."TextLeft"..lines);
-											
-											if( not usabilityData ) then
-												usabilityData = { };
-												BuildUsabilityData(usabilityData);
-											end
-											if( not LootLink_GetSkillRank(usabilityData, _type, subtype, location) ) then
-												line:SetTextColor(1, 0, 0);
-											end
-										else
-											local line = getglobal(tooltip:GetName().."TextRight"..lines);
-											line:SetText(i);
+					
+					local _type = LootLink_SearchData(value, "ty");
+					local subtype = LootLink_SearchData(value, "su");
 
-											if( not usabilityData ) then
-												usabilityData = { };
-												BuildUsabilityData(usabilityData);
-											end
-											if( LootLink_GetSkillRank(usabilityData, _type, subtype, location) ) then
-												line:SetTextColor(1, 1, 1);
+					local i;
+					local v;
+
+					-- Equip location and type/subtype
+					local location = LootLink_SearchData(value, "lo");
+					if( location ) then
+						local subtypes;
+						local name;
+						for i, v in pairs(LocationTypes) do
+							if( v.i == location ) then
+								name = i;
+								subtypes = v.subtypes;
+								break;
+							end
+						end
+						if( name ) then
+							tooltip:AddLine(name, 1, 1, 1);
+							lines = lines + 1;
+							if( subtype ) then
+								if( _type == LL.TYPE_WEAPON ) then
+									subtypes = WeaponSubtypes;
+								end
+								if( subtypes ) then
+									for i, v in pairs(subtypes) do
+										if( v == subtype ) then
+											if( i == name ) then
+												local line = _G[tooltip:GetName().."TextLeft"..lines];
+												
+												if( not usabilityData ) then
+													usabilityData = { };
+													BuildUsabilityData(usabilityData);
+												end
+												if( not LootLink_GetSkillRank(usabilityData, _type, subtype, location) ) then
+													line:SetTextColor(1, 0, 0);
+												end
 											else
-												line:SetTextColor(1, 0, 0);
+												local line = _G[tooltip:GetName().."TextRight"..lines];
+												line:SetText(i);
+
+												if( not usabilityData ) then
+													usabilityData = { };
+													BuildUsabilityData(usabilityData);
+												end
+												if( LootLink_GetSkillRank(usabilityData, _type, subtype, location) ) then
+													line:SetTextColor(1, 1, 1);
+												else
+													line:SetTextColor(1, 0, 0);
+												end
+												
+												line:Show();
+												extraSkip = extraSkip + 1;
+												break;
 											end
-											
-											line:Show();
-											extraSkip = extraSkip + 1;
-											break;
 										end
 									end
 								end
 							end
 						end
 					end
-				end
-				
-				-- Now do type specific data
-				if( _type == TYPE_ARMOR ) then
-					local armor = LootLink_SearchData(value, "ar");
-					if( armor ) then
-						tooltip:AddLine(armor.." Armor", 1, 1, 1);
-						lines = lines + 1;
-					end
-				elseif( _type == TYPE_WEAPON ) then
-					local min = LootLink_SearchData(value, "mi");
-					local max = LootLink_SearchData(value, "ma");
-					local speed = LootLink_SearchData(value, "sp");
-					local dps = LootLink_SearchData(value, "dp");
 					
-					if( min and max ) then
-						tooltip:AddLine(min.." - "..max.." Damage", 1, 1, 1);
-						lines = lines + 1;
-						if( speed ) then
-							local line = getglobal(tooltip:GetName().."TextRight"..lines);
-							line:SetText(format("Speed %.2f", tonumber(speed)));
-							line:SetTextColor(1, 1, 1);
-							line:Show();
-							extraSkip = extraSkip + 1;
+					-- Now do type specific data
+					if( _type == LL.TYPE_ARMOR ) then
+						local armor = LootLink_SearchData(value, "ar");
+						if( armor ) then
+							tooltip:AddLine(armor.." Armor", 1, 1, 1);
+							lines = lines + 1;
 						end
-					end
-					if( dps ) then
-						tooltip:AddLine("("..dps.." damage per second)", 1, 1, 1);
-						lines = lines + 1;
-					end
-				elseif( _type == TYPE_SHIELD ) then
-					local armor = LootLink_SearchData(value, "ar");
-					local block = LootLink_SearchData(value, "bl");
-					if( armor ) then
-						tooltip:AddLine(armor.." Armor", 1, 1, 1);
-						lines = lines + 1;
-					end
-					if( block ) then
-						tooltip:AddLine(block.." Block", 1, 1, 1);
-						lines = lines + 1;
-					end
-				elseif( _type == TYPE_RECIPE ) then
-					local skill = LootLink_SearchData(value, "sk");
-					if( skill and subtype ) then
-						for i, v in pairs(RecipeSubtypes) do
+					elseif( _type == LL.TYPE_WEAPON ) then
+						local min = LootLink_SearchData(value, "mi");
+						local max = LootLink_SearchData(value, "ma");
+						local speed = LootLink_SearchData(value, "sp");
+						local dps = LootLink_SearchData(value, "dp");
+						
+						if( min and max ) then
+							tooltip:AddLine(min.." - "..max.." Damage", 1, 1, 1);
+							lines = lines + 1;
+							if( speed ) then
+								local line = _G[tooltip:GetName().."TextRight"..lines];
+								line:SetText(format("Speed %.2f", tonumber(speed)));
+								line:SetTextColor(1, 1, 1);
+								line:Show();
+								extraSkip = extraSkip + 1;
+							end
+						end
+						if( dps ) then
+							tooltip:AddLine("("..dps.." damage per second)", 1, 1, 1);
+							lines = lines + 1;
+						end
+					elseif( _type == LL.TYPE_SHIELD ) then
+						local armor = LootLink_SearchData(value, "ar");
+						local block = LootLink_SearchData(value, "bl");
+						if( armor ) then
+							tooltip:AddLine(armor.." Armor", 1, 1, 1);
+							lines = lines + 1;
+						end
+						if( block ) then
+							tooltip:AddLine(block.." Block", 1, 1, 1);
+							lines = lines + 1;
+						end
+					elseif( _type == LL.TYPE_RECIPE ) then
+						local skill = LootLink_SearchData(value, "sk");
+						if( skill and subtype ) then
+							for i, v in pairs(RecipeSubtypes) do
+								if( v == subtype ) then
+									if( not usabilityData ) then
+										usabilityData = { };
+										BuildUsabilityData(usabilityData);
+									end
+									local rank = LootLink_GetSkillRank(usabilityData, _type, subtype, location);
+									if( not rank or rank < skill ) then
+										tooltip:AddLine("Requires "..i.." ("..skill..")", 1, 0, 0);
+									else
+										tooltip:AddLine("Requires "..i.." ("..skill..")", 1, 1, 1);
+									end
+									lines = lines + 1;
+									break;
+								end
+							end
+						end
+					elseif( _type == LL.TYPE_CONTAINER ) then
+						local slots = LootLink_SearchData(value, "sl");
+						if( slots ) then
+							tooltip:AddLine(slots.." Slot Container", 1, 1, 1);
+							lines = lines + 1;
+						end
+					elseif( _type == LL.TYPE_GLYPH ) then
+						for i, v in pairs(GlyphSubtypes) do
 							if( v == subtype ) then
-								if( not usabilityData ) then
-									usabilityData = { };
-									BuildUsabilityData(usabilityData);
-								end
-								local rank = LootLink_GetSkillRank(usabilityData, _type, subtype, location);
-								if( not rank or rank < skill ) then
-									tooltip:AddLine("Requires "..i.." ("..skill..")", 1, 0, 0);
-								else
-									tooltip:AddLine("Requires "..i.." ("..skill..")", 1, 1, 1);
-								end
+								tooltip:AddLine(i.." Glyph", 0.4, 0.75, 1);
 								lines = lines + 1;
 								break;
 							end
 						end
 					end
-				elseif( _type == TYPE_CONTAINER ) then
-					local slots = LootLink_SearchData(value, "sl");
-					if( slots ) then
-						tooltip:AddLine(slots.." Slot Container", 1, 1, 1);
-						lines = lines + 1;
-					end
-				end
-				
-				local level = LootLink_SearchData(value, "le");
+					
+					local level = LootLink_SearchData(value, "le");
 
-				-- Now add any extra text data that we have
-				if( value.t ) then
-					local skip = lines + extraSkip;
-					local piece;
-					for piece in string.gmatch(value.t, "(.-)\183") do
-						if( lines < 29 ) then
-							if( skip == 0 ) then
-								if( string.find(piece, "^%a+ Socket$") ) then
-									-- '<Type> Socket'
-									local s, e, socket = string.find(piece, "^(%a+) Socket$");
-									tooltip:AddLine(piece, 0.5, 0.5, 0.5, 1, 1);
-									tooltip:AddTexture("Interface\\ItemSocketingFrame\\UI-EmptySocket-"..socket);
-								elseif( string.find(piece, "^Socket Bonus: ") ) then
-									-- 'Socket Bonus: <bonus>'
-									tooltip:AddLine(piece, 0.5, 0.5, 0.5, 1, 1);
-								elseif( string.find(piece, "^Requires Level .*") ) then
-									-- 'Requires Level <level>'
-									if( level and tonumber(level) > UnitLevel("player") ) then
-										tooltip:AddLine(piece, 1, 0, 0, 1, 1);
-									else
-										tooltip:AddLine(piece, 1, 1, 1, 1, 1);
-									end
-								elseif( string.find(piece, "^Requires ") ) then
-									if( not string.find(piece, "^Requires %a+ %(%d%)$") ) then
-										-- 'Requires <something we don't check (faction, PvP rank) or can't check (trade skill specialization)>'
-										tooltip:AddLine(piece, 0.8, 0.8, 0.8, 1, 1);
-									end
-								elseif( string.find(piece, "\"") or string.find(piece, "%(%d+/%d+%)") ) then
-									-- '"<quote>"' or '<set name> (0/<pieces>)'
-									tooltip:AddLine(piece, 1, 0.8235, 0, 1, 1);
-								elseif( string.find(piece, "^  ") ) then
-									-- '  <set component>'
-									tooltip:AddLine(piece, 0.5, 0.5, 0.5, 1, 1);
-								elseif( string.find(piece, ":") ) then
-									-- 'Class: <class>' or 'Classes: <classes>' or 'Equip: <benefit>', etc.
-									if( string.find(piece, "^Class") ) then
-										-- 'Class: <class>' or 'Classes: <classes>'
-										if( string.find(piece, "^Class.*"..UnitClass("player")) ) then
-											tooltip:AddLine(piece, 1, 1, 1, 1, 1);
-										else
+					-- Now add any extra text data that we have
+					if( value.t ) then
+						local skip = lines + extraSkip;
+						local piece;
+						for piece in string.gmatch(value.t, "(.-)·") do
+							if( lines < 29 ) then
+								if( skip == 0 ) then
+									if( string.find(piece, "^%a+ Socket$") ) then
+										-- '<Type> Socket'
+										local s, e, socket = string.find(piece, "^(%a+) Socket$");
+										tooltip:AddLine(piece, 0.5, 0.5, 0.5, 1, 1);
+										tooltip:AddTexture("Interface\\ItemSocketingFrame\\UI-EmptySocket-"..socket);
+									elseif( string.find(piece, "^Socket Bonus: ") ) then
+										-- 'Socket Bonus: <bonus>'
+										tooltip:AddLine(piece, 0.5, 0.5, 0.5, 1, 1);
+									elseif( string.find(piece, "^Requires Level .*") ) then
+										-- 'Requires Level <level>'
+										if( level and tonumber(level) > UnitLevel("player") ) then
 											tooltip:AddLine(piece, 1, 0, 0, 1, 1);
+										else
+											tooltip:AddLine(piece, 1, 1, 1, 1, 1);
+										end
+									elseif( string.find(piece, "^Requires ") ) then
+										if( not string.find(piece, "^Requires %a+ %(%d%)$") ) then
+											-- 'Requires <something we don't check (faction, PvP rank) or can't check (trade skill specialization)>'
+											tooltip:AddLine(piece, 0.8, 0.8, 0.8, 1, 1);
+										end
+									elseif( string.find(piece, "\"") or string.find(piece, "%(%d+/%d+%)") ) then
+										-- '"<quote>"' or '<set name> (0/<pieces>)'
+										tooltip:AddLine(piece, 1, 0.8235, 0, 1, 1);
+									elseif( string.find(piece, "^  ") ) then
+										-- '  <set component>'
+										tooltip:AddLine(piece, 0.5, 0.5, 0.5, 1, 1);
+									elseif( string.find(piece, ":") ) then
+										-- 'Class: <class>' or 'Classes: <classes>' or 'Equip: <benefit>', etc.
+										if( string.find(piece, "^Class") ) then
+											-- 'Class: <class>' or 'Classes: <classes>'
+											if( string.find(piece, "^Class.*"..UnitClass("player")) ) then
+												tooltip:AddLine(piece, 1, 1, 1, 1, 1);
+											else
+												tooltip:AddLine(piece, 1, 0, 0, 1, 1);
+											end
+										else
+											-- 'Equip: <benefit>', etc.
+											tooltip:AddLine(piece, 0, 1, 0, 1, 1);
 										end
 									else
-										-- 'Equip: <benefit>', etc.
-										tooltip:AddLine(piece, 0, 1, 0, 1, 1);
+										-- None of the above
+										tooltip:AddLine(piece, 1, 1, 1, 1, 1);
 									end
+									lines = lines + 1;
 								else
-									-- None of the above
-									tooltip:AddLine(piece, 1, 1, 1, 1, 1);
+									skip = skip - 1;
 								end
-								lines = lines + 1;
-							else
-								skip = skip - 1;
 							end
 						end
 					end
-				end
-				
-				-- And, after all that, let the user know that we faked this tooltip
-				if( lines < 30 ) then
-					tooltip:AddLine("|cff40ffc0<Generated by LootLink from cached data>|r");
-				end
-				
-				-- Finally, show the tooltip, which adjusts its size
-				tooltip:Show();
-			end
+					
+					-- Now try to add the drop location to the item
+					if( lines < 30 ) then
+						LootLink_AddSourceInfo(tooltip, LootLink_GetItemId(llid));
+						lines = lines + 1;
+					end
 
-			return false;
+					-- And, after all that, let the user know that we faked this tooltip
+					if( lines < 30 ) then
+						tooltip:AddLine("|cff40ffc0<Generated by LootLink from cached data>|r");
+						lines = lines + 1;
+					end
+					
+					-- Finally, show the tooltip, which adjusts its size
+					tooltip:Show();
+				end
+			end
 		else
+			if( LL.lReady and value ) then
+				-- Check to see if any of the data for this item has changed since we stored it
+				
+				-- To avoid polluting any of our checks with changes by other AddOns that might
+				-- be hooking tooltip:SetHyperlink, we'll use our own tooltip to check against
+				LLHiddenTooltip:SetOwner(UIParent, "ANCHOR_NONE");
+				LLHiddenTooltip:SetHyperlink(link);
+				
+				local field = _G["LLHiddenTooltipTextLeft1"];
+				
+				if( field:IsShown() ) then
+					local oldName = LootLink_GetName(llid);
+					local newName = field:GetText();
+					local color = LootLink_GetHexColorFromRGB(field:GetTextColor());
+					if( oldName ~= newName ) then
+						-- New name; delete the old entry and add a new one
+						local itemid = LootLink_GetItemId(llid);
+						local itemString = value.i;
+
+						if( LootLink_CheckItemServerRaw(value, LL.lServerIndex) ) then
+							LL.lItemLinksSizeServer = LL.lItemLinksSizeServer - 1;
+						end
+						LL.lItemLinksSizeTotal = LL.lItemLinksSizeTotal - 1;
+						ItemLinks[llid] = nil;
+						
+						LootLink_InternalAddItem(itemid, newName, color, itemString);
+					else
+						-- Same name; update our data in case things have changed
+						value.c = color;
+						LootLink_BuildSearchData(llid, ItemLinks[llid]);
+					end
+				end
+				
+				LLHiddenTooltip:Hide();
+			end
+			
 			-- Get the actual tooltip from the cache
 			tooltip:SetHyperlink(link);
-			
-			-- After setting the tooltip, parse its data
-			LootLink_BuildSearchData(name, ItemLinks[name]);
+
+			-- Now try to add the drop location to the item
+			LootLink_AddSourceInfo(tooltip, LootLink_GetItemId(llid));
+
+			-- Finally, show the tooltip, which adjusts its size
+			tooltip:Show();
 
 			return true;
 		end
@@ -4089,7 +4413,7 @@ function LootLink_SetHyperlink(tooltip, name, link)
 end
 
 -- Adds extra tooltip information for the item with the given name
-function LootLink_AddTooltipInfo(name, tooltip, quantity)
+--[[function LootLink_AddTooltipInfo(name, tooltip, quantity)
 	if( LootLink_AutoAddInfo() ) then
 		if( not tooltip ) then
 			tooltip = GameTooltip;
@@ -4105,37 +4429,33 @@ function LootLink_AddTooltipInfo(name, tooltip, quantity)
 			tooltip:Show();
 		end
 	end
-end
+end]]--
 
 -- This will set up a tooltip with item information for the given name if it's known
 function LootLink_SetTooltip(tooltip, name, quantity)
-	local link;
-	
-	if( tooltip and name ) then
-		link = LootLink_GetHyperlink(name);
-		if( link ) then
-			local addAllowed = LootLink_AutoAddInfo();
-			if( addAllowed ) then
-				LootLink_AutoInfoOff();
-			end
-			LootLink_SetHyperlink(tooltip, name, link);
-			if( addAllowed ) then
-				if( quantity ) then
-					quantity = tonumber(quantity);
-				else
-					quantity = 1;
-				end
-				if( quantity > 0 ) then
-					LootLink_AddTooltipInfo(name, tooltip, quantity);
-				end
-				LootLink_AutoInfoOn();
+	if( LL.lReady and tooltip and name ) then
+		local llid = LootLink_GetLootLinkIdFromName(name);
+		if( llid ) then
+			local link = LootLink_GetHyperlink(llid);
+			if( link ) then
+				LootLink_SetHyperlinkFromId(tooltip, llid, link);
 			end
 		end
 	end
 end
 
+-- This will set up a tooltip with item information for the given item if it's known
+function LootLink_SetTooltipFromItemIdAndName(tooltip, itemid, name, quantity)
+	if( LL.lReady and tooltip and itemid and name ) then
+		local link = LootLink_GetHyperlink(itemid..":"..name);
+		if( link ) then
+			LootLink_SetHyperlinkFromId(tooltip, llid, link);
+		end
+	end
+end
+
 -- Calling this will allow LootLink to automatically add information to tooltips when needed
-function LootLink_AutoInfoOn()
+--[[function LootLink_AutoInfoOn()
 	lSuppressInfoAdd = nil;
 end
 
@@ -4147,7 +4467,7 @@ end
 -- Returns whether or not information will be automatically added to tooltips
 function LootLink_AutoAddInfo()
 	return not lSuppressInfoAdd;
-end
+end]]--
 
 -- Use this function to get the current server name from LootLink's perspective
 function LootLink_GetCurrentServerName()
@@ -4159,19 +4479,18 @@ function LootLink_GetCurrentServerIndex()
 	return LL.lServerIndex;
 end
 
--- Use this function to map a server name to the server index for the ItemLinks[name].servers array
+-- Use this function to map a server name to the server index for the ItemLinks entry servers array
 function LootLink_GetServerIndex(name)
-	if( not LootLinkState or not LootLinkState.ServerNamesToIndices ) then
+	if( not LL.lReady or not LootLinkState or not LootLinkState.ServerNamesToIndices ) then
 		return nil;
 	end
 	return LootLinkState.ServerNamesToIndices[name];
 end
 
--- Use this function to check whether an ItemLinks[name] entry is valid for a given server index
+-- Use this function to check whether an ItemLinks entry is valid for a given server index
 function LootLink_CheckItemServer(item, serverIndex)
-	-- If we haven't converted and this item predates multiple server support, count it as valid
-	if( LootLink_GetDataVersion() < 110 and not item._ ) then
-		return 1;
+	if( not LL.lReady ) then
+		return false;
 	end
 	return LootLink_CheckItemServerRaw(item, serverIndex);
 end
@@ -4258,7 +4577,7 @@ end
 
 
 -- Used for debugging changes in item data and tooltip format
-function LootLink_Validate()
+--[[function LootLink_Validate()
 	-- Indices and values of the outer and inner arrays
 	local iOuter, vOuter, iInner, vInner;
 	-- What data we found in the element
@@ -4303,25 +4622,26 @@ function LootLink_Validate()
 	end
 	
 	dlog(ilMissing, " items missing itemlinks!");
-end
+end]]--
 
 --------------------------------------------------------------------------------------------------
 -- Hookable callback functions
 --------------------------------------------------------------------------------------------------
 
--- Hook this function to add any extra information you like to the tooltip
-function LootLink_AddExtraTooltipInfo(tooltip, name, quantity, item)
-	-- tooltip: the current tooltip frame
-	-- name: the name of the item
-	-- quantity: the number of items, if known, else 1
-	-- item: ItemLinks[name]; LootLink's data for this item
-end
-
 -- Hook this function to be called whenever an equipment slot is successfully inspected
 function LootLink_Event_InspectSlot(name, count, item, unit, slotid)
 	-- name: the name of the item
 	-- count: the number of items, if known, else 1
-	-- item: ItemLinks[name]; LootLink's data for this item
+	-- item: ItemLinks entry; LootLink's data for this item
+	-- unit: "target", "player", etc.
+	-- slotid: the id of the slot inspected
+end
+
+-- Hook this function to be called whenever an equipment slot is successfully inspected
+function LootLink_Event_InspectSlotId(llid, count, item, unit, slotid)
+	-- llid: the LootLink id of the item
+	-- count: the number of items, if known, else 1
+	-- item: ItemLinks entry; LootLink's data for this item
 	-- unit: "target", "player", etc.
 	-- slotid: the id of the slot inspected
 end
@@ -4330,7 +4650,16 @@ end
 function LootLink_Event_ScanInventory(name, count, item, bagid, slotid)
 	-- name: the name of the item
 	-- count: the number of items, if known, else 1
-	-- item: ItemLinks[name]; LootLink's data for this item
+	-- item: ItemLinks entry; LootLink's data for this item
+	-- bagid: the id of the bag containing the item
+	-- slotid: the id of the slot inspected
+end
+
+-- Hook this function to be called whenever an inventory slot is successfully inspected
+function LootLink_Event_ScanInventoryId(llid, count, item, bagid, slotid)
+	-- llid: the LootLink id of the item
+	-- count: the number of items, if known, else 1
+	-- item: ItemLinks entry; LootLink's data for this item
 	-- bagid: the id of the bag containing the item
 	-- slotid: the id of the slot inspected
 end
@@ -4339,8 +4668,35 @@ end
 function LootLink_Event_ScanBank(name, count, item, bagid, slotid)
 	-- name: the name of the item
 	-- count: the number of items, if known, else 1
-	-- item: ItemLinks[name]; LootLink's data for this item
+	-- item: ItemLinks entry; LootLink's data for this item
 	-- bagid: the id of the bag containing the item
+	-- slotid: the id of the slot inspected
+end
+
+-- Hook this function to be called whenever a bank slot is successfully inspected
+function LootLink_Event_ScanBankId(llid, count, item, bagid, slotid)
+	-- llid: the LootLink id of the item
+	-- count: the number of items, if known, else 1
+	-- item: ItemLinks entry; LootLink's data for this item
+	-- bagid: the id of the bag containing the item
+	-- slotid: the id of the slot inspected
+end
+
+-- Hook this function to be called whenever a guild bank slot is successfully inspected
+function LootLink_Event_ScanGuildBank(name, count, item, tabid, slotid)
+	-- name: the name of the item
+	-- count: the number of items, if known, else 1
+	-- item: ItemLinks entry; LootLink's data for this item
+	-- tabid: the id of the tab containing the item
+	-- slotid: the id of the slot inspected
+end
+
+-- Hook this function to be called whenever a bank slot is successfully inspected
+function LootLink_Event_ScanGuildBankId(llid, count, item, tabid, slotid)
+	-- llid: the LootLink id of the item
+	-- count: the number of items, if known, else 1
+	-- item: ItemLinks entry; LootLink's data for this item
+	-- tabid: the id of the tab containing the item
 	-- slotid: the id of the slot inspected
 end
 
@@ -4348,7 +4704,16 @@ end
 function LootLink_Event_ScanAuction(name, count, item, auctionpage, auctionid)
 	-- name: the name of the item
 	-- count: the number of items, if known, else 1
-	-- item: ItemLinks[name]; LootLink's data for this item
+	-- item: ItemLinks entry; LootLink's data for this item
+	-- auctionpage: the page number this item was found on
+	-- auctionid: the id of the inspected item
+end
+
+-- Hook this function to be called whenever an auction entry is successfully inspected
+function LootLink_Event_ScanAuctionId(llid, count, item, auctionpage, auctionid)
+	-- llid: the LootLink id of the item
+	-- count: the number of items, if known, else 1
+	-- item: ItemLinks entry; LootLink's data for this item
 	-- auctionpage: the page number this item was found on
 	-- auctionid: the id of the inspected item
 end
@@ -4356,21 +4721,44 @@ end
 -- Hook this function to be called whenever a chat message is successfully inspected
 function LootLink_Event_ScanChat(name, item, text)
 	-- name: the name of the last item in the chat message
-	-- item: ItemLinks[name]; LootLink's data for this item
+	-- item: ItemLinks entry; LootLink's data for this item
+	-- text: the inspected chat message
+end
+
+-- Hook this function to be called whenever a chat message is successfully inspected
+function LootLink_Event_ScanChatId(llid, item, text)
+	-- llid: the LootLink id of the item
+	-- item: ItemLinks entry; LootLink's data for this item
 	-- text: the inspected chat message
 end
 
 -- Hook this function to be called whenever a merchant item is successfully inspected
 function LootLink_Event_ScanMerchant(name, item, index)
 	-- name: the name of the item
-	-- item: ItemLinks[name]; LootLink's data for this item
+	-- item: ItemLinks entry; LootLink's data for this item
+	-- index: the merchant item index of this item
+end
+
+-- Hook this function to be called whenever a merchant item is successfully inspected
+function LootLink_Event_ScanMerchantId(llid, item, index)
+	-- llid: the LootLink id of the item
+	-- item: ItemLinks entry; LootLink's data for this item
 	-- index: the merchant item index of this item
 end
 
 -- Hook this function to be called whenever a quest log item is successfully inspected
 function LootLink_Event_ScanQuest(name, item, questLog, type, index)
 	-- name: the name of the item
-	-- item: ItemLinks[name]; LootLink's data for this item
+	-- item: ItemLinks entry; LootLink's data for this item
+	-- questLog: true if this is a quest log item
+	-- type: "choice" or "reward"
+	-- index: the quest item index of this item
+end
+
+-- Hook this function to be called whenever a quest log item is successfully inspected
+function LootLink_Event_ScanQuestId(llid, item, questLog, type, index)
+	-- llid: the LootLink id of the item
+	-- item: ItemLinks entry; LootLink's data for this item
 	-- questLog: true if this is a quest log item
 	-- type: "choice" or "reward"
 	-- index: the quest item index of this item
@@ -4379,14 +4767,28 @@ end
 -- Hook this function to be called whenever a loot item is successfully inspected
 function LootLink_Event_ScanLoot(name, item, index)
 	-- name: the name of the item
-	-- item: ItemLinks[name]; LootLink's data for this item
+	-- item: ItemLinks entry; LootLink's data for this item
+	-- index: the loot slot index of this item
+end
+
+-- Hook this function to be called whenever a loot item is successfully inspected
+function LootLink_Event_ScanLootId(llid, item, index)
+	-- llid: the LootLink id of the item
+	-- item: ItemLinks entry; LootLink's data for this item
 	-- index: the loot slot index of this item
 end
 
 -- Hook this function to be called whenever a rolled-for-item is successfully inspected
 function LootLink_Event_ScanRoll(name, item, id)
 	-- name: the name of the item
-	-- item: ItemLinks[name]; LootLink's data for this item
+	-- item: ItemLinks entry; LootLink's data for this item
+	-- id: the roll id of this item
+end
+
+-- Hook this function to be called whenever a rolled-for-item is successfully inspected
+function LootLink_Event_ScanRollId(llid, item, id)
+	-- llid: the LootLink id of the item
+	-- item: ItemLinks entry; LootLink's data for this item
 	-- id: the roll id of this item
 end
 
