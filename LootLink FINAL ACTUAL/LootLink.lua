@@ -1115,33 +1115,6 @@ local function LootLink_MatchType(left, right)
 	return 1, nil, LL.TYPE_MISC, nil;
 end
 
---[[local function LootLink_SetTooltipMoney(frame, count, money, stack)
-	if( not InRepairMode() and (not MerchantFrame or not MerchantFrame:IsVisible()) ) then
-		local text;
-		
-		if( count and count > 1 ) then
-			money = money * count;
-			text = format(LOOTLINK_SELL_PRICE_N, count);
-		elseif( stack ) then
-			text = LOOTLINK_SELL_PRICE_EACH;
-		else
-			text = LOOTLINK_SELL_PRICE, 1.0, 1.0, 1.0;
-		end
-		
-		SetTooltipMoney(frame, money);
-		
-		local name = frame:GetName();
-		local moneyFrame = getglobal(name.."MoneyFrame"..frame.shownMoneyFrames);
-		local numLines = frame:NumLines();
-		local moneyLineName = name.."TextLeft"..numLines;
-		local moneyLineText = getglobal(moneyLineName);
-		
-		moneyLineText:SetText(text);
-		moneyFrame:SetPoint("LEFT", moneyLineName, "RIGHT", 4, 0);
-		frame:SetMinimumWidth(moneyFrame:GetWidth() + moneyLineText:GetWidth() - 10);
-	end
-end]]--
-
 --
 -- Functions that are dependent on preceding local functions, ordered appropriately
 --
@@ -1212,6 +1185,7 @@ local function LootLink_GetHyperlink(llid)
 	return nil;
 end
 
+--Skray this breaks need to update at some point.  Get Name function.
 local function LootLink_GetLink(name)
 	local itemLink = ItemLinks[name];
 	if( itemLink and itemLink.c and itemLink.i and LootLink_CheckItemServer(itemLink, LL.lServerIndex) ) then
@@ -1221,7 +1195,19 @@ local function LootLink_GetLink(name)
 	return nil;
 end
 
-local function LootLink_BuildSearchData(name, value)
+--[[local function LootLink_GetLink(llid)
+	local itemLink = ItemLinks[llid];
+	if( itemLink and itemLink.c and LootLink_CheckItemServer(itemLink, LL.lServerIndex) ) then
+		local hyperlink = LootLink_GetHyperlink(llid);
+		if( hyperlink ) then
+			local link = "|c"..itemLink.c.."|H"..hyperlink.."|h["..LootLink_GetName(llid).."]|h|r";
+			return link;
+		end
+	end
+	return nil;
+end]]--
+
+local function LootLink_BuildSearchData(llid, value)
 	local itemLink;
 	local state = LL.STATE_NAME;
 	local loop;
@@ -1251,21 +1237,21 @@ local function LootLink_BuildSearchData(name, value)
 	if( iLevel ) then
 		value.d = value.d.."il"..iLevel.."·";
 	end
-		
+	
 	-- We'll use our own tooltip to parse the information to avoid
 	-- picking up any changes made by other mods to the tooltip text
 	LLHiddenTooltip:SetOwner(UIParent, "ANCHOR_NONE");
 	LLHiddenTooltip:SetHyperlink(itemLink);
 	
-	for index = 1, 30, 1 do
-		field = getglobal("LLHiddenTooltipTextLeft"..index);
+	for index = 1, 30 do
+		field = _G["LLHiddenTooltipTextLeft"..index];
 		if( field and field:IsShown() ) then
 			left = field:GetText();
 		else
 			left = nil;
 		end
 		
-		field = getglobal("LLHiddenTooltipTextRight"..index);
+		field = _G["LLHiddenTooltipTextRight"..index];
 		if( field and field:IsShown() ) then
 			right = field:GetText();
 		else
@@ -1274,14 +1260,14 @@ local function LootLink_BuildSearchData(name, value)
 		
 		if( left ) then
 			if( not LootLinkState.LightMode ) then
-				value.t = value.t..left.."\183";
+				value.t = value.t..left.."·";
 			end
 		else
 			left = "";
 		end
 		if( right ) then
 			if( not LootLinkState.LightMode ) then
-				value.t = value.t..right.."\183";
+				value.t = value.t..right.."·";
 			end
 		else
 			right = "";
@@ -1290,147 +1276,190 @@ local function LootLink_BuildSearchData(name, value)
 		loop = 1;
 		while( loop ) do
 			if( state == LL.STATE_NAME ) then
-				state = STATE_BOUND;
+				state = LL.STATE_HEROIC;
 				loop = nil;
-			elseif( state == STATE_BOUND ) then
-				iStart, iEnd, val1 = string.find(left, "Binds when (.+)");
+			elseif( state == LL.STATE_HEROIC ) then
+				if( string.find(left, "Heroic") ) then
+					value.d = value.d.."he1·"
+					loop = nil;
+				end
+				state = LL.STATE_BOUND;
+			elseif( state == LL.STATE_BOUND ) then
+				iStart, iEnd, val1 = string.find(left, "Binds (.+)");
 				if( val1 ) then
-					if( val1 == "equipped" ) then
-						value.d = value.d.."bi"..BINDS_EQUIP.."\183";
-					elseif( val1 == "picked up" ) then
-						value.d = value.d.."bi"..BINDS_PICKUP.."\183";
-					elseif( val1 == "used" ) then
-						value.d = value.d.."bi"..BINDS_USED.."\183";
+					if( val1 == "when equipped" ) then
+						value.d = value.d.."bi"..LL.BINDS_EQUIP.."·";
+					elseif( val1 == "when picked up" ) then
+						value.d = value.d.."bi"..LL.BINDS_PICKUP.."·";
+					elseif( val1 == "when used" ) then
+						value.d = value.d.."bi"..LL.BINDS_USED.."·";
+					elseif( val1 == "to account" ) then
+						value.d = value.d.."bi"..LL.BINDS_ACCOUNT.."·";
 					end
 					loop = nil;
 				else
-					value.d = value.d.."bi"..BINDS_DOES_NOT_BIND.."\183";
+					value.d = value.d.."bi"..LL.BINDS_DOES_NOT_BIND.."·";
 				end
-				state = STATE_UNIQUE;
-			elseif( state == STATE_UNIQUE ) then
-				if( string.find(left, "Unique") ) then
-					value.d = value.d.."un1\183";
+				state = LL.STATE_UNIQUE;
+			elseif( state == LL.STATE_UNIQUE ) then
+				if( string.find(left, "Unique-Equipped") ) then
+					value.d = value.d.."un"..LL.UNIQUE_EQUIPPED.."·";
+					loop = nil;
+				elseif( string.find(left, "Unique") ) then
+					value.d = value.d.."un"..LL.UNIQUE_GENERIC.."·";
 					loop = nil;
 				end
-				state = STATE_LOCATION;
-			elseif( state == STATE_LOCATION ) then
+				state = LL.STATE_LOCATION;
+			elseif( state == LL.STATE_LOCATION ) then
 				local location;
 				loop, location, _type, subtype = LootLink_MatchType(left, right);
 				if( location ) then
-					value.d = value.d.."lo"..location.."\183";
+					value.d = value.d.."lo"..location.."·";
 				end
-				if( _type == TYPE_WEAPON ) then
-					state = STATE_DAMAGE;
-				elseif( _type == TYPE_ARMOR or _type == TYPE_SHIELD ) then
-					state = STATE_ARMOR;
+				if( _type == LL.TYPE_WEAPON ) then
+					state = LL.STATE_DAMAGE;
+				elseif( _type == LL.TYPE_ARMOR or _type == LL.TYPE_SHIELD ) then
+					state = LL.STATE_ARMOR;
 				else
-					state = STATE_CONTAINER;
+					state = LL.STATE_GLYPH;
 				end
-			elseif( state == STATE_DAMAGE ) then
+			elseif( state == LL.STATE_DAMAGE ) then
 				iStart, iEnd, val1, val2 = string.find(left, "(%d+) %- (%d+) Damage");
 				if( val1 and val2 ) then
-					value.d = value.d.."mi"..val1.."\183ma"..val2.."\183";
+					value.d = value.d.."mi"..val1.."·ma"..val2.."·";
 				end
 				iStart, iEnd, val1 = string.find(right, "Speed (.+)");
 				if( val1 ) then
-					value.d = value.d.."sp"..val1.."\183";
+					value.d = value.d.."sp"..val1.."·";
 				end
-				state = STATE_DPS;
+				state = LL.STATE_DPS;
 				loop = nil;
-			elseif( state == STATE_DPS ) then
+			elseif( state == LL.STATE_DPS ) then
 				iStart, iEnd, val1 = string.find(left, "%((.+) damage per second%)");
 				if( val1 ) then
-					value.d = value.d.."dp"..val1.."\183";
+					value.d = value.d.."dp"..val1.."·";
 				end
-				state = STATE_MATCHES;
+				state = LL.STATE_MATCHES;
 				loop = nil;
-			elseif( state == STATE_ARMOR ) then
+			elseif( state == LL.STATE_ARMOR ) then
 				iStart, iEnd, val1 = string.find(left, "(%d+) Armor");
 				if( val1 ) then
-					value.d = value.d.."ar"..val1.."\183";
+					value.d = value.d.."ar"..val1.."·";
 				end
-				if( _type == TYPE_SHIELD ) then
-					state = STATE_BLOCK;
+				if( _type == LL.TYPE_SHIELD ) then
+					state = LL.STATE_BLOCK;
 				else
-					state = STATE_MATCHES;
+					state = LL.STATE_MATCHES;
 				end
 				loop = nil;
-			elseif( state == STATE_BLOCK ) then
+			elseif( state == LL.STATE_BLOCK ) then
 				iStart, iEnd, val1 = string.find(left, "(%d+) Block");
 				if( val1 ) then
-					value.d = value.d.."bl"..val1.."\183";
+					value.d = value.d.."bl"..val1.."·";
 				end
-				state = STATE_MATCHES;
+				state = LL.STATE_MATCHES;
 				loop = nil;
-			elseif( state == STATE_CONTAINER ) then
-				iStart, iEnd, val1 = string.find(left, "(%d+) Slot Container");
+			elseif( state == LL.STATE_GLYPH ) then
+				iStart, iEnd, val1 = string.find(left, "(.*) Glyph");
 				if( val1 ) then
-					_type = TYPE_CONTAINER;
-					value.d = value.d.."sl"..val1.."\183";
+					_type = LL.TYPE_GLYPH;
+					subtype = GlyphSubtypes[val1];
 					loop = nil;
 				end
-				state = STATE_MATCHES;
-			elseif( state == STATE_MATCHES ) then
-				if( _type == TYPE_MISC ) then
+				state = LL.STATE_CONTAINER;
+			elseif( state == LL.STATE_CONTAINER ) then
+				iStart, iEnd, val1 = string.find(left, "(%d+) Slot Container");
+				if( val1 ) then
+					_type = LL.TYPE_CONTAINER;
+					value.d = value.d.."sl"..val1.."·";
+					loop = nil;
+				end
+				state = LL.STATE_MATCHES;
+			elseif( state == LL.STATE_MATCHES ) then
+				if( _type == LL.TYPE_MISC ) then
 					val1 = string.match(left, "^\"Matches a (.*) Socket.\"$");
 					if( val1 ) then
-						_type = TYPE_GEM;
+						_type = LL.TYPE_GEM;
 						val2 = 0;
 						if( string.match(val1, "Red") ) then
-							val2 = val2 + SUBTYPE_GEM_RED;
+							val2 = val2 + LL.SUBTYPE_GEM_RED;
 						end
 						if( string.match(val1, "Yellow") ) then
-							val2 = val2 + SUBTYPE_GEM_YELLOW;
+							val2 = val2 + LL.SUBTYPE_GEM_YELLOW;
 						end
 						if( string.match(val1, "Blue") ) then
-							val2 = val2 + SUBTYPE_GEM_BLUE;
+							val2 = val2 + LL.SUBTYPE_GEM_BLUE;
 						end
 						subtype = val2;
 						loop = nil;
 					else
 						val1 = string.match(left, "^\"Only fits in a meta gem slot.\"$");
 						if( val1 ) then
-							_type = TYPE_GEM;
-							subtype = SUBTYPE_GEM_META;
+							_type = LL.TYPE_GEM;
+							subtype = LL.SUBTYPE_GEM_META;
 							loop = nil;
 						end
 					end
 				end
-				state = STATE_REQUIRES;
-			elseif( state == STATE_REQUIRES ) then
+				state = LL.STATE_REQUIRES;
+			elseif( state == LL.STATE_REQUIRES ) then
 				iStart, iEnd, val1 = string.find(left, "Requires (.+)");
 				if( val1 ) then
 					iStart, iEnd, val2 = string.find(val1, "Level (%d+)");
 					if( val2 ) then
-						value.d = value.d.."le"..val2.."\183";
+						value.d = value.d.."le"..val2.."·";
 					else
 						iStart, iEnd, val2, val3 = string.find(val1, "(.+) %((%d+)%)");
 						if( val2 and val3 ) then
 							val1 = RecipeSubtypes[val2];
-							if( val1 and _type == TYPE_MISC ) then
-								_type = TYPE_RECIPE;
+							if( val1 and _type == LL.TYPE_MISC ) then
+								_type = LL.TYPE_RECIPE;
 								subtype = val1;
-								value.d = value.d.."sk"..val3.."\183";
+								value.d = value.d.."sk"..val3.."·";
 							end
 						end
 					end
 				end
-				state = STATE_MATCHES;
+				state = LL.STATE_MATCHES;
 				loop = nil;
-			elseif( state == STATE_FINISH ) then
+			elseif( state == LL.STATE_FINISH ) then
 				loop = nil;
 			end
 		end
 	end
 
 	if( _type ) then
-		value.d = value.d.."ty".._type.."\183";
+		value.d = value.d.."ty".._type.."·";
 	end
 	if( subtype ) then
-		value.d = value.d.."su"..subtype.."\183";
+		value.d = value.d.."su"..subtype.."·";
 	end
+	
+	LLHiddenTooltip:Hide();
 
 	return 1;
+end
+
+local function LootLink_InternalAddItem(itemid, name, color, itemString)
+	local llid = itemid..":"..name;
+	if( not ItemLinks[llid] ) then
+		ItemLinks[llid] = { };
+		LL.lItemLinksSizeTotal = LL.lItemLinksSizeTotal + 1;
+	else
+		ItemLinks[llid].d = nil;
+		ItemLinks[llid].t = nil;
+	end
+	ItemLinks[llid].c = color;
+	ItemLinks[llid].i = itemString;
+
+	if( not LootLink_CheckItemServerRaw(ItemLinks[llid], LL.lServerIndex) ) then
+		LootLink_AddItemServer(ItemLinks[llid], LL.lServerIndex);
+		LL.lItemLinksSizeServer = LL.lItemLinksSizeServer + 1;
+	end
+	
+	LootLink_BuildSearchData(llid, ItemLinks[llid]);
+	
+	return llid;
 end
 
 local function BuildUsabilityData(data)
@@ -1514,7 +1543,7 @@ local function LootLink_GetSkillRank(ud, _type, subtype, location)
 end
 
 local function LootLink_SetTitle()
-	local lootLinkTitle = getglobal("LootLinkTitleText");
+	local lootLinkTitle = _G["LootLinkTitleText"];
 	local total = LootLink_GetSize(LL.lServerIndex);
 	local size;
 	
@@ -1525,15 +1554,15 @@ local function LootLink_SetTitle()
 	end
 	if( size < total ) then
 		if( size == 1 ) then
-			lootLinkTitle:SetText(TEXT(LOOTLINK_TITLE_FORMAT_PARTIAL_SINGULAR));
+			lootLinkTitle:SetText(LOOTLINK_TITLE_FORMAT_PARTIAL_SINGULAR);
 		else
-			lootLinkTitle:SetText(format(TEXT(LOOTLINK_TITLE_FORMAT_PARTIAL_PLURAL), size));
+			lootLinkTitle:SetText(format(LOOTLINK_TITLE_FORMAT_PARTIAL_PLURAL, size));
 		end
 	else
 		if( size == 1 ) then
-			lootLinkTitle:SetText(TEXT(LOOTLINK_TITLE_FORMAT_SINGULAR));
+			lootLinkTitle:SetText(LOOTLINK_TITLE_FORMAT_SINGULAR);
 		else
-			lootLinkTitle:SetText(format(TEXT(LOOTLINK_TITLE_FORMAT_PLURAL), size));
+			lootLinkTitle:SetText(format(LOOTLINK_TITLE_FORMAT_PLURAL, size));
 		end
 	end
 end
