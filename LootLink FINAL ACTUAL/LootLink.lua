@@ -1090,13 +1090,13 @@ end
 local function LootLink_UpgradeLink(itemLink)
 		if( string.find(itemLink.i, "^%d+:%d+:%d+:%d+$") ) then
 			-- Upgrade old links, removing instance-specific data
-			item = string.gsub(itemLink.i, "^(%d+):(%d+):(%d+):(%d+)$", "%1:0:0:0:0:0:%3:%4:1");
+			item = string.gsub(itemLink.i, "^(%d+):(%d+):(%d+):(%d+)$", "%1:0:0:0:0:0:%3:%4:0");
 		elseif( string.find(itemLink.i, "^%d+:%d+:%d+:%d+:%d+:%d+:%d+:%d+$") ) then
 			-- Upgrade old V2.x links, 
-			item = string.gsub(itemLink.i, "^(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+)$", "%1:%2:%3:%4:%5:%6:%7:%8:9");
+			item = string.gsub(itemLink.i, "^(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+)$", "%1:0:0:0:0:%6:%7:%8:0");
 		else
-			-- Remove instance-specific data that we captured from the link we return (2nd is enchantment, 3rd-5th are sockets)
-			item = string.gsub(itemLink.i, "(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+)", "%1:0:0:0:0:%6:%7:%8:1");
+			-- Remove instance-specific data that we captured from the link we return (2nd is enchantment, 3rd-5th are sockets, 9th is the linking character's level)
+			item = string.gsub(itemLink.i, "(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+)", "%1:0:0:0:0:%6:%7:%8:0");
 		end
 end
 
@@ -3787,10 +3787,10 @@ function LootLink_AddItem(name, item, color)
 
 		if( string.find(item, "^%d+:%d+:%d+:%d+$") ) then
 			-- Upgrade old links, removing instance-specific data
-			itemString, valid = string.gsub(item, "^(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+)$", "%1:0:0:0:0:0:%3:%4:1");
+			itemString, valid = string.gsub(item, "^(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+)$", "%1:0:0:0:0:0:%3:%4:0");
 		else
-			-- Remove instance-specific data from the given item (2nd is enchantment, 3rd-5th are sockets)
-			itemString, valid = string.gsub(item, "(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+)", "%1:0:0:0:0:%6:%7:%8:%9");
+			-- Remove instance-specific data from the given item (2nd is enchantment, 3rd-5th are sockets, 9th is the linking character's level)
+			itemString, valid = string.gsub(item, "(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+)", "%1:0:0:0:0:%6:%7:%8:0");
 		end
 
 		if( valid and valid == 1) then
