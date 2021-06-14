@@ -2668,17 +2668,30 @@ local function LootLink_ScanRoll(id)
 end
 
 local function LootLink_StartAuctionScan()
+	local iButton;
+	local button;
+
+	-- Hide the UI from any current results, show the no results text so we can use it
+	BrowseNoResultsText:Show();
+	for iButton = 1, NUM_BROWSE_TO_DISPLAY do
+		button = _G["BrowseButton"..iButton];
+		button:Hide();
+	end
+	BrowsePrevPageButton:Hide();
+	BrowseNextPageButton:Hide();
+	BrowseSearchCountText:Hide();
+
 	-- Start with the first page
 	lCurrentAuctionPage = nil;
 
 	-- Hook the functions that we need for the scan
-	if( not lOriginal_CanSendAuctionQuery ) then
-		lOriginal_CanSendAuctionQuery = CanSendAuctionQuery;
+	if( not LL.lOriginal_CanSendAuctionQuery ) then
+		LL.lOriginal_CanSendAuctionQuery = CanSendAuctionQuery;
 		CanSendAuctionQuery = LootLink_CanSendAuctionQuery;
 	end
-	if( not lOriginal_AuctionFrameBrowse_OnEvent ) then
-		lOriginal_AuctionFrameBrowse_OnEvent = AuctionFrameBrowse_OnEvent;
-		AuctionFrameBrowse_OnEvent = LootLink_AuctionFrameBrowse_OnEvent;
+	if( not LL.lOriginal_AuctionFrameBrowse_OnEvent ) then
+		LL.lOriginal_AuctionFrameBrowse_OnEvent = AuctionFrameBrowse:GetScript("OnEvent");
+		AuctionFrameBrowse:SetScript("OnEvent", LootLink_AuctionFrameBrowse_OnEvent);
 	end
 	
 	LootLink_Event_StartAuctionScan();
@@ -2688,13 +2701,13 @@ local function LootLink_StopAuctionScan()
 	LootLink_Event_StopAuctionScan();
 	
 	-- Unhook the scanning functions
-	if( lOriginal_CanSendAuctionQuery ) then
-		CanSendAuctionQuery = lOriginal_CanSendAuctionQuery;
-		lOriginal_CanSendAuctionQuery = nil;
+	if( LL.lOriginal_CanSendAuctionQuery ) then
+		CanSendAuctionQuery = LL.lOriginal_CanSendAuctionQuery;
+		LL.lOriginal_CanSendAuctionQuery = nil;
 	end
-	if( lOriginal_AuctionFrameBrowse_OnEvent ) then
-		AuctionFrameBrowse_OnEvent = lOriginal_AuctionFrameBrowse_OnEvent;
-		lOriginal_AuctionFrameBrowse_OnEvent = nil;
+	if( LL.lOriginal_AuctionFrameBrowse_OnEvent ) then
+		AuctionFrameBrowse:SetScript("OnEvent", LL.lOriginal_AuctionFrameBrowse_OnEvent);
+		LL.lOriginal_AuctionFrameBrowse_OnEvent = nil;
 	end
 end
 
@@ -2707,7 +2720,6 @@ local function LootLink_AuctionNextQuery()
 			lCurrentAuctionPage = lCurrentAuctionPage + 1;
 			BrowseNoResultsText:SetText(format(LOOTLINK_AUCTION_PAGE_N, lCurrentAuctionPage + 1, maxPages + 1));
 		else
-			lScanAuction = nil;
 			LootLink_StopAuctionScan();
 			if( totalAuctions > 0 ) then
 				BrowseNoResultsText:SetText(LOOTLINK_AUCTION_SCAN_DONE);
@@ -2726,19 +2738,15 @@ end
 local function LootLink_ScanAuction()
 	local numBatchAuctions, totalAuctions = GetNumAuctionItems("list");
 	local auctionid;
-	local link;
 
 	if( numBatchAuctions > 0 ) then
 		for auctionid = 1, numBatchAuctions do
-			link = GetAuctionItemLink("list", auctionid);
+			local link = GetAuctionItemLink("list", auctionid);
 			if( link ) then
-				local name = LootLink_ProcessLinks(link);
-				if( name and ItemLinks[name] ) then
-					local name_, texture, count, quality, canUse, level, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner = GetAuctionItemInfo("list", auctionid);
-					if( count > 1 ) then
-						ItemLinks[name].x = 1;
-					end
-					LootLink_Event_ScanAuction(name, count, ItemLinks[name], lCurrentAuctionPage, auctionid);
+				local llid = LootLink_ProcessLinks(link);
+				if( llid and ItemLinks[llid] ) then
+					LootLink_Event_ScanAuction(name, 1, ItemLinks[llid], lCurrentAuctionPage, auctionid);
+					LootLink_Event_ScanAuctionId(llid, 1, ItemLinks[llid], lCurrentAuctionPage, auctionid);
 				end
 			end
 		end
@@ -2930,11 +2938,11 @@ function LootLink_OnLoad(self)
 	
 	self:RegisterEvent("PLAYER_TARGET_CHANGED");
 	self:RegisterEvent("UPDATE_MOUSEOVER_UNIT");
---	self:RegisterEvent("PLAYER_REGEN_ENABLED");
+	self:RegisterEvent("PLAYER_REGEN_ENABLED");
 	self:RegisterEvent("PLAYER_ENTERING_WORLD");
 	self:RegisterEvent("PLAYER_LEAVING_WORLD");
 	self:RegisterEvent("BANKFRAME_OPENED");
---	self:RegisterEvent("GUILDBANKBAGSLOTS_CHANGED");
+	self:RegisterEvent("GUILDBANKBAGSLOTS_CHANGED");
 	self:RegisterEvent("VARIABLES_LOADED");
 	self:RegisterEvent("ADDON_LOADED");
 	self:RegisterEvent("AUCTION_HOUSE_SHOW");
@@ -2944,8 +2952,8 @@ function LootLink_OnLoad(self)
 	self:RegisterEvent("MERCHANT_UPDATE");
 	self:RegisterEvent("LOOT_OPENED");
 	self:RegisterEvent("START_LOOT_ROLL");
---	self:RegisterEvent("PLAYER_LOGIN");
---	self:RegisterEvent("ZONE_CHANGED_NEW_AREA");
+	self:RegisterEvent("PLAYER_LOGIN");
+	self:RegisterEvent("ZONE_CHANGED_NEW_AREA");
 
 	LLHiddenTooltip:SetScript("OnTooltipAddMoney", nil);
 	LLHiddenTooltip:SetScript("OnTooltipCleared", nil);
@@ -2956,7 +2964,7 @@ function LootLink_OnLoad(self)
 	SlashCmdList["LOOTLINK"] = function(msg)
 		LootLink_SlashCommandHandler(msg);
 	end
-	
+
 	-- Hook the quest item update function
 	hooksecurefunc("QuestInfo_ShowRewards", LootLink_ScanQuest);
 	
@@ -3587,14 +3595,14 @@ function LootLinkSearch_SaveValues()
 	LootLinkFrame.SearchParams = { };
 	sp = LootLinkFrame.SearchParams;
 	
-	field = getglobal("LLS_TextEditBox");
+	field = _G["LLS_TextEditBox"];
 	value = field:GetText();
 	if( value and value ~= "" ) then
 		sp.text = value;
 		interesting = 1;
 	end
 	
-	field = getglobal("LLS_NameEditBox");
+	field = _G["LLS_NameEditBox"];
 	value = field:GetText();
 	if( value and value ~= "" ) then
 		sp.name = value;
@@ -3613,7 +3621,7 @@ function LootLinkSearch_SaveValues()
 		interesting = 1;
 	end
 	
-	field = getglobal("LLS_UniqueCheckButton");
+	field = _G["LLS_UniqueCheckButton"];
 	value = field:GetChecked();
 	if( value ) then
 		sp.unique = value;
@@ -3626,27 +3634,41 @@ function LootLinkSearch_SaveValues()
 		interesting = 1;
 	end
 	
-	field = getglobal("LLS_UsableCheckButton");
+	field = _G["LLS_UsableCheckButton"];
 	value = field:GetChecked();
 	if( value ) then
 		sp.usable = value;
 		interesting = 1;
 	end
 	
-	field = getglobal("LLS_MinimumLevelEditBox");
+	field = _G["LLS_MinimumLevelEditBox"];
 	value = field:GetText();
 	if( value and LootLink_CheckNumeric(value) ) then
 		sp.minLevel = tonumber(value);
 		interesting = 1;
 	end
 	
-	field = getglobal("LLS_MaximumLevelEditBox");
+	field = _G["LLS_MaximumLevelEditBox"];
 	value = field:GetText();
 	if( value and LootLink_CheckNumeric(value) ) then
 		sp.maxLevel = tonumber(value);
 		interesting = 1;
 	end
 
+	field = _G["LLS_MinimumiLevelEditBox"];
+	value = field:GetText();
+	if( value and LootLink_CheckNumeric(value) ) then
+		sp.miniLevel = tonumber(value);
+		interesting = 1;
+	end
+	
+	field = _G["LLS_MaximumiLevelEditBox"];
+	value = field:GetText();
+	if( value and LootLink_CheckNumeric(value) ) then
+		sp.maxiLevel = tonumber(value);
+		interesting = 1;
+	end
+	
 	value = UIDropDownMenu_GetSelectedID(LLS_TypeDropDown);
 	if( value and value ~= 1 ) then
 		sp.type = value;
@@ -3661,63 +3683,70 @@ function LootLinkSearch_SaveValues()
 		end
 	end
 
-	field = getglobal("LLS_MinimumDamageEditBox");
+	field = _G["LLS_MinimumDamageEditBox"];
 	value = field:GetText();
 	if( value and LootLink_CheckNumeric(value) ) then
 		sp.minMinDamage = tonumber(value);
 		interesting = 1;
 	end
-	
-	field = getglobal("LLS_MaximumDamageEditBox");
+
+	field = _G["LLS_MaximumDamageEditBox"];
 	value = field:GetText();
 	if( value and LootLink_CheckNumeric(value) ) then
 		sp.minMaxDamage = tonumber(value);
 		interesting = 1;
 	end
-	
-	field = getglobal("LLS_MaximumSpeedEditBox");
+
+	field = _G["LLS_MinimumSpeedEditBox"];
+	value = field:GetText();
+	if( value and LootLink_CheckNumeric(value) ) then
+		sp.minSpeed = tonumber(value);
+		interesting = 1;
+	end
+
+	field = _G["LLS_MaximumSpeedEditBox"];
 	value = field:GetText();
 	if( value and LootLink_CheckNumeric(value) ) then
 		sp.maxSpeed = tonumber(value);
 		interesting = 1;
 	end
 	
-	field = getglobal("LLS_MinimumDPSEditBox");
+	field = _G["LLS_MinimumDPSEditBox"];
 	value = field:GetText();
 	if( value and LootLink_CheckNumeric(value) ) then
 		sp.minDPS = tonumber(value);
 		interesting = 1;
 	end
 	
-	field = getglobal("LLS_MinimumArmorEditBox");
+	field = _G["LLS_MinimumArmorEditBox"];
 	value = field:GetText();
 	if( value and LootLink_CheckNumeric(value) ) then
 		sp.minArmor = tonumber(value);
 		interesting = 1;
 	end
 	
-	field = getglobal("LLS_MinimumBlockEditBox");
+	field = _G["LLS_MinimumBlockEditBox"];
 	value = field:GetText();
 	if( value and LootLink_CheckNumeric(value) ) then
 		sp.minBlock = tonumber(value);
 		interesting = 1;
 	end
 
-	field = getglobal("LLS_MinimumSlotsEditBox");
+	field = _G["LLS_MinimumSlotsEditBox"];
 	value = field:GetText();
 	if( value and LootLink_CheckNumeric(value) ) then
 		sp.minSlots = tonumber(value);
 		interesting = 1;
 	end
 
-	field = getglobal("LLS_MinimumSkillEditBox");
+	field = _G["LLS_MinimumSkillEditBox"];
 	value = field:GetText();
 	if( value and LootLink_CheckNumeric(value) ) then
 		sp.minSkill = tonumber(value);
 		interesting = 1;
 	end
 
-	field = getglobal("LLS_MaximumSkillEditBox");
+	field = _G["LLS_MaximumSkillEditBox"];
 	value = field:GetText();
 	if( value and LootLink_CheckNumeric(value) ) then
 		sp.maxSkill = tonumber(value);
@@ -3769,7 +3798,6 @@ function LootLinkSearchFrame_OnTab(self, backwards)
 	local field;
 	
 	-- Find the currently selected field
-	-- SKRAY- Currently giving LUA errors, table expected, got nil.  Might be fixed elsewhere.
 	for index, value in ipairs(LootLinkFrame.BaseSearchEditFields) do
 		if( value == self ) then
 			if( backwards ) then
