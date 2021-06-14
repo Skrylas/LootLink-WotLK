@@ -9,10 +9,6 @@
 	- Automatically inspects your target and extracts data for each of their equipped items
 	- Automatically gets link data from your auction queries
 	- Can perform a fully automatic scan of the entire auction house inventory
-	- Stores sell prices for items that you've moused over while a merchant window was open
-	  and displays them in the tooltips for stacks of items that you are looting, stacks of items
-	  in your inventory and entries in the LootLink browse window
-	- Converts green loot messages into correctly colored item messages if the item is cached
 	- Provides a browsable, searchable window that allows you to find any item in the cache
 	- Allows you to shift-click items in the browse window to insert links in the chat edit box
 
@@ -34,8 +30,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				self:RegisterForClicks("LeftButtonUp", "RightButtonUp");
 			</OnLoad>
 			<OnClick>
-<!-- changing this to (self, button) prevents shift links from working, may need LUA support -->
-				LootLinkItemButton_OnClick(arg1);
+				LootLinkItemButton_OnClick(self, button);
 			</OnClick>
 			<OnEnter>
 				LootLinkItemButton_OnEnter(self);
@@ -162,8 +157,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</Anchor>
 				</Anchors>
 			</Button>
-<!-- changing this to inherits="SimpleDropDownTemplate" keeps it from working, may need LUA support-->
-			<Button name="LootLinkFrameDropDown" inherits="UIDropDownMenuTemplate">
+			<Button name="LootLinkFrameDropDown" inherits="SimpleDropDownTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT">
 						<Offset>
@@ -225,19 +219,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
-					<ButtonText name="LootLinkItem1ButtonText" nonspacewrap="true">
-						<Size>
-							<AbsDimension x="0" y="16"/>
-						</Size>
-						<Anchors>
-							<Anchor point="LEFT">
-								<Offset>
-									<AbsDimension x="10" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors> 
-					</ButtonText>
-				<NormalFont style="GameFontNormalLeft"/>
 			</Button>
 			<Button name="LootLinkItem2" inherits="LootLinkItemButtonTemplate" id="2" hidden="true">
 				<Anchors>
@@ -247,19 +228,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
-					<ButtonText name="LootLinkItem2ButtonText" nonspacewrap="true">
-						<Size>
-							<AbsDimension x="0" y="16"/>
-						</Size>
-						<Anchors>
-							<Anchor point="LEFT">
-								<Offset>
-									<AbsDimension x="10" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors> 
-					</ButtonText>
-				<NormalFont style="GameFontNormalLeft"/>
 			</Button>
 			<Button name="LootLinkItem3" inherits="LootLinkItemButtonTemplate" id="3" hidden="true">
 				<Anchors>
@@ -269,19 +237,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
-					<ButtonText name="LootLinkItem3ButtonText" nonspacewrap="true">
-						<Size>
-							<AbsDimension x="0" y="16"/>
-						</Size>
-						<Anchors>
-							<Anchor point="LEFT">
-								<Offset>
-									<AbsDimension x="10" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors> 
-					</ButtonText>
-				<NormalFont style="GameFontNormalLeft"/>
 			</Button>
 			<Button name="LootLinkItem4" inherits="LootLinkItemButtonTemplate" id="4" hidden="true">
 				<Anchors>
@@ -291,19 +246,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
-					<ButtonText name="LootLinkItem4ButtonText" nonspacewrap="true">
-						<Size>
-							<AbsDimension x="0" y="16"/>
-						</Size>
-						<Anchors>
-							<Anchor point="LEFT">
-								<Offset>
-									<AbsDimension x="10" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors> 
-					</ButtonText>
-				<NormalFont style="GameFontNormalLeft"/>
 			</Button>
 			<Button name="LootLinkItem5" inherits="LootLinkItemButtonTemplate" id="5" hidden="true">
 				<Anchors>
@@ -313,19 +255,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
-					<ButtonText name="LootLinkItem5ButtonText" nonspacewrap="true">
-						<Size>
-							<AbsDimension x="0" y="16"/>
-						</Size>
-						<Anchors>
-							<Anchor point="LEFT">
-								<Offset>
-									<AbsDimension x="10" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors> 
-					</ButtonText>
-				<NormalFont style="GameFontNormalLeft"/>
 			</Button>
 			<Button name="LootLinkItem6" inherits="LootLinkItemButtonTemplate" id="6" hidden="true">
 				<Anchors>
@@ -335,19 +264,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
-					<ButtonText name="LootLinkItem6ButtonText" nonspacewrap="true">
-						<Size>
-							<AbsDimension x="0" y="16"/>
-						</Size>
-						<Anchors>
-							<Anchor point="LEFT">
-								<Offset>
-									<AbsDimension x="10" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors> 
-					</ButtonText>
-				<NormalFont style="GameFontNormalLeft"/>
 			</Button>
 			<Button name="LootLinkItem7" inherits="LootLinkItemButtonTemplate" id="7" hidden="true">
 				<Anchors>
@@ -357,19 +273,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
-					<ButtonText name="LootLinkItem7ButtonText" nonspacewrap="true">
-						<Size>
-							<AbsDimension x="0" y="16"/>
-						</Size>
-						<Anchors>
-							<Anchor point="LEFT">
-								<Offset>
-									<AbsDimension x="10" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors> 
-					</ButtonText>
-				<NormalFont style="GameFontNormalLeft"/>
 			</Button>
 			<Button name="LootLinkItem8" inherits="LootLinkItemButtonTemplate" id="8" hidden="true">
 				<Anchors>
@@ -379,19 +282,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
-					<ButtonText name="LootLinkItem8ButtonText" nonspacewrap="true">
-						<Size>
-							<AbsDimension x="0" y="16"/>
-						</Size>
-						<Anchors>
-							<Anchor point="LEFT">
-								<Offset>
-									<AbsDimension x="10" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors> 
-					</ButtonText>
-				<NormalFont style="GameFontNormalLeft"/>
 			</Button>
 			<Button name="LootLinkItem9" inherits="LootLinkItemButtonTemplate" id="9" hidden="true">
 				<Anchors>
@@ -401,19 +291,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
-					<ButtonText name="LootLinkItem9ButtonText" nonspacewrap="true">
-						<Size>
-							<AbsDimension x="0" y="16"/>
-						</Size>
-						<Anchors>
-							<Anchor point="LEFT">
-								<Offset>
-									<AbsDimension x="10" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors> 
-					</ButtonText>
-				<NormalFont style="GameFontNormalLeft"/>
 			</Button>
 			<Button name="LootLinkItem10" inherits="LootLinkItemButtonTemplate" id="10" hidden="true">
 				<Anchors>
@@ -423,19 +300,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
-					<ButtonText name="LootLinkItem10ButtonText" nonspacewrap="true">
-						<Size>
-							<AbsDimension x="0" y="16"/>
-						</Size>
-						<Anchors>
-							<Anchor point="LEFT">
-								<Offset>
-									<AbsDimension x="10" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors> 
-					</ButtonText>
-				<NormalFont style="GameFontNormalLeft"/>
 			</Button>
 			<Button name="LootLinkItem11" inherits="LootLinkItemButtonTemplate" id="11" hidden="true">
 				<Anchors>
@@ -445,19 +309,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
-					<ButtonText name="LootLinkItem11ButtonText" nonspacewrap="true">
-						<Size>
-							<AbsDimension x="0" y="16"/>
-						</Size>
-						<Anchors>
-							<Anchor point="LEFT">
-								<Offset>
-									<AbsDimension x="10" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors> 
-					</ButtonText>
-				<NormalFont style="GameFontNormalLeft"/>
 			</Button>
 			<Button name="LootLinkItem12" inherits="LootLinkItemButtonTemplate" id="12" hidden="true">
 				<Anchors>
@@ -467,19 +318,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
-					<ButtonText name="LootLinkItem12ButtonText" nonspacewrap="true">
-						<Size>
-							<AbsDimension x="0" y="16"/>
-						</Size>
-						<Anchors>
-							<Anchor point="LEFT">
-								<Offset>
-									<AbsDimension x="10" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors> 
-					</ButtonText>
-				<NormalFont style="GameFontNormalLeft"/>
 			</Button>
 			<Button name="LootLinkItem13" inherits="LootLinkItemButtonTemplate" id="13" hidden="true">
 				<Anchors>
@@ -489,19 +327,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
-					<ButtonText name="LootLinkItem13ButtonText" nonspacewrap="true">
-						<Size>
-							<AbsDimension x="0" y="16"/>
-						</Size>
-						<Anchors>
-							<Anchor point="LEFT">
-								<Offset>
-									<AbsDimension x="10" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors> 
-					</ButtonText>
-				<NormalFont style="GameFontNormalLeft"/>
 			</Button>
 			<Button name="LootLinkItem14" inherits="LootLinkItemButtonTemplate" id="14" hidden="true">
 				<Anchors>
@@ -511,19 +336,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
-					<ButtonText name="LootLinkItem14ButtonText" nonspacewrap="true">
-						<Size>
-							<AbsDimension x="0" y="16"/>
-						</Size>
-						<Anchors>
-							<Anchor point="LEFT">
-								<Offset>
-									<AbsDimension x="10" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors> 
-					</ButtonText>
-				<NormalFont style="GameFontNormalLeft"/>				
 			</Button>
 			<Button name="LootLinkItem15" inherits="LootLinkItemButtonTemplate" id="15" hidden="true">
 				<Anchors>
@@ -533,19 +345,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
-					<ButtonText name="LootLinkItem15ButtonText" nonspacewrap="true">
-						<Size>
-							<AbsDimension x="0" y="16"/>
-						</Size>
-						<Anchors>
-							<Anchor point="LEFT">
-								<Offset>
-									<AbsDimension x="10" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors> 
-					</ButtonText>
-				<NormalFont style="GameFontNormalLeft"/>
 			</Button>
 			<Button name="LootLinkItem16" inherits="LootLinkItemButtonTemplate" id="16" hidden="true">
 				<Anchors>
@@ -555,19 +354,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
-					<ButtonText name="LootLinkItem16ButtonText" nonspacewrap="true">
-						<Size>
-							<AbsDimension x="0" y="16"/>
-						</Size>
-						<Anchors>
-							<Anchor point="LEFT">
-								<Offset>
-									<AbsDimension x="10" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors> 
-					</ButtonText>
-				<NormalFont style="GameFontNormalLeft"/>
 			</Button>
 			<Button name="LootLinkItem17" inherits="LootLinkItemButtonTemplate" id="17" hidden="true">
 				<Anchors>
@@ -577,19 +363,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
-					<ButtonText name="LootLinkItem17ButtonText" nonspacewrap="true">
-						<Size>
-							<AbsDimension x="0" y="16"/>
-						</Size>
-						<Anchors>
-							<Anchor point="LEFT">
-								<Offset>
-									<AbsDimension x="10" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors> 
-					</ButtonText>
-				<NormalFont style="GameFontNormalLeft"/>
 			</Button>
 			<Button name="LootLinkItem18" inherits="LootLinkItemButtonTemplate" id="18" hidden="true">
 				<Anchors>
@@ -599,19 +372,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
-					<ButtonText name="LootLinkItem18ButtonText" nonspacewrap="true">
-						<Size>
-							<AbsDimension x="0" y="16"/>
-						</Size>
-						<Anchors>
-							<Anchor point="LEFT">
-								<Offset>
-									<AbsDimension x="10" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors> 
-					</ButtonText>
-				<NormalFont style="GameFontNormalLeft"/>
 			</Button>
 			<Button name="LootLinkItem19" inherits="LootLinkItemButtonTemplate" id="19" hidden="true">
 				<Anchors>
@@ -621,19 +381,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
-					<ButtonText name="LootLinkItem19ButtonText" nonspacewrap="true">
-						<Size>
-							<AbsDimension x="0" y="16"/>
-						</Size>
-						<Anchors>
-							<Anchor point="LEFT">
-								<Offset>
-									<AbsDimension x="10" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors> 
-					</ButtonText>
-				<NormalFont style="GameFontNormalLeft"/>
 			</Button>
 			<Button name="LootLinkItem20" inherits="LootLinkItemButtonTemplate" id="20" hidden="true">
 				<Anchors>
@@ -643,19 +390,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
-					<ButtonText name="LootLinkItem20ButtonText" nonspacewrap="true">
-						<Size>
-							<AbsDimension x="0" y="16"/>
-						</Size>
-						<Anchors>
-							<Anchor point="LEFT">
-								<Offset>
-									<AbsDimension x="10" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors> 
-					</ButtonText>
-				<NormalFont style="GameFontNormalLeft"/>
 			</Button>
 			<Button name="LootLinkItem21" inherits="LootLinkItemButtonTemplate" id="21" hidden="true">
 				<Anchors>
@@ -665,19 +399,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
-					<ButtonText name="LootLinkItem21ButtonText" nonspacewrap="true">
-						<Size>
-							<AbsDimension x="0" y="16"/>
-						</Size>
-						<Anchors>
-							<Anchor point="LEFT">
-								<Offset>
-									<AbsDimension x="10" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors> 
-					</ButtonText>
-				<NormalFont style="GameFontNormalLeft"/>
 			</Button>
 			<Button name="LootLinkItem22" inherits="LootLinkItemButtonTemplate" id="22" hidden="true">
 				<Anchors>
@@ -687,19 +408,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
-					<ButtonText name="LootLinkItem22ButtonText" nonspacewrap="true">
-						<Size>
-							<AbsDimension x="0" y="16"/>
-						</Size>
-						<Anchors>
-							<Anchor point="LEFT">
-								<Offset>
-									<AbsDimension x="10" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors> 
-					</ButtonText>
-				<NormalFont style="GameFontNormalLeft"/>
 			</Button>
 			<Button name="LootLinkItem23" inherits="LootLinkItemButtonTemplate" id="23" hidden="true">
 				<Anchors>
@@ -709,19 +417,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
-					<ButtonText name="LootLinkItem23ButtonText" nonspacewrap="true">
-						<Size>
-							<AbsDimension x="0" y="16"/>
-						</Size>
-						<Anchors>
-							<Anchor point="LEFT">
-								<Offset>
-									<AbsDimension x="10" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors> 
-					</ButtonText>
-				<NormalFont style="GameFontNormalLeft"/>
 			</Button>
 			<ScrollFrame name="LootLinkListScrollFrame" inherits="FauxScrollFrameTemplate">
 				<Size>
@@ -993,12 +688,36 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="LLS_TypeLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" text="LLS_TYPE">
+        <FontString name="LLS_MinimumiLevelLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" text="LLS_MINIMUM_ILEVEL">
+          <Size>
+            <AbsDimension x="134" y="14"/>
+          </Size>
+          <Anchors>
+            <Anchor point="TOPLEFT" relativeTo="LLS_MaximumLevelLabel" relativePoint="BOTTOMLEFT">
+              <Offset>
+                <AbsDimension x="0" y="-15"/>
+              </Offset>
+            </Anchor>
+          </Anchors>
+        </FontString>
+        <FontString name="LLS_MaximumiLevelLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" text="LLS_MAXIMUM_ILEVEL">
+          <Size>
+            <AbsDimension x="134" y="14"/>
+          </Size>
+          <Anchors>
+            <Anchor point="TOPLEFT" relativeTo="LLS_MinimumiLevelLabel" relativePoint="BOTTOMLEFT">
+              <Offset>
+                <AbsDimension x="0" y="-15"/>
+              </Offset>
+            </Anchor>
+          </Anchors>
+        </FontString>
+        <FontString name="LLS_TypeLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" text="LLS_TYPE">
 					<Size>
 						<AbsDimension x="134" y="14"/>
 					</Size>
 					<Anchors>
-						<Anchor point="TOPLEFT" relativeTo="LLS_MaximumLevelLabel" relativePoint="BOTTOMLEFT">
+						<Anchor point="TOPLEFT" relativeTo="LLS_MaximumiLevelLabel" relativePoint="BOTTOMLEFT">
 							<Offset>
 								<AbsDimension x="0" y="-15"/>
 							</Offset>
@@ -1055,12 +774,24 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Anchor>
 					</Anchors>
 				</FontString>
+        <FontString name="LLS_MinimumSpeedLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" hidden="true" text="LLS_MINIMUM_SPEED">
+          <Size>
+            <AbsDimension x="134" y="14"/>
+          </Size>
+          <Anchors>
+            <Anchor point="TOPLEFT" relativeTo="LLS_MaximumDamageLabel" relativePoint="BOTTOMLEFT">
+              <Offset>
+                <AbsDimension x="0" y="-15"/>
+              </Offset>
+            </Anchor>
+          </Anchors>
+        </FontString>
 				<FontString name="LLS_MaximumSpeedLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" hidden="true" text="LLS_MAXIMUM_SPEED">
 					<Size>
 						<AbsDimension x="134" y="14"/>
 					</Size>
 					<Anchors>
-						<Anchor point="TOPLEFT" relativeTo="LLS_MaximumDamageLabel" relativePoint="BOTTOMLEFT">
+						<Anchor point="TOPLEFT" relativeTo="LLS_MinimumSpeedLabel" relativePoint="BOTTOMLEFT">
 							<Offset>
 								<AbsDimension x="0" y="-15"/>
 							</Offset>
@@ -1202,7 +933,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</Anchor>
 				</Anchors>
 			</EditBox>
-			<Button name="LLS_RarityDropDown" inherits="UIDropDownMenuTemplate" id="1">
+			<Button name="LLS_RarityDropDown" inherits="SimpleDropDownTemplate" id="1">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="LLS_RarityLabel" relativePoint="TOPRIGHT">
 						<Offset>
@@ -1216,7 +947,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</OnLoad>
 				</Scripts>
 			</Button>
-			<Button name="LLS_BindsDropDown" inherits="UIDropDownMenuTemplate" id="1">
+			<Button name="LLS_BindsDropDown" inherits="SimpleDropDownTemplate" id="1">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="LLS_BindsLabel" relativePoint="TOPRIGHT">
 						<Offset>
@@ -1260,7 +991,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				<CheckedTexture file="Interface\Buttons\UI-CheckBox-Check"/>
 				<DisabledCheckedTexture file="Interface\Buttons\UI-CheckBox-Check-Disabled"/>
 			</CheckButton>
-			<Button name="LLS_LocationDropDown" inherits="UIDropDownMenuTemplate" id="1">
+			<Button name="LLS_LocationDropDown" inherits="SimpleDropDownTemplate" id="1">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="LLS_LocationLabel" relativePoint="TOPRIGHT">
 						<Offset>
@@ -1322,7 +1053,25 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</Anchor>
 				</Anchors>
 			</EditBox>
-			<Button name="LLS_TypeDropDown" inherits="UIDropDownMenuTemplate" id="1">
+      <EditBox name="LLS_MinimumiLevelEditBox" inherits="LLS_EditBoxTemplate">
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeTo="LLS_MinimumiLevelLabel" relativePoint="TOPRIGHT">
+            <Offset>
+              <AbsDimension x="16" y="0"/>
+            </Offset>
+          </Anchor>
+        </Anchors>
+      </EditBox>
+      <EditBox name="LLS_MaximumiLevelEditBox" inherits="LLS_EditBoxTemplate">
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeTo="LLS_MaximumiLevelLabel" relativePoint="TOPRIGHT">
+            <Offset>
+              <AbsDimension x="16" y="0"/>
+            </Offset>
+          </Anchor>
+        </Anchors>
+      </EditBox>
+      <Button name="LLS_TypeDropDown" inherits="SimpleDropDownTemplate" id="1">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="LLS_TypeLabel" relativePoint="TOPRIGHT">
 						<Offset>
@@ -1336,7 +1085,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</OnLoad>
 				</Scripts>
 			</Button>
-			<Button name="LLS_SubtypeDropDown" inherits="UIDropDownMenuTemplate" id="1" hidden="true">
+			<Button name="LLS_SubtypeDropDown" inherits="SimpleDropDownTemplate" id="1" hidden="true">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="LLS_SubtypeLabel" relativePoint="TOPRIGHT">
 						<Offset>
@@ -1379,7 +1128,16 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</Anchor>
 				</Anchors>
 			</EditBox>
-			<EditBox name="LLS_MaximumSpeedEditBox" inherits="LLS_EditBoxTemplate" hidden="true">
+      <EditBox name="LLS_MinimumSpeedEditBox" inherits="LLS_EditBoxTemplate" hidden="true">
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeTo="LLS_MinimumSpeedLabel" relativePoint="TOPRIGHT">
+            <Offset>
+              <AbsDimension x="16" y="0"/>
+            </Offset>
+          </Anchor>
+        </Anchors>
+      </EditBox>
+      <EditBox name="LLS_MaximumSpeedEditBox" inherits="LLS_EditBoxTemplate" hidden="true">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="LLS_MaximumSpeedLabel" relativePoint="TOPRIGHT">
 						<Offset>
@@ -1437,6 +1195,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			</EditBox>
 		</Frames>
 		<Scripts>
+      <OnLoad>
+        LootLinkSearchFrame_OnLoad(self);
+      </OnLoad>
 			<OnShow>
 				LootLinkSearch_LoadValues();
 				LootLinkSearchFrame_SaveSearchParams();
@@ -1448,4 +1209,125 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			</OnKeyDown>
 		</Scripts>
 	</Frame>
+  
+  <!-- Autocomplete buttons -->
+  <Button name="LootLinkAutoCompleteButtonTemplate" virtual="true">
+    <Size>
+      <AbsDimension x="1920" y="16"/>
+    </Size>
+    <Scripts>
+      <OnClick function="LootLink_AutoCompleteButton_OnClick"/>
+      <OnEnter>
+        LootLinkAutoCompleteButton_OnEnter(self);
+      </OnEnter>
+      <OnUpdate>
+        if( GameTooltip:IsOwned(self) ) then
+          LootLinkAutoCompleteButton_OnEnter(self);
+        end
+      </OnUpdate>
+      <OnLeave>
+        LootLinkAutoCompleteButton_OnLeave(self);
+      </OnLeave>
+      <OnLoad>
+        self:GetFontString():SetPoint("LEFT", self, "LEFT", 15, 1);
+      </OnLoad>
+    </Scripts>
+    <ButtonText name="$parentText"/>
+    <NormalFont style="GameFontNormal"/>
+    <HighlightFont style="GameFontHighlight"/>
+    <DisabledFont style="GameFontDisable"/>
+    <HighlightTexture file="Interface\QuestFrame\UI-QuestLogTitleHighlight" alphaMode="ADD"/>
+  </Button>
+  
+  <!-- Autocomplete frame -->
+  <Frame name="LootLinkAutoCompleteFrame" parent="UIParent" hidden="true">
+    <Size>
+      <AbsDimension x="5" y="5"/>
+    </Size>
+    <Anchors>
+      <Anchor point="CENTER"/>
+    </Anchors>
+    <Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background-Dark" edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
+      <EdgeSize>
+        <AbsValue val="16"/>
+      </EdgeSize>
+      <TileSize>
+        <AbsValue val="16"/>
+      </TileSize>
+      <BackgroundInsets>
+        <AbsInset left="5" right="5" top="5" bottom="5"/>
+      </BackgroundInsets>
+    </Backdrop>
+    <Layers>
+      <Layer level="ARTWORK">
+        <FontString name="LootLinkAutoCompleteInstructions" inherits="GameFontDisableSmall" text="PRESS_TAB">
+          <Anchors>
+            <Anchor point="BOTTOMLEFT">
+              <Offset x="15" y="10"/>
+            </Anchor>
+          </Anchors>
+        </FontString>
+        <FontString name="LootLinkAutoCompleteWidthTest" inherits="ChatFontNormal"/>
+      </Layer>
+    </Layers>
+    <Frames>
+      <Button name="LootLinkAutoCompleteButton1" inherits="LootLinkAutoCompleteButtonTemplate">
+        <Anchors>
+          <Anchor point="TOPLEFT">
+            <Offset>
+              <AbsDimension x="0" y="-10"/>
+            </Offset>
+          </Anchor>
+        </Anchors>
+      </Button>
+      <Button name="LootLinkAutoCompleteButton2" inherits="LootLinkAutoCompleteButtonTemplate">
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeTo="LootLinkAutoCompleteButton1" relativePoint="BOTTOMLEFT"/>
+        </Anchors>
+      </Button>
+      <Button name="LootLinkAutoCompleteButton3" inherits="LootLinkAutoCompleteButtonTemplate">
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeTo="LootLinkAutoCompleteButton2" relativePoint="BOTTOMLEFT"/>
+        </Anchors>
+      </Button>
+      <Button name="LootLinkAutoCompleteButton4" inherits="LootLinkAutoCompleteButtonTemplate">
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeTo="LootLinkAutoCompleteButton3" relativePoint="BOTTOMLEFT"/>
+        </Anchors>
+      </Button>
+      <Button name="LootLinkAutoCompleteButton5" inherits="LootLinkAutoCompleteButtonTemplate">
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeTo="LootLinkAutoCompleteButton4" relativePoint="BOTTOMLEFT"/>
+        </Anchors>
+      </Button>
+      <Button name="LootLinkAutoCompleteButton6" inherits="LootLinkAutoCompleteButtonTemplate">
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeTo="LootLinkAutoCompleteButton5" relativePoint="BOTTOMLEFT"/>
+        </Anchors>
+      </Button>
+      <Button name="LootLinkAutoCompleteButton7" inherits="LootLinkAutoCompleteButtonTemplate">
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeTo="LootLinkAutoCompleteButton6" relativePoint="BOTTOMLEFT"/>
+        </Anchors>
+      </Button>
+      <Button name="LootLinkAutoCompleteButton8" inherits="LootLinkAutoCompleteButtonTemplate">
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeTo="LootLinkAutoCompleteButton7" relativePoint="BOTTOMLEFT"/>
+        </Anchors>
+      </Button>
+      <Button name="LootLinkAutoCompleteButton9" inherits="LootLinkAutoCompleteButtonTemplate">
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeTo="LootLinkAutoCompleteButton8" relativePoint="BOTTOMLEFT"/>
+        </Anchors>
+      </Button>
+      <Button name="LootLinkAutoCompleteButton10" inherits="LootLinkAutoCompleteButtonTemplate">
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeTo="LootLinkAutoCompleteButton9" relativePoint="BOTTOMLEFT"/>
+        </Anchors>
+      </Button>
+    </Frames>
+    <Scripts>
+      <OnLoad function="LootLink_AutoComplete_OnLoad"/>
+    </Scripts>
+  </Frame>
 </Ui>

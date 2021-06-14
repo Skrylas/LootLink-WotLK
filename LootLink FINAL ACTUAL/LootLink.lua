@@ -1,8 +1,8 @@
 --[[
 
-	LootLink 3.51: An in-game item database
-		copyright 2004 by Telo updated for WoW 3.0 by Tegran
-		
+	LootLink 4.00: An in-game item database
+
+
 	- Watches all chat links you see to cache link color and link data
 	- Automatically extracts data from items already in or added to your inventory
 	- Automatically caches link data from items already in or added to your bank
@@ -121,7 +121,7 @@ LL.RARE = "Rare";
 LL.EPIC = "Epic";
 LL.LEGENDARY = "Legendary";
 LL.HEIRLOOM = "Heirloom";
-LL.ARTIFCAT = "Artifact";
+LL.ARTIFACT = "Artifact";
 LL.DOES_NOT = "Does Not";
 LL.ON_EQUIP = "On Equip";
 LL.ON_PICKUP = "On Pickup";
@@ -769,9 +769,6 @@ LOOTLINK_CURRENT_DATA_VERSION = 201; -- version 2.01
 LOOTLINK_ITEM_HEIGHT = 16;
 LOOTLINK_ITEMS_SHOWN = 23;
 
---[[UIPanelWindows["LootLinkFrame"] =		{ area = "left",	pushable = 11,	whileDead = 1 };
-UIPanelWindows["LootLinkSearchFrame"] =	{ area = "center",	pushable = 0,	whileDead = 1 };]]--
-
 --------------------------------------------------------------------------------------------------
 -- Internal functions
 --------------------------------------------------------------------------------------------------
@@ -888,32 +885,6 @@ local function LootLink_GetHexColorFromRGB(red, green, blue, alpha)
 	
 	return strlower(alphaString..redString..greenString..blueString);
 end
-
---[[local function LootLink_MouseIsOver(frame)
-	local x, y = GetCursorPosition();
-	
-	if( not frame ) then
-		return nil;
-	end
-	
-	x = x / frame:GetEffectiveScale();
-	y = y / frame:GetEffectiveScale();
-
-	local left = frame:GetLeft();
-	local right = frame:GetRight();
-	local top = frame:GetTop();
-	local bottom = frame:GetBottom();
-	
-	if( not left or not right or not top or not bottom ) then
-		return nil;
-	end
-	
-	if( (x > left and x < right) and (y > bottom and y < top) ) then
-		return 1;
-	else
-		return nil;
-	end
-end]]--
 
 local function LootLink_GetDataVersion()
 	if( not LootLinkState or not LootLinkState.DataVersion ) then
@@ -1137,16 +1108,6 @@ local function LootLink_GetHyperlink(llid)
 	end
 	return nil;
 end
-
---Skray this breaks need to update at some point.  Get Name function.
---[[local function LootLink_GetLink(name)
-	local itemLink = ItemLinks[name];
-	if( itemLink and itemLink.c and itemLink.i and LootLink_CheckItemServer(itemLink, LL.lServerIndex) ) then
-		local link = "|c"..itemLink.c.."|H"..LootLink_GetHyperlink(name).."|h["..name.."]|h|r";
-		return link;
-	end
-	return nil;
-end]]--
 
 local function LootLink_GetLink(llid)
 	local itemLink = ItemLinks[llid];
@@ -2078,29 +2039,24 @@ end
 -- Uncategorized functions; will sort later
 --
 
---Skray, need simpledropdown to work here.  Without SDD these don't seem to work.
 local function LootLinkFrameDropDown_Initialize()
-	local info;
+	local info = { };
 	for i = 1, #LOOTLINK_DROPDOWN_LIST, 1 do
-		info = { };
 		info.text = LOOTLINK_DROPDOWN_LIST[i].name;
-		info.func = LootLinkFrameDropDownButton_OnClick;
-		UIDropDownMenu_AddButton(info);
+		info.func = LootLinkFrameDropDown_OnClick;
+		sdd:AddButton(info);
 	end
 end
 
 local function LLS_RarityDropDown_Initialize()
-	local info;
+	local info = { };
 	for i = 1, #LLS_RARITY_LIST, 1 do
-		info = { };
 		info.text = LLS_RARITY_LIST[i].name;
 		info.func = LLS_RarityDropDown_OnClick;
 		if( LLS_RARITY_LIST[i].value ) then
-			info.textR = LLS_RARITY_LIST[i].r;
-			info.textG = LLS_RARITY_LIST[i].g;
-			info.textB = LLS_RARITY_LIST[i].b;
+			info.colorCode = "|c"..LLS_RARITY_LIST[i].value;
 		end
-		UIDropDownMenu_AddButton(info);
+		sdd:AddButton(info);
 	end
 end
 
@@ -2110,7 +2066,7 @@ local function LLS_BindsDropDown_Initialize()
 		info = { };
 		info.text = LLS_BINDS_LIST[i].name;
 		info.func = LLS_BindsDropDown_OnClick;
-		UIDropDownMenu_AddButton(info);
+		sdd:AddButton(info);
 	end
 end
 
@@ -2120,7 +2076,7 @@ local function LLS_LocationDropDown_Initialize()
 		info = { };
 		info.text = LLS_LOCATION_LIST[i].name;
 		info.func = LLS_LocationDropDown_OnClick;
-		UIDropDownMenu_AddButton(info);
+		sdd:AddButton(info);
 	end
 end
 
@@ -2130,7 +2086,7 @@ local function LLS_TypeDropDown_Initialize()
 		info = { };
 		info.text = LLS_TYPE_LIST[i].name;
 		info.func = LLS_TypeDropDown_OnClick;
-		UIDropDownMenu_AddButton(info);
+		sdd:AddButton(info);
 	end
 end
 
@@ -2140,7 +2096,7 @@ local function LLS_SubtypeDropDownArmor_Initialize()
 		info = { };
 		info.text = LLS_SUBTYPE_ARMOR_LIST[i].name;
 		info.func = LLS_SubtypeDropDown_OnClick;
-		UIDropDownMenu_AddButton(info);
+		sdd:AddButton(info);
 	end
 end
 
@@ -2150,7 +2106,17 @@ local function LLS_SubtypeDropDownGem_Initialize()
 		info = { };
 		info.text = LLS_SUBTYPE_GEM_LIST[i].name;
 		info.func = LLS_SubtypeDropDown_OnClick;
-		UIDropDownMenu_AddButton(info);
+		sdd:AddButton(info);
+	end
+end
+
+local function LLS_SubtypeDropDownGlyph_Initialize()
+	local info;
+	for i = 1, #LLS_SUBTYPE_GLYPH_LIST, 1 do
+		info = { };
+		info.text = LLS_SUBTYPE_GLYPH_LIST[i].name;
+		info.func = LLS_SubtypeDropDown_OnClick;
+		sdd:AddButton(info);
 	end
 end
 
@@ -2160,7 +2126,7 @@ local function LLS_SubtypeDropDownShield_Initialize()
 		info = { };
 		info.text = LLS_SUBTYPE_SHIELD_LIST[i].name;
 		info.func = LLS_SubtypeDropDown_OnClick;
-		UIDropDownMenu_AddButton(info);
+		sdd:AddButton(info);
 	end
 end
 
@@ -2170,7 +2136,7 @@ local function LLS_SubtypeDropDownWeapon_Initialize()
 		info = { };
 		info.text = LLS_SUBTYPE_WEAPON_LIST[i].name;
 		info.func = LLS_SubtypeDropDown_OnClick;
-		UIDropDownMenu_AddButton(info);
+		sdd:AddButton(info);
 	end
 end
 
@@ -2180,16 +2146,8 @@ local function LLS_SubtypeDropDownRecipe_Initialize()
 		info = { };
 		info.text = LLS_SUBTYPE_RECIPE_LIST[i].name;
 		info.func = LLS_SubtypeDropDown_OnClick;
-		UIDropDownMenu_AddButton(info);
+		sdd:AddButton(info);
 	end
-end
-
-local function LootLink_UIDropDownMenu_SetSelectedID(frame, id, names)
-	UIDropDownMenu_SetSelectedID(frame, id, UIDROPDOWNMENU_MENU_LEVEL);
-	if( not frame ) then
-		frame = this;
-	end
-	UIDropDownMenu_SetText(frame, names[id].name);
 end
 
 local function LootLink_SetupTypeUI(iType, iSubtype)
@@ -2315,20 +2273,6 @@ local function LootLink_SetupTypeUI(iType, iSubtype)
 		tinsert(fields, field);
 	end
 end
-
---[[local function LootLink_InspectSlot(unit, id)
-	local link = GetInventoryItemLink(unit, id);
-	if( link ) then
-		local name = LootLink_ProcessLinks(link);
-		if( name and ItemLinks[name] ) then
-			local count = GetInventoryItemCount(unit, id);
-			if( count > 1 ) then
-				ItemLinks[name].x = 1;
-			end
-			LootLink_Event_InspectSlot(name, count, ItemLinks[name], unit, id);
-		end
-	end
-end]]--
 
 local function LootLink_InspectSlot(unit, id)
 	local link = GetInventoryItemLink(unit, id);
@@ -2944,7 +2888,6 @@ function LootLink_OnLoad(self)
 	self:RegisterEvent("BANKFRAME_OPENED");
 	self:RegisterEvent("GUILDBANKBAGSLOTS_CHANGED");
 	self:RegisterEvent("VARIABLES_LOADED");
-	self:RegisterEvent("ADDON_LOADED");
 	self:RegisterEvent("AUCTION_HOUSE_SHOW");
 	self:RegisterEvent("AUCTION_HOUSE_CLOSE");
 	self:RegisterEvent("AUCTION_ITEM_LIST_UPDATE");
@@ -3085,24 +3028,19 @@ function LootLink_OnEvent(self, event, ...)
 	end
 end
 
--- can't change these for some reason.  llid instead of GetText isn't working.
-function LootLinkItemButton_OnClick(button)
+function LootLinkItemButton_OnClick(self, button)
 	if( button == "LeftButton" ) then
 		if( IsShiftKeyDown() ) then
-			local activeWindow = ChatEdit_GetActiveWindow();
-			if ( activeWindow ) then
-				activeWindow:Insert(LootLink_GetLink(this:GetText())); 
-			else
-				ChatEdit_InsertLink(LootLink_GetLink(this:GetText()));
+			if( ChatEdit_GetActiveWindow() ) then
+				ChatEdit_InsertLink(LootLink_GetLink(self.llid));
 			end
 		end
 		if( IsControlKeyDown() ) then
-			DressUpItemLink(LootLink_GetLink(this:GetText()));
+			DressUpItemLink(LootLink_GetLink(self.llid));
 		end
 	elseif( button == "RightButton" ) then
 		if( IsShiftKeyDown() and IsControlKeyDown() ) then
-			--@todo Telo: add a confirmation dialog to this
-			ItemLinks[this:GetText()] = nil;
+			ItemLinks[self.llid] = nil;
 			LootLink_Refresh();
 		end
 	end
@@ -3118,15 +3056,17 @@ function LootLink_OnHide(self)
 end
 
 -- this disables tooltips.  Doesn't pull data from things, because of llid instead of name.
-function LootLinkItemButton_OnEnter()
-	local link = LootLink_GetHyperlink(this:GetText());
+function LootLinkItemButton_OnEnter(self)
+	local link = LootLink_GetHyperlink(self.llid);
 	if( link ) then
-		LootLinkFrame.TooltipButton = this:GetID();
-		GameTooltip:SetOwner(this, "ANCHOR_BOTTOMRIGHT");
-		local cached = LootLink_SetHyperlink(GameTooltip, this:GetText(), link);
+		LootLinkFrame.TooltipButton = self:GetID();
+		GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT");
+		local cached = LootLink_SetHyperlinkFromId(GameTooltip, self.llid, link);
 		if( IsShiftKeyDown() and (cached or IsControlKeyDown()) ) then
 			LootLink_ShowCompareItem(link);
 		end
+	else
+		LootLinkItemButton_OnLeave(self);
 	end
 end
 
@@ -3137,75 +3077,66 @@ function LootLinkItemButton_OnLeave(self)
 	end
 end
 
--- Need to change for SDD
-function LootLinkFrameDropDown_OnLoad()
-	UIDropDownMenu_Initialize(LootLinkFrameDropDown, LootLinkFrameDropDown_Initialize);
-	LootLink_UIDropDownMenu_SetSelectedID(LootLinkFrameDropDown, 1, LOOTLINK_DROPDOWN_LIST);
-	UIDropDownMenu_SetWidth(LootLinkFrameDropDown, 80);
-	UIDropDownMenu_SetButtonWidth(LootLinkFrameDropDown, 24);
-	UIDropDownMenu_JustifyText(LootLinkFrameDropDown, LootLinkFrameDropDown, "LEFT")
+function LootLinkFrameDropDown_OnLoad(self)
+	sdd:Initialize(self, LootLinkFrameDropDown_Initialize);
+	sdd:SetSelectedID(self, 1);
+	sdd:SetWidth(self, 80);
+	sdd:JustifyText(self, "LEFT")
 end
 
-function LootLinkFrameDropDownButton_OnClick()
-	local oldID = UIDropDownMenu_GetSelectedID(LootLinkFrameDropDown);
-	UIDropDownMenu_SetSelectedID(LootLinkFrameDropDown, this:GetID());
-	if( oldID ~= this:GetID() ) then
+function LootLinkFrameDropDown_OnClick(self, arg1, arg2, checked)
+	sdd:SetSelectedID(LootLinkFrameDropDown, self:GetID());
+	if( not checked ) then
 		LootLink_Refresh();
 	end
 end
 
-function LLS_RarityDropDown_OnLoad()
-	UIDropDownMenu_SetWidth(this, 90);
-	UIDropDownMenu_SetButtonWidth(this, 24);
-	UIDropDownMenu_JustifyText(LLS_RarityDropDown, "LEFT");
+function LLS_RarityDropDown_OnLoad(self)
+	sdd:SetWidth(self, 90);
+	sdd:JustifyText(self, "LEFT");
 end
 
-function LLS_RarityDropDown_OnClick()
-	UIDropDownMenu_SetSelectedID(LLS_RarityDropDown, this:GetID());
+function LLS_RarityDropDown_OnClick(self)
+	sdd:SetSelectedID(LLS_RarityDropDown, self:GetID());
 end
 
-function LLS_BindsDropDown_OnLoad()
-	UIDropDownMenu_SetWidth(this, 90);
-	UIDropDownMenu_SetButtonWidth(this, 24);
-	UIDropDownMenu_JustifyText(LLS_BindsDropDown, "LEFT");
+function LLS_BindsDropDown_OnLoad(self)
+	sdd:SetWidth(self, 90);
+	sdd:JustifyText(self, "LEFT");
 end
 
-function LLS_BindsDropDown_OnClick()
-	UIDropDownMenu_SetSelectedID(LLS_BindsDropDown, this:GetID());
+function LLS_BindsDropDown_OnClick(self)
+	sdd:SetSelectedID(LLS_BindsDropDown, self:GetID());
 end
 
-function LLS_LocationDropDown_OnLoad()
-	UIDropDownMenu_SetWidth(this, 90);
-	UIDropDownMenu_SetButtonWidth(this, 24);
-	UIDropDownMenu_JustifyText(LLS_LocationDropDown, "LEFT");
+function LLS_LocationDropDown_OnLoad(self)
+	sdd:SetWidth(self, 90);
+	sdd:JustifyText(self, "LEFT");
 end
 
-function LLS_LocationDropDown_OnClick()
-	UIDropDownMenu_SetSelectedID(LLS_LocationDropDown, this:GetID());
+function LLS_LocationDropDown_OnClick(self)
+	sdd:SetSelectedID(LLS_LocationDropDown, self:GetID());
 end
 
-function LLS_TypeDropDown_OnLoad()
-	UIDropDownMenu_SetWidth(this, 90);
-	UIDropDownMenu_SetButtonWidth(this, 24);
-	UIDropDownMenu_JustifyText(LLS_TypeDropDown, "LEFT");
+function LLS_TypeDropDown_OnLoad(self)
+	sdd:SetWidth(self, 90);
+	sdd:JustifyText(self, "LEFT");
 end
 
-function LLS_TypeDropDown_OnClick()
-	local oldID = UIDropDownMenu_GetSelectedID(LLS_TypeDropDown);
-	UIDropDownMenu_SetSelectedID(LLS_TypeDropDown, this:GetID());
-	if( oldID ~= this:GetID() ) then
-		LootLink_SetupTypeUI(this:GetID(), 1);
+function LLS_TypeDropDown_OnClick(self, arg1, arg2, clicked)
+	sdd:SetSelectedID(LLS_TypeDropDown, self:GetID());
+	if( not checked ) then
+		LootLink_SetupTypeUI(self:GetID(), 1);
 	end
 end
 
-function LLS_SubtypeDropDown_OnLoad()
-	UIDropDownMenu_SetWidth(this, 90);
-	UIDropDownMenu_SetButtonWidth(this, 24);
-	UIDropDownMenu_JustifyText(LLS_SubtypeDropDown, "LEFT");
+function LLS_SubtypeDropDown_OnLoad(self)
+	sdd:SetWidth(self, 90);
+	sdd:JustifyText(self, "LEFT");
 end
 
-function LLS_SubtypeDropDown_OnClick()
-	UIDropDownMenu_SetSelectedID(LLS_SubtypeDropDown, this:GetID());
+function LLS_SubtypeDropDown_OnClick(self)
+	sdd:SetSelectedID(LLS_SubtypeDropDown, self:GetID());
 end
 
 function LootLink_AutoCompleteButton_OnClick(self)
@@ -3383,36 +3314,36 @@ function LootLink_Update()
 		LootLink_BuildDisplayIndices();
 	end
 	FauxScrollFrame_Update(LootLinkListScrollFrame, DisplayIndices.onePastEnd - 1, LOOTLINK_ITEMS_SHOWN, LOOTLINK_ITEM_HEIGHT);
-	for iItem = 1, LOOTLINK_ITEMS_SHOWN, 1 do
+	for iItem = 1, LOOTLINK_ITEMS_SHOWN do
 		local itemIndex = iItem + FauxScrollFrame_GetOffset(LootLinkListScrollFrame);
-		local lootLinkItem = getglobal("LootLinkItem"..iItem);		
-		local lootLinkItemText = getglobal("LootLinkItem"..iItem.."ButtonText");
+		local lootLinkItem = _G["LootLinkItem"..iItem];
+		local lootLinkItemText = _G["LootLinkItem"..iItem.."Text"];
 		
 		if( itemIndex < DisplayIndices.onePastEnd ) then
 			local color = { };
-			local name = DisplayIndices[itemIndex];
-			local font;
+			local llid = DisplayIndices[itemIndex];
 			
-			lootLinkItem:SetText(name);
-			if( ItemLinks[name].c ) then
-				color.r, color.g, color.b = LootLink_GetRGBFromHexColor(ItemLinks[name].c);
+			if (ItemLinks[llid]) then
+				lootLinkItem.llid = llid;
+			
+				lootLinkItemText:SetText(LootLink_GetName(llid));
+			
+				if( ItemLinks[llid].c ) then
+					color.r, color.g, color.b = LootLink_GetRGBFromHexColor(ItemLinks[llid].c);
+				else
+					color.r, color.g, color.b = LootLink_GetRGBFromHexColor("ff40ffc0");
+				end
+				lootLinkItemText:SetTextColor(color.r, color.g, color.b);
 			else
-				color.r, color.g, color.b = LootLink_GetRGBFromHexColor("ff40ffc0");
+				lootLinkItem.llid = nil;
+				lootLinkItemText:SetText(LOOTLINK_ITEM_RENAMED);
+				lootLinkItemText:SetTextColor(LootLink_GetRGBFromHexColor("ff40ffc0"));
 			end
-			lootLinkItemText:SetTextColor(color.r, color.g, color.b);
-			--lootLinkItem:SetHighlightTextColor(color.r, color.g, color.b);
+
 			lootLinkItem:Show();
 			
 			if( LootLinkFrame.TooltipButton == iItem ) then
-				if( ItemLinks[name].i ) then
-					local link = LootLink_GetHyperlink(name);
-					local cached = LootLink_SetHyperlink(GameTooltip, name, link);
-					if( IsShiftKeyDown() and (cached or IsControlKeyDown()) ) then
-						LootLink_ShowCompareItem(link);
-					end
-				else
-					LootLinkItemButton_OnLeave();
-				end
+				LootLinkItemButton_OnEnter(lootLinkItem);
 			end
 		else
 			lootLinkItem:Hide();
@@ -3439,151 +3370,79 @@ function LootLinkSearch_LoadValues()
 	local sp = LootLinkFrame.SearchParams;
 	local field;
 	
+	LootLinkFrame.BaseSearchEditFields = { };
+	local fields = LootLinkFrame.BaseSearchEditFields;
+	
 	if( LootLinkState.LightMode ) then
-		getglobal("LLS_TextDisabled"):Show();
-		getglobal("LLS_TextEditBox"):Hide();
-		getglobal("LLS_NameEditBox"):SetFocus();
+		_G["LLS_TextDisabled"]:Show();
+		_G["LLS_TextEditBox"]:Hide();
+		_G["LLS_NameEditBox"]:SetFocus();
 	else
-		getglobal("LLS_TextDisabled"):Hide();
-		field = getglobal("LLS_TextEditBox");
+		_G["LLS_TextDisabled"]:Hide();
+		field = _G["LLS_TextEditBox"];
 		field:Show();
 		field:SetFocus();
-		if( sp and sp.text ) then
-			field:SetText(sp.text);
-		else
-			field:SetText("");
-		end
+		field:SetText(sp and sp.text or "");
+		tinsert(fields, field);
 	end
 	
-	field = getglobal("LLS_NameEditBox");
-	if( sp and sp.name ) then
-		field:SetText(sp.name);
-	else
-		field:SetText("");
-	end
+	field = _G["LLS_NameEditBox"];
+	field:SetText(sp and sp.name or "");
+	tinsert(fields, field);
 	
-	UIDropDownMenu_Initialize(LLS_RarityDropDown, LLS_RarityDropDown_Initialize);
-	if( sp and sp.rarity ) then
-		LootLink_UIDropDownMenu_SetSelectedID(LLS_RarityDropDown, sp.rarity, LLS_RARITY_LIST);
-	else
-		LootLink_UIDropDownMenu_SetSelectedID(LLS_RarityDropDown, 1, LLS_RARITY_LIST);
-	end
+	sdd:Initialize(LLS_RarityDropDown, LLS_RarityDropDown_Initialize);
+	sdd:SetSelectedID(LLS_RarityDropDown, sp and sp.rarity or 1);
 	
-	UIDropDownMenu_Initialize(LLS_BindsDropDown, LLS_BindsDropDown_Initialize);
-	if( sp and sp.binds ) then
-		LootLink_UIDropDownMenu_SetSelectedID(LLS_BindsDropDown, sp.binds, LLS_BINDS_LIST);
-	else
-		LootLink_UIDropDownMenu_SetSelectedID(LLS_BindsDropDown, 1, LLS_BINDS_LIST);
-	end
-	
-	if( sp and sp.unique ) then
-		getglobal("LLS_UniqueCheckButton"):SetChecked(1);
-	else
-		getglobal("LLS_UniqueCheckButton"):SetChecked(0);
-	end
-	
-	UIDropDownMenu_Initialize(LLS_LocationDropDown, LLS_LocationDropDown_Initialize);
-	if( sp and sp.location ) then
-		LootLink_UIDropDownMenu_SetSelectedID(LLS_LocationDropDown, sp.location, LLS_LOCATION_LIST);
-	else
-		LootLink_UIDropDownMenu_SetSelectedID(LLS_LocationDropDown, 1, LLS_LOCATION_LIST);
-	end
-	
-	if( sp and sp.usable ) then
-		getglobal("LLS_UsableCheckButton"):SetChecked(1);
-	else
-		getglobal("LLS_UsableCheckButton"):SetChecked(0);
-	end
-	
-	field = getglobal("LLS_MinimumLevelEditBox");
-	if( sp and sp.minLevel ) then
-		field:SetText(sp.minLevel);
-	else
-		field:SetText("");
-	end
+	sdd:Initialize(LLS_BindsDropDown, LLS_BindsDropDown_Initialize);
+	sdd:SetSelectedID(LLS_BindsDropDown, sp and sp.binds or 1);
 
-	field = getglobal("LLS_MaximumLevelEditBox");
-	if( sp and sp.maxLevel ) then
-		field:SetText(sp.maxLevel);
-	else
-		field:SetText("");
-	end
+	_G["LLS_UniqueCheckButton"]:SetChecked(sp and sp.unique);
 	
-	UIDropDownMenu_Initialize(LLS_TypeDropDown, LLS_TypeDropDown_Initialize);
-	if( sp and sp.type ) then
-		LootLink_UIDropDownMenu_SetSelectedID(LLS_TypeDropDown, sp.type, LLS_TYPE_LIST);
-	else
-		LootLink_UIDropDownMenu_SetSelectedID(LLS_TypeDropDown, 1, LLS_TYPE_LIST);
-	end
+	sdd:Initialize(LLS_LocationDropDown, LLS_LocationDropDown_Initialize);
+	sdd:SetSelectedID(LLS_LocationDropDown, sp and sp.location or 1);
 	
-	if( sp and sp.type ) then
-		LootLink_SetupTypeUI(sp.type, sp.subtype);
-	else
-		LootLink_SetupTypeUI(1, 1);
-	end
+	_G["LLS_UsableCheckButton"]:SetChecked(sp and sp.usable);
+	
+	field = _G["LLS_MinimumLevelEditBox"];
+	field:SetText(sp and sp.minLevel or "");
+	tinsert(fields, field);
 
-	field = getglobal("LLS_MinimumDamageEditBox");
-	if( sp and sp.minMinDamage ) then
-		field:SetText(sp.minMinDamage);
-	else
-		field:SetText("");
-	end
+	field = _G["LLS_MaximumLevelEditBox"];
+	field:SetText(sp and sp.maxLevel or "");
+	tinsert(fields, field);
 	
-	field = getglobal("LLS_MaximumDamageEditBox");
-	if( sp and sp.minMaxDamage ) then
-		field:SetText(sp.minMaxDamage);
-	else
-		field:SetText("");
-	end
+	field = _G["LLS_MinimumiLevelEditBox"];
+	field:SetText(sp and sp.miniLevel or "");
+	tinsert(fields, field);
+
+	field = _G["LLS_MaximumiLevelEditBox"];
+	field:SetText(sp and sp.maxiLevel or "");
+	tinsert(fields, field);
 	
-	field = getglobal("LLS_MaximumSpeedEditBox");
-	if( sp and sp.maxSpeed ) then
-		field:SetText(sp.maxSpeed);
-	else
-		field:SetText("");
-	end
+	sdd:Initialize(LLS_TypeDropDown, LLS_TypeDropDown_Initialize);
+	sdd:SetSelectedID(LLS_TypeDropDown, sp and sp.type or 1);
 	
-	field = getglobal("LLS_MinimumDPSEditBox");
-	if( sp and sp.minDPS ) then
-		field:SetText(sp.minDPS);
-	else
-		field:SetText("");
-	end
+	LootLink_SetupTypeUI(sp and sp.type or 1, sp and sp.subtype or 1);
+
+	_G["LLS_MinimumDamageEditBox"]:SetText(sp and sp.minMinDamage or "");
 	
-	field = getglobal("LLS_MinimumArmorEditBox");
-	if( sp and sp.minArmor ) then
-		field:SetText(sp.minArmor);
-	else
-		field:SetText("");
-	end
+	_G["LLS_MaximumDamageEditBox"]:SetText(sp and sp.minMaxDamage or "");
 	
-	field = getglobal("LLS_MinimumBlockEditBox");
-	if( sp and sp.minBlock ) then
-		field:SetText(sp.minBlock);
-	else
-		field:SetText("");
-	end
+	_G["LLS_MinimumSpeedEditBox"]:SetText(sp and sp.minSpeed or "");
 	
-	field = getglobal("LLS_MinimumSlotsEditBox");
-	if( sp and sp.minSlots ) then
-		field:SetText(sp.minSlots);
-	else
-		field:SetText("");
-	end
+	_G["LLS_MaximumSpeedEditBox"]:SetText(sp and sp.maxSpeed or "");
 	
-	field = getglobal("LLS_MinimumSkillEditBox");
-	if( sp and sp.minSkill ) then
-		field:SetText(sp.minSkill);
-	else
-		field:SetText("");
-	end
+	_G["LLS_MinimumDPSEditBox"]:SetText(sp and sp.minDPS or "");
 	
-	field = getglobal("LLS_MaximumSkillEditBox");
-	if( sp and sp.maxSkill ) then
-		field:SetText(sp.maxSkill);
-	else
-		field:SetText("");
-	end
+	_G["LLS_MinimumArmorEditBox"]:SetText(sp and sp.minArmor or "");
+	
+	_G["LLS_MinimumBlockEditBox"]:SetText(sp and sp.minBlock or "");
+	
+	_G["LLS_MinimumSlotsEditBox"]:SetText(sp and sp.minSlots or "");
+	
+	_G["LLS_MinimumSkillEditBox"]:SetText(sp and sp.minSkill or "");
+	
+	_G["LLS_MaximumSkillEditBox"]:SetText(sp and sp.maxSkill or "");
 end
 
 function LootLinkSearch_SaveValues()
@@ -3609,13 +3468,13 @@ function LootLinkSearch_SaveValues()
 		interesting = 1;
 	end
 	
-	value = UIDropDownMenu_GetSelectedID(LLS_RarityDropDown);
+	value = sdd:GetSelectedID(LLS_RarityDropDown);
 	if( value and value ~= 1 ) then
 		sp.rarity = value;
 		interesting = 1;
 	end
 	
-	value = UIDropDownMenu_GetSelectedID(LLS_BindsDropDown);
+	value = sdd:GetSelectedID(LLS_BindsDropDown);
 	if( value and value ~= 1 ) then
 		sp.binds = value;
 		interesting = 1;
@@ -3628,7 +3487,7 @@ function LootLinkSearch_SaveValues()
 		interesting = 1;
 	end
 	
-	value = UIDropDownMenu_GetSelectedID(LLS_LocationDropDown);
+	value = sdd:GetSelectedID(LLS_LocationDropDown);
 	if( value and value ~= 1 ) then
 		sp.location = value;
 		interesting = 1;
@@ -3669,13 +3528,13 @@ function LootLinkSearch_SaveValues()
 		interesting = 1;
 	end
 	
-	value = UIDropDownMenu_GetSelectedID(LLS_TypeDropDown);
+	value = sdd:GetSelectedID(LLS_TypeDropDown);
 	if( value and value ~= 1 ) then
 		sp.type = value;
 		interesting = 1;
 	end
 	
-	value = UIDropDownMenu_GetSelectedID(LLS_SubtypeDropDown);
+	value = sdd:GetSelectedID(LLS_SubtypeDropDown);
 	if( value and value ~= 1 ) then
 		sp.subtype = value;
 		if( sp.type and sp.type ~= 1 ) then
@@ -3925,7 +3784,7 @@ end
 function LootLink_AddItem(name, item, color)
 	if( LL.lReady and color and item and name and name ~= "" ) then
 		local itemString, valid;
-	
+
 		if( string.find(item, "^%d+:%d+:%d+:%d+$") ) then
 			-- Upgrade old links, removing instance-specific data
 			itemString, valid = string.gsub(item, "^(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+)$", "%1:0:0:0:0:0:%3:%4:1");
@@ -4434,25 +4293,6 @@ function LootLink_SetHyperlinkFromId(tooltip, llid, link)
 	return false;
 end
 
--- Adds extra tooltip information for the item with the given name
---[[function LootLink_AddTooltipInfo(name, tooltip, quantity)
-	if( LootLink_AutoAddInfo() ) then
-		if( not tooltip ) then
-			tooltip = GameTooltip;
-		end
-		if( not quantity ) then
-			quantity = 1;
-		end
-		if( not LootLinkState.HideInfo ) then
-			if( ItemLinks[name] and ItemLinks[name].p and quantity > 0 ) then
-				LootLink_SetTooltipMoney(tooltip, quantity, ItemLinks[name].p, ItemLinks[name].x);
-			end
-			LootLink_AddExtraTooltipInfo(tooltip, name, quantity, ItemLinks[name]);
-			tooltip:Show();
-		end
-	end
-end]]--
-
 -- This will set up a tooltip with item information for the given name if it's known
 function LootLink_SetTooltip(tooltip, name, quantity)
 	if( LL.lReady and tooltip and name ) then
@@ -4475,21 +4315,6 @@ function LootLink_SetTooltipFromItemIdAndName(tooltip, itemid, name, quantity)
 		end
 	end
 end
-
--- Calling this will allow LootLink to automatically add information to tooltips when needed
---[[function LootLink_AutoInfoOn()
-	lSuppressInfoAdd = nil;
-end
-
--- Calling this will prevent LootLink from automatically adding information to tooltips
-function LootLink_AutoInfoOff()
-	lSuppressInfoAdd = 1;
-end
-
--- Returns whether or not information will be automatically added to tooltips
-function LootLink_AutoAddInfo()
-	return not lSuppressInfoAdd;
-end]]--
 
 -- Use this function to get the current server name from LootLink's perspective
 function LootLink_GetCurrentServerName()
