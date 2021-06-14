@@ -1742,9 +1742,9 @@ local function LootLink_MatchesSearch(llid, value, ud)
 	return 1;
 end
 
---local function LootLink_NameComparison(elem1, elem2)
---	return LootLink_GetName(elem1) < LootLink_GetName(elem2);
---end
+local function LootLink_NameComparison(elem1, elem2)
+	return LootLink_GetName(elem1) < LootLink_GetName(elem2);
+end
 
 local function LootLink_ColorComparison(elem1, elem2)
 	local color1;
@@ -3895,29 +3895,23 @@ end
 
 -- Allows other AddOns to add items directly to LootLink's cache
 function LootLink_AddItem(name, item, color)
-	if( color and item and name and name ~= "" ) then
+	if( LL.lReady and color and item and name and name ~= "" ) then
+		local itemString, valid;
+	
 		if( string.find(item, "^%d+:%d+:%d+:%d+$") ) then
 			-- Upgrade old links, removing instance-specific data
-			item = string.gsub(item, "^(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+)$", "%1:0:0:0:0:0:%3:%4:1");
+			itemString, valid = string.gsub(item, "^(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+)$", "%1:0:0:0:0:0:%3:%4:1");
 		else
 			-- Remove instance-specific data from the given item (2nd is enchantment, 3rd-5th are sockets)
-			item = string.gsub(item, "(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+)", "%1:0:0:0:0:%6:%7:%8:%9");
+			itemString, valid = string.gsub(item, "(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+)", "%1:0:0:0:0:%6:%7:%8:%9");
 		end
 
-		if( not ItemLinks[name] ) then
-			ItemLinks[name] = { };
-			LL.lItemLinksSizeTotal = LL.lItemLinksSizeTotal + 1;
-		else
-			ItemLinks[name].d = nil;
-			ItemLinks[name].t = nil;
-		end
-		ItemLinks[name].c = color;
-		ItemLinks[name].i = item;
+		if( valid and valid == 1) then
+			local itemid = string.match(itemString, "^(%-?%d+):");
 
-		LootLink_BuildSearchData(name, ItemLinks[name]);
-		if( not LootLink_CheckItemServerRaw(ItemLinks[name], LL.lServerIndex) ) then
-			LootLink_AddItemServer(ItemLinks[name], LL.lServerIndex);
-			LL.lItemLinksSizeServer = LL.lItemLinksSizeServer + 1;
+			if( itemid ) then
+				LootLink_InternalAddItem(itemid, name, color, itemString);
+			end
 		end
 	end
 end
