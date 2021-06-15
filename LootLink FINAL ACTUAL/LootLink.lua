@@ -377,154 +377,6 @@ lTypeAndSubtypeToSkill[LL.TYPE_RECIPE][LL.SUBTYPE_RECIPE_FISHING] = "Fishing";
 lTypeAndSubtypeToSkill[LL.TYPE_RECIPE][LL.SUBTYPE_RECIPE_JEWELCRAFTING] = "Jewelcrafting";
 lTypeAndSubtypeToSkill[LL.TYPE_RECIPE][LL.SUBTYPE_RECIPE_INSCRIPTION] = "Inscription";
 
-local lClassSkills =
-{
-	["DEATHKNIGHT"] =
-	{
-		["Cloth"] = 0,
-		["Leather"] = 0,
-		["Mail"] = 0,
-		["Plate Mail"] = 0,
-		["Axes"] = 0,
-		["Two-Handed Axes"] = 0,
-		["Maces"] = 0,
-		["Two-Handed Maces"] = 0,
-		["Polearms"] = 0,
-		["Swords"] = 0,
-		["Two-Handed Swords"] = 0,
-		["Sigil"] = 0,
-	},
-
-	["DRUID"] =
-	{
-		["Cloth"] = 0,
-		["Leather"] = 0,
-		["Daggers"] = 0,
-		["Maces"] = 0,
-		["Polearms"] = 20,
-		["Staves"] = 0,
-		["Two-Handed Maces"] = 0,
-		["Fist Weapons"] = 0,
-		["Idol"] = 0,
-	},
-
-	["HUNTER"] =
-	{
-		["Cloth"] = 0,
-		["Leather"] = 0,
-		["Mail"] = 40,
-		["Axes"] = 0,
-		["Two-Handed Axes"] = 0,
-		["Daggers"] = 0,
-		["Fist Weapons"] = 0,
-		["Polearms"] = 20,
-		["Swords"] = 0,
-		["Two-Handed Swords"] = 0,
-		["Staves"] = 0,
-		["Bows"] = 0,
-		["Crossbows"] = 0,
-		["Guns"] = 0,
-		["Thrown"] = 0,
-	},
-
-	["MAGE"] =
-	{
-		["Cloth"] = 0,
-		["Daggers"] = 0,
-		["Staves"] = 0,
-		["Swords"] = 0,
-		["Wands"] = 0,
-	},
-
-	["PALADIN"] =
-	{
-		["Cloth"] = 0,
-		["Leather"] = 0,
-		["Mail"] = 0,
-		["Plate Mail"] = 40,
-		["Axes"] = 0,
-		["Two-Handed Axes"] = 0,
-		["Maces"] = 0,
-		["Two-Handed Maces"] = 0,
-		["Polearms"] = 20,
-		["Swords"] = 0,
-		["Two-Handed Swords"] = 0,
-		["Libram"] = 0,
-		["Shield"] = 0,
-	},
-
-	["PRIEST"] =
-	{
-		["Cloth"] = 0,
-		["Daggers"] = 0,
-		["Staves"] = 0,
-		["Maces"] = 0,
-		["Wands"] = 0,
-	},
-
-	["ROGUE"] =
-	{
-		["Cloth"] = 0,
-		["Leather"] = 0,
-		["Daggers"] = 0,
-		["Fist Weapons"] = 0,
-		["Maces"] = 0,
-		["Swords"] = 0,
-		["Bows"] = 0,
-		["Crossbows"] = 0,
-		["Guns"] = 0,
-		["Thrown"] = 0,
-	},
-
-	["SHAMAN"] =
-	{
-		["Cloth"] = 0,
-		["Leather"] = 0,
-		["Mail"] = 40,
-		["Axes"] = 0,
-		["Two-Handed Axes"] = 0,
-		["Daggers"] = 0,
-		["Fist Weapons"] = 0,
-		["Maces"] = 0,
-		["Two-Handed Maces"] = 0,
-		["Staves"] = 0,
-		["Totem"] = 0,
-	},
-
-	["WARLOCK"] =
-	{
-		["Cloth"] = 0,
-		["Daggers"] = 0,
-		["Staves"] = 0,
-		["Swords"] = 0,
-		["Wands"] = 0,
-	},
-
-	["WARRIOR"] =
-	{
-		["Cloth"] = 0,
-		["Leather"] = 0,
-		["Mail"] = 0,
-		["Plate Mail"] = 40,
-		["Axes"] = 0,
-		["Two-Handed Axes"] = 0,
-		["Daggers"] = 0,
-		["Fist Weapons"] = 0,
-		["Maces"] = 0,
-		["Two-Handed Maces"] = 0,
-		["Polearms"] = 20,
-		["Staves"] = 0,
-		["Swords"] = 0,
-		["Two-Handed Swords"] = 0,
-		["Bows"] = 0,
-		["Crossbows"] = 0,
-		["Guns"] = 0,
-		["Thrown"] = 0,
-		["Shield"] = 0,
-	},
-};
-
-
 local LocationTypes = { };
 LocationTypes["Held In Off-hand"]		= { i = 0, type = LL.TYPE_MISC };
 LocationTypes["Back"]					= { i = 1, type = LL.TYPE_ARMOR, subtypes = ArmorSubtypes };
@@ -1377,31 +1229,51 @@ local function LootLink_InternalAddItem(itemid, name, color, itemString)
 end
 
 local function BuildUsabilityData(data)
-	local localizedClassName;
+	local nSkills;
+	local iSkill;
+	local HeaderData = { };
+	local name, header, isExpanded, rank;
+	local Collapse = { };
+	local nToCollapse = 0;
+	local iCollapse;
 
-	localizedClassName, data.class = UnitClass("player");
+	data.class = UnitClass("player");
 	data.race = UnitRace("player");
 	data.level = UnitLevel("player");
 	data.skills = { };
-
-	local skillName, minLevel;
-	for skillName, minLevel in pairs(lClassSkills[data.class]) do
-		if( data.level >= minLevel ) then
-			data.skills[skillName] = 0;
+	
+	-- We need to expand all of the skills, but first want to save off their state
+	nSkills = GetNumSkillLines();
+	for iSkill = 1, nSkills do
+		local name, header, isExpanded, rank = GetSkillLineInfo(iSkill);
+		if( header and not isExpanded ) then
+			-- Since we don't know the final index for this item yet, we'll store it by name
+			HeaderData[name] = 0;
 		end
 	end
-
-	local skillIds;
-	skillIds = { };
-	skillIds[1], skillIds[2], skillIds[3], skillIds[4], skillIds[5], skillIds[6] = GetProfessions();
-
-	local skillIndex;
-	for skillIndex = 1, 6 do
-		if( skillIds[skillIndex] ) then
-			local name, _, rank = GetProfessionInfo(skillIds[skillIndex]);
-			if (name and rank) then
-				data.skills[name] = rank;
-			end
+	
+	-- Now expand everything and save off our known skills
+	ExpandSkillHeader(0);
+	nSkills = GetNumSkillLines()
+	for iSkill = 1, nSkills do
+		local name, header, isExpanded, rank = GetSkillLineInfo(iSkill);
+		if( not header ) then
+			data.skills[name] = rank;
+		elseif( HeaderData[name] ) then
+			-- We now know the final index for this header item
+			HeaderData[name] = iSkill;
+		end
+	end
+	
+	-- Finally, return the skills page to its original state
+	for name, iSkill in pairs(HeaderData) do
+		Collapse[nToCollapse + 1] = iSkill;
+		nToCollapse = nToCollapse + 1;
+	end
+	if( nToCollapse > 0 ) then
+		table.sort(Collapse);
+		for iCollapse = nToCollapse, 1, -1 do
+			CollapseSkillHeader(Collapse[iCollapse]);
 		end
 	end
 end
