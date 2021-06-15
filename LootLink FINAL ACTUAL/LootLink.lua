@@ -37,6 +37,7 @@ LOOTLINK_SCHEDULED_AUCTION_SCAN = "LootLink: will perform a full auction scan th
 LOOTLINK_ITEM_RENAMED = "<item was renamed since last seen>";
 
 LOOTLINK_HELP = "help";					-- must be lowercase; command to display help
+LOOTLINK_ADVANCED = "advanced";			-- must be lowercase; command to display advanced help
 LOOTLINK_STATUS = "status";				-- must be lowercase; command to display status
 LOOTLINK_AUTOCOMPLETE = "autocomplete";	-- must be lowercase; command to toggle autocompletion support
 LOOTLINK_AUCTION = "auction";			-- must be lowercase; command to scan auctions
@@ -65,13 +66,21 @@ LOOTLINK_HELP_TEXT1 = "|cffffff00LootLink command help:|r";
 LOOTLINK_HELP_TEXT2 = "|cff00ff00Use |r|cffffffff/lootlink|r|cff00ff00 or |r|cffffffff/ll|r|cff00ff00 without any arguments to toggle the browse window open or closed.|r";
 LOOTLINK_HELP_TEXT3 = "|cff00ff00Use |r|cffffffff/lootlink <command>|r|cff00ff00 or |r|cffffffff/ll <command>|r|cff00ff00 to perform the following commands:|r";
 LOOTLINK_HELP_TEXT4 = "|cffffffff"..LOOTLINK_HELP.."|r|cff00ff00: displays this message.|r";
-LOOTLINK_HELP_TEXT5 = "|cffffffff"..LOOTLINK_STATUS.."|r|cff00ff00: displays status information for data and current options.|r";
-LOOTLINK_HELP_TEXT6 = "|cffffffff"..LOOTLINK_AUTOCOMPLETE.."|r|cff00ff00: toggles chat autocomplete support.|r";
-LOOTLINK_HELP_TEXT7 = "|cffffffff"..LOOTLINK_AUCTION.."|r|cff00ff00 or |r|cffffffff"..LOOTLINK_SCAN.."|r|cff00ff00: starts or schedules an automatic scan of all items in the auction house.|r";
-LOOTLINK_HELP_TEXT8 = "|cffffffff"..LOOTLINK_FULLMODE.."|r|cff00ff00: enables full-text search. This is the default mode.|r";
-LOOTLINK_HELP_TEXT9 = "|cffffffff"..LOOTLINK_LIGHTMODE.."|r|cff00ff00: disables full-text search, using less memory.|r";
-LOOTLINK_HELP_TEXT10 = " ";
-LOOTLINK_HELP_TEXT11 = "|cff00ff00For example: |r|cffffffff/lootlink scan|r|cff00ff00 will start an auction house scan if the auction window is open.|r";
+LOOTLINK_HELP_TEXT5 = "|cffffffff"..LOOTLINK_ADVANCED.."|r|cff00ff00: displays more control help.|r";
+LOOTLINK_HELP_TEXT6 = "|cffffffff"..LOOTLINK_STATUS.."|r|cff00ff00: displays status information for data and current options.|r";
+LOOTLINK_HELP_TEXT7 = "|cffffffff"..LOOTLINK_AUTOCOMPLETE.."|r|cff00ff00: toggles chat autocomplete support.|r";
+LOOTLINK_HELP_TEXT8 = "|cffffffff"..LOOTLINK_AUCTION.."|r|cff00ff00 or |r|cffffffff"..LOOTLINK_SCAN.."|r|cff00ff00: starts or schedules an automatic scan of all items in the auction house.|r";
+LOOTLINK_HELP_TEXT9 = "|cffffffff"..LOOTLINK_FULLMODE.."|r|cff00ff00: enables full-text search. This is the default mode.|r";
+LOOTLINK_HELP_TEXT10 = "|cffffffff"..LOOTLINK_LIGHTMODE.."|r|cff00ff00: disables full-text search, using less memory.|r";
+LOOTLINK_HELP_TEXT11 = " ";
+LOOTLINK_HELP_TEXT12 = "|cff00ff00For example: |r|cffffffff/lootlink scan|r|cff00ff00 will start an auction house scan if the auction window is open.|r";
+
+LOOTLINK_ADVANCED_TEXT0 = " ";
+LOOTLINK_ADVANCED_TEXT1 = "|cffffff00LootLink advanced command help:|r";
+LOOTLINK_ADVANCED_TEXT2 = "|cffffffff"..LOOTLINK_RESET.."|r|cff00ff00: resets all lootlink data. THIS IS NOT REVERSIBLE.|r";
+LOOTLINK_ADVANCED_TEXT3 = "|cff00ff00Holding |r|cffffffffShift|r|cff00ff00 and |r|cffffffffCtrl|r|cff00ff00 while |r|cffffffffRight-Clicking|r|cff00ff00 an item will remove it from the database.|r";
+LOOTLINK_ADVANCED_TEXT4 = "|cff00ff00Holding |r|cffffffffShift|r|cff00ff00 while |r|cffffffffLeft-Clicking|r|cff00ff00 an item will link it.|r";
+LOOTLINK_ADVANCED_TEXT5 = "|cff00ff00Holding |r|cffffffffCtrl|r|cff00ff00 while |r|cffffffffLeft-Clicking|r|cff00ff00 an item will open the dressing room.|r";
 
 LOOTLINK_DATA_UPGRADE_HELP_TEXT0 = "|cffffff00LootLink's data format has significantly changed and your existing data could not be upgraded.|r";
 LOOTLINK_DATA_UPGRADE_HELP_TEXT1 = "|cffffff00LootLink's data format has changed; your existing data has been upgraded to the new format automatically.|r";
@@ -2790,9 +2799,8 @@ function LootLink_OnLoad(self)
 	ChatEdit_CustomTabPressed = LootLink_ChatEdit_CustomTabPressed;
 
 	if( DEFAULT_CHAT_FRAME ) then
-		DEFAULT_CHAT_FRAME:AddMessage("Telo's LootLink AddOn loaded");
+		DEFAULT_CHAT_FRAME:AddMessage("LootLink AddOn loaded");
 	end
-	UIErrorsFrame:AddMessage("Telo's LootLink AddOn loaded", 1.0, 1.0, 1.0, 1.0, UIERRORS_HOLD_TIME);
 end
 
 function LootLink_CanSendAuctionQuery(...)
@@ -2906,11 +2914,13 @@ function LootLinkItemButton_OnClick(self, button)
 			if( ChatEdit_GetActiveWindow() ) then
 				ChatEdit_InsertLink(LootLink_GetLink(self.llid));
 			end
-		end
-		if( IsControlKeyDown() ) then
+		elseif( IsControlKeyDown() ) then
 			DressUpItemLink(LootLink_GetLink(self.llid));
+		else 
+			SetItemRef(LootLink_GetLink(self.llid));
 		end
-	elseif( button == "RightButton" ) then
+	end
+	if( button == "RightButton" ) then
 		if( IsShiftKeyDown() and IsControlKeyDown() ) then
 			ItemLinks[self.llid] = nil;
 			LootLink_Refresh();
@@ -3101,6 +3111,14 @@ function LootLink_SlashCommandHandler(msg)
 				index = index + 1;
 				value = _G["LOOTLINK_HELP_TEXT"..index];
 			end
+		elseif( command == LOOTLINK_ADVANCED ) then
+			local index = 0;
+			local value = _G["LOOTLINK_ADVANCED_TEXT"..index];
+			while( value ) do
+				DEFAULT_CHAT_FRAME:AddMessage(value);
+				index = index + 1;
+				value = _G["LOOTLINK_ADVANCED_TEXT"..index];
+			end	
 		elseif( command == LOOTLINK_STATUS ) then
 			LootLink_Status();
 		elseif( command == LOOTLINK_AUTOCOMPLETE ) then
