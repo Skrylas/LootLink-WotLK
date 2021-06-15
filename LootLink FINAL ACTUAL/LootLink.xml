@@ -59,7 +59,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 	</Button>
 	
   <!-- The main browse frame -->
-  <Frame name="LootLinkFrame" toplevel="true" enableMouse="true" movable="true" parent="UIParent" hidden="true">
+  <Frame name="LootLinkFrame" toplevel="true" enableMouse="true" movable="true" parent="UIParent" hidden="true" clampedToScreen="true">
 		<Size>
 			<AbsDimension x="384" y="512"/>
 		</Size>
@@ -469,7 +469,14 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		<Scripts>
 			<OnLoad>
 				LootLink_OnLoad(self);
+				self:RegisterForDrag("LeftButton","RightButton")
 			</OnLoad>
+			<OnDragStart>
+				self:StartMoving()
+			</OnDragStart>
+			<OnDragStop>
+				self:StopMovingOrSizing()
+			</OnDragStop>
 			<OnEvent>
 				LootLink_OnEvent(self, event, ...);
 			</OnEvent>
@@ -547,7 +554,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 	</EditBox>
 	
   <!-- The search frame -->
-  <Frame name="LootLinkSearchFrame" toplevel="true" frameStrata="DIALOG" enableMouse="true" enableKeyboard="true" movable="true" parent="UIParent" hidden="true">
+  <Frame name="LootLinkSearchFrame" toplevel="true" frameStrata="DIALOG" enableMouse="true" enableKeyboard="true" movable="true" parent="UIParent" hidden="true" clampedToScreen="true">
 		<Size>
 			<AbsDimension x="384" y="541"/>
 		</Size>
@@ -1197,7 +1204,14 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		<Scripts>
       <OnLoad>
         LootLinkSearchFrame_OnLoad(self);
+		self:RegisterForDrag("LeftButton","RightButton")
       </OnLoad>
+	  		<OnDragStart>
+				self:StartMoving()
+			</OnDragStart>
+			<OnDragStop>
+				self:StopMovingOrSizing()
+			</OnDragStop>
 			<OnShow>
 				LootLinkSearch_LoadValues();
 				LootLinkSearchFrame_SaveSearchParams();
