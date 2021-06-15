@@ -81,6 +81,7 @@ LOOTLINK_ADVANCED_TEXT2 = "|cffffffff"..LOOTLINK_RESET.."|r|cff00ff00: resets al
 LOOTLINK_ADVANCED_TEXT3 = "|cff00ff00Holding |r|cffffffffShift|r|cff00ff00 and |r|cffffffffCtrl|r|cff00ff00 while |r|cffffffffRight-Clicking|r|cff00ff00 an item will remove it from the database.|r";
 LOOTLINK_ADVANCED_TEXT4 = "|cff00ff00Holding |r|cffffffffShift|r|cff00ff00 while |r|cffffffffLeft-Clicking|r|cff00ff00 an item will link it.|r";
 LOOTLINK_ADVANCED_TEXT5 = "|cff00ff00Holding |r|cffffffffCtrl|r|cff00ff00 while |r|cffffffffLeft-Clicking|r|cff00ff00 an item will open the dressing room.|r";
+LOOTLINK_ADVANCED_TEXT6 = "|cff00ff00Typing |r|cffffffff[|r|cff00ff00 will bring up the ability to link an item from the database.  Ending with |r|cffffffff]|r|cff00ff00 will autocomplete the link with the highlighted item.|r";
 
 LOOTLINK_DATA_UPGRADE_HELP_TEXT0 = "|cffffff00LootLink's data format has significantly changed and your existing data could not be upgraded.|r";
 LOOTLINK_DATA_UPGRADE_HELP_TEXT1 = "|cffffff00LootLink's data format has changed; your existing data has been upgraded to the new format automatically.|r";
