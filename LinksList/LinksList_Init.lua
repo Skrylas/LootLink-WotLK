@@ -1,2 +1,0 @@
-
-LinksList.t_Init();

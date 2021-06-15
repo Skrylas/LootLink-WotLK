@@ -1,5 +1,0 @@
-<Bindings>
-	<Binding name="LINKSLIST_TOGGLE" header="LINKSLIST">
-		LinksList.Results_Toggle();
-	</Binding>
-</Bindings>

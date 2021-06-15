@@ -1,7 +1,0 @@
-<Bindings>
-	<Binding name="TOOLTIPEXCHANGE_TOGGLE" header="TOOLTIPEXCHANGE">
-		if TooltipExchange then
-			TooltipExchange:TriggerEvent("TooltipExchange_OpenUI")
-		end
-	</Binding>
-</Bindings>

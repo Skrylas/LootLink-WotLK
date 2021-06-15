@@ -1,6 +1,0 @@
-## Interface: 30000
-## Title: Telo's LootLink
-## Notes: An in-game browseable, searchable item database, with loot link coloring based on rarity.  Use << /lootlink >> or << /ll >> or bind a key through Blizzard's Key Bindings to open the browse window.  Use << /ll help >> or << /lootlink help >> for a helpful list of commands.
-## Version: 3.51
-## SavedVariables: ItemLinks, LootLinkState
-LootLink.xml
