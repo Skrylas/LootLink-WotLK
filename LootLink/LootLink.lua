@@ -2175,8 +2175,9 @@ local function LootLink_Inspect(who)
 		for index = 1, #INVENTORY_SLOT_LIST, 1 do
 			LootLink_InspectSlot(who, INVENTORY_SLOT_LIST[index].id)
 		end
-
-		ClearInspectPlayer();
+		if not ( InspectFrame and InspectFrame:IsVisible() ) then	
+			ClearInspectPlayer();
+		end
 	end
 end
 
@@ -2835,7 +2836,7 @@ function LootLink_OnEvent(self, event, ...)
 			LootLink_Inspect("target");
 		end
 	elseif( event == "UPDATE_MOUSEOVER_UNIT" ) then
-		if( not InCombatLockdown() and not UnitIsUnit("mouseover", "player") and UnitIsPlayer("mouseover") ) then
+		if( not InCombatLockdown() and not UnitIsUnit("mouseover", "player") and UnitIsPlayer("mouseover") and not ( InspectFrame and InspectFrame:IsVisible() )) then
 			LootLink_Inspect("mouseover");
 		end
 	elseif( event == "PLAYER_LOGIN" or event == "ZONE_CHANGED_NEW_AREA" ) then
