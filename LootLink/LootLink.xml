@@ -22,9 +22,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 
   <!-- Buttons in the main frame -->
   <Button name="LootLinkItemButtonTemplate" virtual="true">
-		<Size>
-			<AbsDimension x="300" y="16"/>
-		</Size>
+  		<Size x="300" y="16"/>
 		<Scripts>
 			<OnLoad>
 				self:RegisterForClicks("LeftButtonUp", "RightButtonUp");
@@ -45,9 +43,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			</OnLeave>
 		</Scripts>
 		<ButtonText name="$parentText" inherits="GameFontNormal" justifyH="LEFT">
-			<Size>
-				<AbsDimension x="275" y="12"/>
-			</Size>
+			<Size x="275" y="12"/>
 			<Anchors>
 				<Anchor point="LEFT">
 					<Offset>
@@ -60,9 +56,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 	
   <!-- The main browse frame -->
   <Frame name="LootLinkFrame" toplevel="true" enableMouse="true" movable="true" parent="UIParent" hidden="true" clampedToScreen="true">
-		<Size>
-			<AbsDimension x="384" y="512"/>
-		</Size>
+		<Size x="384" y="512"/>
 		<Anchors>
  			<Anchor point="TOPLEFT">
  				<Offset>
@@ -500,45 +494,8 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 	</Button>
 
   <!-- Edit boxes in the search frame -->
-  <EditBox name="LLS_EditBoxTemplate" letters="256" historyLines="0" virtual="true">
-		<Size>
-			<AbsDimension x="200" y="20"/>
-		</Size>
-		<Layers>
-			<Layer level="BACKGROUND">
-				<Texture name="$parentLeft" file="Interface\ClassTrainerFrame\UI-ClassTrainer-FilterBorder">
-					<Size>
-						<AbsDimension x="12" y="29"/>
-					</Size>
-					<Anchors>
-						<Anchor point="TOPLEFT">
-							<Offset>
-								<AbsDimension x="-11" y="2"/>
-							</Offset>
-						</Anchor>
-					</Anchors>
-					<TexCoords left="0" right="0.09375" top="0" bottom="1.0"/>
-				</Texture>
-				<Texture name="$parentMiddle" file="Interface\ClassTrainerFrame\UI-ClassTrainer-FilterBorder">
-					<Size>
-						<AbsDimension x="195" y="29"/>
-					</Size>
-					<Anchors>
-						<Anchor point="LEFT" relativeTo="$parentLeft" relativePoint="RIGHT"/>
-					</Anchors>
-					<TexCoords left="0.09375" right="0.90625" top="0" bottom="1.0"/>
-				</Texture>
-				<Texture name="$parentRight" file="Interface\ClassTrainerFrame\UI-ClassTrainer-FilterBorder">
-					<Size>
-						<AbsDimension x="12" y="29"/>
-					</Size>
-					<Anchors>
-						<Anchor point="LEFT" relativeTo="$parentMiddle" relativePoint="RIGHT"/>
-					</Anchors>
-					<TexCoords left="0.90625" right="1.0" top="0" bottom="1.0"/>
-				</Texture>
-			</Layer>
-		</Layers>
+  <EditBox name="LLS_EditBoxTemplate" letters="256" historyLines="0" virtual="true" inherits="InputBoxTemplate">
+		<Size x="35" y="16"/>
 		<Scripts>
 			<OnEscapePressed>
 				LootLinkSearchFrame_Cancel();
@@ -546,9 +503,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			<OnEnterPressed>
 				LootLinkSearchFrame_Okay();
 			</OnEnterPressed>
-      <OnTabPressed>
-        LootLinkSearchFrame_OnTab(self, IsShiftKeyDown());
-      </OnTabPressed>
+			<OnTabPressed>
+        		LootLinkSearchFrame_OnTab(self, IsShiftKeyDown());
+			</OnTabPressed>
 		</Scripts>
 		<FontString inherits="ChatFontNormal"/>
 	</EditBox>
@@ -671,10 +628,10 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="LLS_MinimumLevelLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" text="LLS_MINIMUM_LEVEL">
+				<FontString name="LLS_LevelRangeLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" text="LLS_LEVEL_RANGE">
 					<Size>
 						<AbsDimension x="134" y="14"/>
-					</Size>
+					</Size>				
 					<Anchors>
 						<Anchor point="TOPLEFT" relativeTo="LLS_LocationLabel" relativePoint="BOTTOMLEFT">
 							<Offset>
@@ -683,48 +640,24 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="LLS_MaximumLevelLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" text="LLS_MAXIMUM_LEVEL">
+				<FontString name="LLS_iLevelRangeLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" text="LLS_ILEVEL_RANGE">
 					<Size>
 						<AbsDimension x="134" y="14"/>
-					</Size>
+					</Size>				
 					<Anchors>
-						<Anchor point="TOPLEFT" relativeTo="LLS_MinimumLevelLabel" relativePoint="BOTTOMLEFT">
+						<Anchor point="TOPLEFT" relativeTo="LLS_LevelRangeLabel" relativePoint="BOTTOMLEFT">
 							<Offset>
 								<AbsDimension x="0" y="-15"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
 				</FontString>
-        <FontString name="LLS_MinimumiLevelLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" text="LLS_MINIMUM_ILEVEL">
-          <Size>
-            <AbsDimension x="134" y="14"/>
-          </Size>
-          <Anchors>
-            <Anchor point="TOPLEFT" relativeTo="LLS_MaximumLevelLabel" relativePoint="BOTTOMLEFT">
-              <Offset>
-                <AbsDimension x="0" y="-15"/>
-              </Offset>
-            </Anchor>
-          </Anchors>
-        </FontString>
-        <FontString name="LLS_MaximumiLevelLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" text="LLS_MAXIMUM_ILEVEL">
-          <Size>
-            <AbsDimension x="134" y="14"/>
-          </Size>
-          <Anchors>
-            <Anchor point="TOPLEFT" relativeTo="LLS_MinimumiLevelLabel" relativePoint="BOTTOMLEFT">
-              <Offset>
-                <AbsDimension x="0" y="-15"/>
-              </Offset>
-            </Anchor>
-          </Anchors>
-        </FontString>
-        <FontString name="LLS_TypeLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" text="LLS_TYPE">
+        		<FontString name="LLS_TypeLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" text="LLS_TYPE">
 					<Size>
 						<AbsDimension x="134" y="14"/>
 					</Size>
 					<Anchors>
-						<Anchor point="TOPLEFT" relativeTo="LLS_MaximumiLevelLabel" relativePoint="BOTTOMLEFT">
+						<Anchor point="TOPLEFT" relativeTo="LLS_iLevelRangeLabel" relativePoint="BOTTOMLEFT">
 							<Offset>
 								<AbsDimension x="0" y="-15"/>
 							</Offset>
@@ -757,7 +690,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</Anchors>
 				</FontString>
 				<!-- weapon items -->
-				<FontString name="LLS_MinimumDamageLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" hidden="true" text="LLS_MINIMUM_DAMAGE">
+				<FontString name="LLS_DamageRangeLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" hidden="true" text="LLS_DAMAGE_RANGE">
 					<Size>
 						<AbsDimension x="134" y="14"/>
 					</Size>
@@ -769,48 +702,24 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="LLS_MaximumDamageLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" hidden="true" text="LLS_MAXIMUM_DAMAGE">
+        		<FontString name="LLS_SpeedRangeLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" hidden="true" text="LLS_SPEED_RANGE">
 					<Size>
 						<AbsDimension x="134" y="14"/>
 					</Size>
 					<Anchors>
-						<Anchor point="TOPLEFT" relativeTo="LLS_MinimumDamageLabel" relativePoint="BOTTOMLEFT">
+						<Anchor point="TOPLEFT" relativeTo="LLS_DamageRangeLabel" relativePoint="BOTTOMLEFT">
 							<Offset>
 								<AbsDimension x="0" y="-15"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
-				</FontString>
-        <FontString name="LLS_MinimumSpeedLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" hidden="true" text="LLS_MINIMUM_SPEED">
-          <Size>
-            <AbsDimension x="134" y="14"/>
-          </Size>
-          <Anchors>
-            <Anchor point="TOPLEFT" relativeTo="LLS_MaximumDamageLabel" relativePoint="BOTTOMLEFT">
-              <Offset>
-                <AbsDimension x="0" y="-15"/>
-              </Offset>
-            </Anchor>
-          </Anchors>
-        </FontString>
-				<FontString name="LLS_MaximumSpeedLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" hidden="true" text="LLS_MAXIMUM_SPEED">
-					<Size>
-						<AbsDimension x="134" y="14"/>
-					</Size>
-					<Anchors>
-						<Anchor point="TOPLEFT" relativeTo="LLS_MinimumSpeedLabel" relativePoint="BOTTOMLEFT">
-							<Offset>
-								<AbsDimension x="0" y="-15"/>
-							</Offset>
-						</Anchor>
-					</Anchors>
-				</FontString>
+        		</FontString>
 				<FontString name="LLS_MinimumDPSLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" hidden="true" text="LLS_MINIMUM_DPS">
 					<Size>
 						<AbsDimension x="134" y="14"/>
 					</Size>
 					<Anchors>
-						<Anchor point="TOPLEFT" relativeTo="LLS_MaximumSpeedLabel" relativePoint="BOTTOMLEFT">
+						<Anchor point="TOPLEFT" relativeTo="LLS_SpeedRangeLabel" relativePoint="BOTTOMLEFT">
 							<Offset>
 								<AbsDimension x="0" y="-15"/>
 							</Offset>
@@ -843,24 +752,12 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</Anchors>
 				</FontString>
 				<!-- recipe items -->
-				<FontString name="LLS_MinimumSkillLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" hidden="true" text="LLS_MINIMUM_SKILL">
+				<FontString name="LLS_SkillRangeLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" hidden="true" text="LLS_SKILL_RANGE">
 					<Size>
 						<AbsDimension x="134" y="14"/>
 					</Size>
 					<Anchors>
 						<Anchor point="TOPLEFT" relativeTo="LLS_SubtypeLabel" relativePoint="BOTTOMLEFT">
-							<Offset>
-								<AbsDimension x="0" y="-15"/>
-							</Offset>
-						</Anchor>
-					</Anchors>
-				</FontString>
-				<FontString name="LLS_MaximumSkillLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" hidden="true" text="LLS_MAXIMUM_SKILL">
-					<Size>
-						<AbsDimension x="134" y="14"/>
-					</Size>
-					<Anchors>
-						<Anchor point="TOPLEFT" relativeTo="LLS_MinimumSkillLabel" relativePoint="BOTTOMLEFT">
 							<Offset>
 								<AbsDimension x="0" y="-15"/>
 							</Offset>
@@ -923,6 +820,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				</Scripts>
 			</Button>
 			<EditBox name="LLS_TextEditBox" inherits="LLS_EditBoxTemplate">
+				<Size>
+					<AbsDimension x="200" y="16"/>
+				</Size>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="LLS_TextLabel" relativePoint="TOPRIGHT">
 						<Offset>
@@ -932,6 +832,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				</Anchors>
 			</EditBox>
 			<EditBox name="LLS_NameEditBox" inherits="LLS_EditBoxTemplate">
+				<Size>
+					<AbsDimension x="200" y="16"/>
+				</Size>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="LLS_NameLabel" relativePoint="TOPRIGHT">
 						<Offset>
@@ -1042,43 +945,57 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				<CheckedTexture file="Interface\Buttons\UI-CheckBox-Check"/>
 				<DisabledCheckedTexture file="Interface\Buttons\UI-CheckBox-Check-Disabled"/>
 			</CheckButton>
-			<EditBox name="LLS_MinimumLevelEditBox" inherits="LLS_EditBoxTemplate">
+			<EditBox name="LLS_MinimumLevelEditBox" letters="2" numeric="true" inherits="LLS_EditBoxTemplate">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="LLS_MinimumLevelLabel" relativePoint="TOPRIGHT">
+					<Anchor point="TOPLEFT" relativeTo="LLS_LevelRangeLabel" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="16" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString inherits="GameFontHighlightSmall" text="-">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT" x="2" y="0"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+			</EditBox>
+			<EditBox name="LLS_MaximumLevelEditBox" letters="2" numeric="true" inherits="LLS_EditBoxTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="LLS_MinimumLevelEditBox" relativePoint="TOPRIGHT" x="16" y="0" />
+				</Anchors>
+			</EditBox>
+			<EditBox name="LLS_MinimumiLevelEditBox" letters="3" numeric="true" inherits="LLS_EditBoxTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="LLS_iLevelRangeLabel" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="16" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString inherits="GameFontHighlightSmall" text="-">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT" x="2" y="0"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+			</EditBox>
+			<EditBox name="LLS_MaximumiLevelEditBox" letters="3" numeric="true" inherits="LLS_EditBoxTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="LLS_MinimumiLevelEditBox" relativePoint="TOPRIGHT">
 						<Offset>
 							<AbsDimension x="16" y="0"/>
 						</Offset>
 					</Anchor>
 				</Anchors>
 			</EditBox>
-			<EditBox name="LLS_MaximumLevelEditBox" inherits="LLS_EditBoxTemplate">
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="LLS_MaximumLevelLabel" relativePoint="TOPRIGHT">
-						<Offset>
-							<AbsDimension x="16" y="0"/>
-						</Offset>
-					</Anchor>
-				</Anchors>
-			</EditBox>
-      <EditBox name="LLS_MinimumiLevelEditBox" inherits="LLS_EditBoxTemplate">
-        <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="LLS_MinimumiLevelLabel" relativePoint="TOPRIGHT">
-            <Offset>
-              <AbsDimension x="16" y="0"/>
-            </Offset>
-          </Anchor>
-        </Anchors>
-      </EditBox>
-      <EditBox name="LLS_MaximumiLevelEditBox" inherits="LLS_EditBoxTemplate">
-        <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="LLS_MaximumiLevelLabel" relativePoint="TOPRIGHT">
-            <Offset>
-              <AbsDimension x="16" y="0"/>
-            </Offset>
-          </Anchor>
-        </Anchors>
-      </EditBox>
-      <Button name="LLS_TypeDropDown" inherits="SimpleDropDownTemplate" id="1">
+      		<Button name="LLS_TypeDropDown" inherits="SimpleDropDownTemplate" id="1">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="LLS_TypeLabel" relativePoint="TOPRIGHT">
 						<Offset>
@@ -1107,7 +1024,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				</Scripts>
 			</Button>
 			<!-- container items -->
-			<EditBox name="LLS_MinimumSlotsEditBox" inherits="LLS_EditBoxTemplate" hidden="true">
+			<EditBox name="LLS_MinimumSlotsEditBox" letters="3" numeric="true" inherits="LLS_EditBoxTemplate" hidden="true">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="LLS_MinimumSlotsLabel" relativePoint="TOPRIGHT">
 						<Offset>
@@ -1117,43 +1034,61 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				</Anchors>
 			</EditBox>
 			<!-- weapon items -->
-			<EditBox name="LLS_MinimumDamageEditBox" inherits="LLS_EditBoxTemplate" hidden="true">
+			<EditBox name="LLS_MinimumDamageEditBox" letters="4" numeric="true" inherits="LLS_EditBoxTemplate" hidden="true">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="LLS_MinimumDamageLabel" relativePoint="TOPRIGHT">
+					<Anchor point="TOPLEFT" relativeTo="LLS_DamageRangeLabel" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="16" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString inherits="GameFontHighlightSmall" text="-">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT" x="2" y="0"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>				
+			</EditBox>
+			<EditBox name="LLS_MaximumDamageEditBox" letters="4" numeric="true" inherits="LLS_EditBoxTemplate" hidden="true">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="LLS_MinimumDamageEditBox" relativePoint="TOPRIGHT">
 						<Offset>
 							<AbsDimension x="16" y="0"/>
 						</Offset>
 					</Anchor>
 				</Anchors>
 			</EditBox>
-			<EditBox name="LLS_MaximumDamageEditBox" inherits="LLS_EditBoxTemplate" hidden="true">
+			<EditBox name="LLS_MinimumSpeedEditBox" letters="4" inherits="LLS_EditBoxTemplate" hidden="true">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="LLS_MaximumDamageLabel" relativePoint="TOPRIGHT">
+					<Anchor point="TOPLEFT" relativeTo="LLS_SpeedRangeLabel" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="16" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString inherits="GameFontHighlightSmall" text="-">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT" x="2" y="0"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>				
+			</EditBox>
+			<EditBox name="LLS_MaximumSpeedEditBox" letters="4" inherits="LLS_EditBoxTemplate" hidden="true">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="LLS_MinimumSpeedEditBox" relativePoint="TOPRIGHT">
 						<Offset>
 							<AbsDimension x="16" y="0"/>
 						</Offset>
 					</Anchor>
 				</Anchors>
 			</EditBox>
-      <EditBox name="LLS_MinimumSpeedEditBox" inherits="LLS_EditBoxTemplate" hidden="true">
-        <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="LLS_MinimumSpeedLabel" relativePoint="TOPRIGHT">
-            <Offset>
-              <AbsDimension x="16" y="0"/>
-            </Offset>
-          </Anchor>
-        </Anchors>
-      </EditBox>
-      <EditBox name="LLS_MaximumSpeedEditBox" inherits="LLS_EditBoxTemplate" hidden="true">
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="LLS_MaximumSpeedLabel" relativePoint="TOPRIGHT">
-						<Offset>
-							<AbsDimension x="16" y="0"/>
-						</Offset>
-					</Anchor>
-				</Anchors>
-			</EditBox>
-			<EditBox name="LLS_MinimumDPSEditBox" inherits="LLS_EditBoxTemplate" hidden="true">
+			<EditBox name="LLS_MinimumDPSEditBox" letters="3" numeric="true" inherits="LLS_EditBoxTemplate" hidden="true">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="LLS_MinimumDPSLabel" relativePoint="TOPRIGHT">
 						<Offset>
@@ -1163,7 +1098,8 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				</Anchors>
 			</EditBox>
 			<!-- armor and shield items -->
-			<EditBox name="LLS_MinimumArmorEditBox" inherits="LLS_EditBoxTemplate" hidden="true">
+			<EditBox name="LLS_MinimumArmorEditBox" letters="5" numeric="true" inherits="LLS_EditBoxTemplate" hidden="true">
+				<Size x="45" y="16"/>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="LLS_MinimumArmorLabel" relativePoint="TOPRIGHT">
 						<Offset>
@@ -1172,7 +1108,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</Anchor>
 				</Anchors>
 			</EditBox>
-			<EditBox name="LLS_MinimumBlockEditBox" inherits="LLS_EditBoxTemplate" hidden="true">
+			<EditBox name="LLS_MinimumBlockEditBox" letters="3" numeric="true" inherits="LLS_EditBoxTemplate" hidden="true">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="LLS_MinimumBlockLabel" relativePoint="TOPRIGHT">
 						<Offset>
@@ -1182,18 +1118,27 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				</Anchors>
 			</EditBox>
 			<!-- recipe items -->
-			<EditBox name="LLS_MinimumSkillEditBox" inherits="LLS_EditBoxTemplate" hidden="true">
+			<EditBox name="LLS_MinimumSkillEditBox" letters="3" numeric="true" inherits="LLS_EditBoxTemplate" hidden="true">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="LLS_MinimumSkillLabel" relativePoint="TOPRIGHT">
+					<Anchor point="TOPLEFT" relativeTo="LLS_SkillRangeLabel" relativePoint="TOPRIGHT">
 						<Offset>
 							<AbsDimension x="16" y="0"/>
 						</Offset>
 					</Anchor>
 				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString inherits="GameFontHighlightSmall" text="-">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT" x="2" y="0"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>				
 			</EditBox>
-			<EditBox name="LLS_MaximumSkillEditBox" inherits="LLS_EditBoxTemplate" hidden="true">
+			<EditBox name="LLS_MaximumSkillEditBox" letters="3" numeric="true" inherits="LLS_EditBoxTemplate" hidden="true">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="LLS_MaximumSkillLabel" relativePoint="TOPRIGHT">
+					<Anchor point="TOPLEFT" relativeTo="LLS_MinimumSkillEditBox" relativePoint="TOPRIGHT">
 						<Offset>
 							<AbsDimension x="16" y="0"/>
 						</Offset>
@@ -1226,9 +1171,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
   
   <!-- Autocomplete buttons -->
   <Button name="LootLinkAutoCompleteButtonTemplate" virtual="true">
-    <Size>
-      <AbsDimension x="1920" y="16"/>
-    </Size>
+    <Size x="1920" y="16"/>
     <Scripts>
       <OnClick function="LootLink_AutoCompleteButton_OnClick"/>
       <OnEnter>

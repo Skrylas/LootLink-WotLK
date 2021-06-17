@@ -100,8 +100,10 @@ LLS_USABLE = "Usable?";
 LLS_LOCATION = "Equip location:";
 LLS_MINIMUM_LEVEL = "Minimum level:";
 LLS_MAXIMUM_LEVEL = "Maximum level:";
+LLS_LEVEL_RANGE = "Level Range:";
 LLS_MINIMUM_ILEVEL = "Minimum iLevel:";
 LLS_MAXIMUM_ILEVEL = "Maximum iLevel:";
+LLS_ILEVEL_RANGE = "iLevel Range:";
 LLS_TYPE = "Type:";
 LLS_SUBTYPE_ARMOR = "Armor subtype:";
 LLS_SUBTYPE_GEM = "Slot type:";
@@ -111,14 +113,17 @@ LLS_SUBTYPE_SHIELD = "Shield subtype:";
 LLS_SUBTYPE_RECIPE = "Recipe subtype:";
 LLS_MINIMUM_DAMAGE = "Min. low damage:";
 LLS_MAXIMUM_DAMAGE = "Min. high damage:";
+LLS_DAMAGE_RANGE = "Damage Range:";
 LLS_MINIMUM_SPEED = "Minimum speed:";
 LLS_MAXIMUM_SPEED = "Maximum speed:";
+LLS_SPEED_RANGE = "Speed Range:";
 LLS_MINIMUM_DPS = "Minimum DPS:";
 LLS_MINIMUM_ARMOR = "Minimum armor:";
 LLS_MINIMUM_BLOCK = "Minimum block:";
 LLS_MINIMUM_SLOTS = "Minimum slots:";
 LLS_MINIMUM_SKILL = "Minimum skill:";
 LLS_MAXIMUM_SKILL = "Maximum skill:";
+LLS_SKILL_RANGE = "Skill Range:";
 LLS_TEXT_DISABLED = "(full-text search is disabled)";
 
 local LL = { };
@@ -175,6 +180,8 @@ LL.RED = "Red";
 LL.YELLOW = "Yellow";
 LL.BLUE = "Blue";
 LL.META = "Meta";
+LL.MAJOR = "Major";
+LL.MINOR = "Minor";
 
 -- For sorting
 LL.SORT_NAME = "Name";
@@ -2040,14 +2047,11 @@ local function LootLink_SetupTypeUI(iType, iSubtype)
 	_G["LLS_SubtypeDropDown"]:Hide();
 	_G["LLS_MinimumArmorLabel"]:Hide();
 	_G["LLS_MinimumBlockLabel"]:Hide();
-	_G["LLS_MinimumDamageLabel"]:Hide();
-	_G["LLS_MaximumDamageLabel"]:Hide();
-	_G["LLS_MinimumSpeedLabel"]:Hide();
-	_G["LLS_MaximumSpeedLabel"]:Hide();
+	_G["LLS_DamageRangeLabel"]:Hide();
+	_G["LLS_SpeedRangeLabel"]:Hide();
 	_G["LLS_MinimumDPSLabel"]:Hide();
 	_G["LLS_MinimumSlotsLabel"]:Hide();
-	_G["LLS_MinimumSkillLabel"]:Hide();
-	_G["LLS_MaximumSkillLabel"]:Hide();
+	_G["LLS_SkillRangeLabel"]:Hide();
 	_G["LLS_MinimumArmorEditBox"]:Hide();
 	_G["LLS_MinimumBlockEditBox"]:Hide();
 	_G["LLS_MinimumDamageEditBox"]:Hide();
@@ -2104,10 +2108,8 @@ local function LootLink_SetupTypeUI(iType, iSubtype)
 			label:SetText(LLS_SUBTYPE_WEAPON);
 			initfunc = LLS_SubtypeDropDownWeapon_Initialize;
 			
-			_G["LLS_MinimumDamageLabel"]:Show();
-			_G["LLS_MaximumDamageLabel"]:Show();
-			_G["LLS_MinimumSpeedLabel"]:Show();
-			_G["LLS_MaximumSpeedLabel"]:Show();
+			_G["LLS_DamageRangeLabel"]:Show();
+			_G["LLS_SpeedRangeLabel"]:Show();
 			_G["LLS_MinimumDPSLabel"]:Show();
 			
 			field =_G["LLS_MinimumDamageEditBox"];
@@ -2133,8 +2135,7 @@ local function LootLink_SetupTypeUI(iType, iSubtype)
 			label:SetText(LLS_SUBTYPE_RECIPE);
 			initfunc = LLS_SubtypeDropDownRecipe_Initialize;
 
-			_G["LLS_MinimumSkillLabel"]:Show();
-			_G["LLS_MaximumSkillLabel"]:Show();
+			_G["LLS_SkillRangeLabel"]:Show();
 			
 			field = _G["LLS_MinimumSkillEditBox"];
 			field:Show();
@@ -2228,7 +2229,7 @@ local function LootLink_ScanMerchant()
 	end
 end
 
-local function LootLink_ScanQuest()
+local function LootLink_ScanQuest(questState)
 	local fQuestLog;
 	local cQuestChoices;
 	local cQuestRewards;
