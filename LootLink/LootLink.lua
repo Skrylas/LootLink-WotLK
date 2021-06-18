@@ -182,6 +182,26 @@ LL.BLUE = "Blue";
 LL.META = "Meta";
 LL.MAJOR = "Major";
 LL.MINOR = "Minor";
+LL.STRENGTH = "Strength";
+LL.AGILITY = "Agility";
+LL.STAMINA = "Stamina";
+LL.INTELLECT = "Intellect";
+LL.SPIRIT = "Spirit";
+LL.ATTACK_POWER = "Attack Power";
+LL.EXPERTISE_RATING = "Expertise Rating";
+LL.ARMOR_PENETRATION_RATING = "Armor Penetration Rating";
+LL.HIT_RATING = "Hit Rating";
+LL.CRIT_RATING = "Crit Rating";
+LL.HASTE_RATING = "Haste Rating";
+LL.SPELL_POWER = "Spell Power";
+LL.MANA_REGENERATION = "Mana per 5";
+LL.SPELL_PENETRATION = "Spell Penetration";
+LL.RESILIENCE_RATING = "Resilience Rating";
+LL.DEFENSE_RATING = "Defense Rating";
+LL.DODGE_RATING = "Dodge Rating";
+LL.PARRY_RATING = "Parry Rating";
+LL.BLOCK_RATING = "Block Rating";
+LL.BLOCK_VALUE = "Block Value";
 
 -- For sorting
 LL.SORT_NAME = "Name";
@@ -234,10 +254,31 @@ LL.STATE_MATCHES = 12;
 LL.STATE_REQUIRES = 13;
 LL.STATE_FINISH = 14;
 
+LL.STAT_STRENGTH = 0;
+LL.STAT_AGILITY = 1;
+LL.STAT_STAMINA = 2;
+LL.STAT_INTELLECT = 3;
+LL.STAT_SPIRIT = 4;
+LL.STAT_ATTACK_POWER = 5;
+LL.STAT_EXPERTISE_RATING = 6;
+LL.STAT_ARMOR_PENETRATION_RATING = 7;
+LL.STAT_HIT_RATING = 8;
+LL.STAT_CRIT_RATING = 9;
+LL.STAT_HASTE_RATING = 10;
+LL.STAT_SPELL_POWER = 11;
+LL.STAT_MANA_REGENERATION = 12;
+LL.STAT_SPELL_PENETRATION = 13;
+LL.STAT_RESILIENCE_RATING = 14;
+LL.STAT_DEFENSE_RATING = 15;
+LL.STAT_DODGE_RATING = 16;
+LL.STAT_PARRY_RATING = 17;
+LL.STAT_BLOCK_RATING = 18;
+LL.STAT_BLOCK_VALUE = 19;
+
 LL.BINDS_DOES_NOT_BIND = 0;
 LL.BINDS_EQUIP = 1;
 LL.BINDS_PICKUP = 2;
-LL.BINDS_USED = 3;
+LL.BINDS_USED = 3; 
 LL.BINDS_ACCOUNT = 4;
 
 LL.UNIQUE_NOT_UNIQUE = 0;
@@ -508,6 +549,30 @@ local LLS_BINDS_LIST = {
 	{ name = LL.TO_ACCOUNT, value = LL.BINDS_ACCOUNT },
 };
 
+local LLS_STAT_LIST = {
+	{ name = LL.NONE, value = nil },
+	{ name = LL.STRENGTH, value = LL.STAT_STRENGTH },
+	{ name = LL.AGILITY, value = LL.STAT_AGILITY },
+	{ name = LL.STAMINA, value = LL.STAT_STAMINA },
+	{ name = LL.INTELLECT, value = LL.STAT_INTELLECT },
+	{ name = LL.SPIRIT, value = LL.STAT_SPIRIT },
+	{ name = LL.ATTACK_POWER, value = LL.STAT_ATTACK_POWER },
+	{ name = LL.EXPERTISE_RATING, value = LL.STAT_EXPERTISE_RATING },
+	{ name = LL.ARMOR_PENETRATION_RATING, value = LL.STAT_ARMOR_PENETRATION_RATING },
+	{ name = LL.HIT_RATING, value = LL.STAT_HIT_RATING },
+	{ name = LL.CRIT_RATING, value = LL.STAT_CRIT_RATING },
+	{ name = LL.HASTE_RATING, value = LL.STAT_HASTE_RATING },
+	{ name = LL.SPELL_POWER, value = LL.STAT_SPELL_POWER },
+	{ name = LL.MANA_REGENERATION, value = LL.STAT_MANA_REGENERATION },
+	{ name = LL.SPELL_PENETRATION, value = LL.STAT_SPELL_PENETRATION },
+	{ name = LL.RESILIENCE_RATING, value = LL.STAT_RESILIENCE_RATING },
+	{ name = LL.DEFENSE_RATING, value = LL.STAT_DEFENSE_RATING },
+	{ name = LL.DODGE_RATING, value = LL.STAT_DODGE_RATING },
+	{ name = LL.PARRY_RATING, value = LL.STAT_PARRY_RATING },
+	{ name = LL.BLOCK_RATING, value = LL.STAT_BLOCK_RATING },
+	{ name = LL.BLOCK_VALUE, value = LL.STAT_BLOCK_VALUE },
+};
+
 local LLS_TYPE_LIST = {
 	{ name = LL.ANY, value = nil },
 	{ name = LL.ARMOR, value = LL.TYPE_ARMOR },
@@ -519,6 +584,7 @@ local LLS_TYPE_LIST = {
 	{ name = LL.SHIELD, value = LL.TYPE_SHIELD },
 	{ name = LL.WEAPON, value = LL.TYPE_WEAPON },
 };
+
 
 local LLS_SUBTYPE_ARMOR_LIST = {
 	{ name = LL.ANY, value = nil },
@@ -1969,6 +2035,16 @@ local function LLS_LocationDropDown_Initialize()
 	end
 end
 
+local function LLS_StatDropDown_Initialize()
+	local info;
+	for i = 1, #LLS_STAT_LIST, 1 do
+		info = { };
+		info.text = LLS_STAT_LIST[i].name;
+		info.func = LLS_StatDropDown_OnClick;
+		sdd:AddButton(info);
+	end
+end
+
 local function LLS_TypeDropDown_Initialize()
 	local info;
 	for i = 1, #LLS_TYPE_LIST, 1 do
@@ -3024,6 +3100,15 @@ function LLS_SubtypeDropDown_OnClick(self)
 	sdd:SetSelectedID(LLS_SubtypeDropDown, self:GetID());
 end
 
+function LLS_StatDropDown_OnLoad(self)
+	sdd:SetWidth(self, 90);
+	sdd:JustifyText(self, "LEFT");
+end
+
+function LLS_StatDropDown_OnClick(self)
+	sdd:SetSelectedID(LLS_StatDropDown, self:GetID());
+end
+
 function LootLink_AutoCompleteButton_OnClick(self)
 	local frame = self:GetParent();
 	
@@ -3293,6 +3378,9 @@ function LootLinkSearch_LoadValues()
 	
 	sdd:Initialize(LLS_LocationDropDown, LLS_LocationDropDown_Initialize);
 	sdd:SetSelectedID(LLS_LocationDropDown, sp and sp.location or 1);
+	
+	sdd:Initialize(LLS_StatDropDown, LLS_StatDropDown_Initialize);
+	sdd:SetSelectedID(LLS_StatDropDown, sp and sp.stat or 1);
 	
 	_G["LLS_UsableCheckButton"]:SetChecked(sp and sp.usable);
 	
