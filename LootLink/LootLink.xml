@@ -1098,9 +1098,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</OnLoad>
 				</Scripts>
 			</Button>		
-			<EditBox name="LLS_MinimumStrengthEditBox" letters="4" numeric="true" inherits="LLS_EditBoxTemplate">
+			<EditBox name="LLS_MinimumStatEditBox" letters="4" numeric="true" inherits="LLS_EditBoxTemplate">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="LLS_StatDropdown" relativePoint="TOPRIGHT">
+					<Anchor point="TOPLEFT" relativeTo="LLS_StatLabel1" relativePoint="TOPRIGHT">
 						<Offset>
 							<AbsDimension x="16" y="0"/>
 						</Offset>
@@ -1116,9 +1116,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</Layer>
 				</Layers>
 			</EditBox>
-			<EditBox name="LLS_MaximumStrengthEditBox" letters="4" numeric="true" inherits="LLS_EditBoxTemplate">
+			<EditBox name="LLS_MaximumStatEditBox" letters="4" numeric="true" inherits="LLS_EditBoxTemplate">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="LLS_MinimumStrengthEditBox" relativePoint="TOPRIGHT">
+					<Anchor point="TOPLEFT" relativeTo="LLS_MinimumStatEditBox" relativePoint="TOPRIGHT">
 						<Offset>
 							<AbsDimension x="16" y="0"/>
 						</Offset>

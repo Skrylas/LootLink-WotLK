@@ -3474,6 +3474,12 @@ function LootLinkSearch_SaveValues()
 		interesting = 1;
 	end
 	
+	value = sdd:GetSelectedID(LLS_StatDropDown);
+	if( value and value ~= 1 ) then
+		sp.stat = value;
+		interesting = 1;
+	end
+	
 	field = _G["LLS_UsableCheckButton"];
 	value = field:GetChecked();
 	if( value ) then
