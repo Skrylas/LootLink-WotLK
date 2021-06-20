@@ -1,0 +1,50 @@
+	
+--- Item ID: ItemName
+["10035:Tuxedo Pants of the Owl"] = {
+--- Item Link
+	["i"] = "10035:0:0:0:0:0:757:0:15",
+--- Server
+	["s"] = "0",
+--- Searchable data
+--- il = Item Level
+--- bi = Binding
+--- lo = Location
+--- ar = armor
+--- ty = type
+--- su = subtype
+--- un = unique
+--- le = level
+--- sk = skill
+--- mi = mindamage
+--- ma = maxdamage
+--- sp = speed
+--- dp = DPS
+--- bl = block
+--- sl = slots
+
+--- sg = strength
+--- ag = agility
+--- st = stamina
+--- in = intellect
+--- si = spirit
+--- ap = attack power
+--- er = expertise rating
+--- am = armor penetration rating
+--- ht = hit rating
+--- cr = crit rating
+--- hr = haste rating
+--- sr = spell power
+--- mr = mana per 5
+--- sn = spell pen
+--- rr = resilience rating
+--- dr = defense rating
+--- do = dodge rating
+--- pr = parry rating
+--- br = block rating
+--- bv = block value
+
+	["d"] = "il35·bi0·lo7·ar153·ty0·su0·",
+--- Name color
+	["c"] = "ffffffff",
+--- Full tooltip text, if full search is turned off this is turned off.
+	["t"] = "Tuxedo Pants of the Owl·Legs·Cloth·153 Armor·|cffffffff+2 Intellect|r·|cffffffff+2 Spirit|r·Item Level 35·",
