@@ -1,10 +1,10 @@
 --[[
 Name: LibStatLogic-1.1
 Description: A Library for stat conversion, calculation and summarization.
-Revision: $Revision: 92 $
+Revision: $Revision: 110 $
 Author: Whitetooth
 Email: hotdogee [at] gmail [dot] com
-Last Update: $Date: 2009-11-07 17:15:58 +0000 (Sat, 07 Nov 2009) $
+Last Update: $Date: 2010-10-15 16:32:31 +0000 (Fri, 15 Oct 2010) $
 Website:
 Documentation:
 SVN: $URL $
@@ -25,7 +25,7 @@ Features:
 ]]
 
 local MAJOR = "LibStatLogic-1.1"
-local MINOR = "$Revision: 92 $"
+local MINOR = "$Revision: 110 $"
 
 local StatLogic = LibStub:NewLibrary(MAJOR, MINOR)
 if not StatLogic then return end
@@ -34,7 +34,8 @@ if not StatLogic then return end
 ----------------------
 -- Version Checking --
 ----------------------
-local wowBuildNo = tonumber((select(2, GetBuildInfo()))) -- need a global for loadstring
+local wowBuildNo = tonumber((select(2, GetBuildInfo())))
+StatLogic.wowBuildNo = wowBuildNo
 local toc = tonumber((select(4, GetBuildInfo())))
 
 
@@ -305,7 +306,8 @@ PatternLocale.enUS = {
 		--["+37 Stamina and +20 Defense"] = {["STA"] = 37, ["DEFENSE_RATING"] = 20}, -- EnchantID: 3818 Defense does not equal Defense Rating...
 		["Rune of Swordbreaking"] = {["PARRY"] = 2}, -- EnchantID: 3594
 		["Rune of Swordshattering"] = {["PARRY"] = 4}, -- EnchantID: 3365
-		["Rune of the Stoneskin Gargoyle"] = {["DEFENSE"] = 25, ["MOD_STA"] = 2}, -- EnchantID: 
+		["Rune of the Stoneskin Gargoyle"] = {["DEFENSE"] = 25, ["MOD_STA"] = 2}, -- EnchantID: 3847
+		["Rune of the Nerubian Carapace"] = {["DEFENSE"] = 13, ["MOD_STA"] = 1}, -- EnchantID: 3883
 	},
 	----------------------------
 	-- Single Plus Stat Check --
@@ -607,10 +609,13 @@ PatternLocale.enUS = {
 		["Increases staff skill rating"] = {"STAFF_WEAPON_RATING"}, -- Leggings of the Fang ID:10410
 
 		["expertise rating"] = {"EXPERTISE_RATING"}, -- gems
-		["armor penetration rating"] = {"ARMOR_PENETRATION_RATING"}, -- gems
 		["Increases your expertise rating"] = {"EXPERTISE_RATING"},
+		["armor penetration rating"] = {"ARMOR_PENETRATION_RATING"}, -- gems
 		["Increases armor penetration rating"] = {"ARMOR_PENETRATION_RATING"},
 		["Increases your armor penetration rating"] = {"ARMOR_PENETRATION_RATING"}, -- ID:43178
+    
+		["mastery rating"] = {"MASTERY_RATING"}, -- gems
+		["Increases your mastery rating"] = {"MASTERY_RATING"},
 
 		-- Exclude
 		["sec"] = false,
@@ -628,6 +633,9 @@ DisplayLocale.enUS = {
 	-- Please localize these strings too, global strings were used in the enUS locale just to have minimum
 	-- localization effect when a locale is not available for that language, you don't have to use global
 	-- strings in your localization.
+  ["Stat Multiplier"] = "Stat Multiplier",
+  ["Attack Power Multiplier"] = "Attack Power Multiplier",
+  ["Reduced Physical Damage Taken"] = "Reduced Physical Damage Taken",
 	["StatIDToName"] = {
 		--[StatID] = {FullName, ShortName},
 		---------------------------------------------------------------------------
@@ -1237,10 +1245,14 @@ PatternLocale.koKR = {
 		["지팡이류 숙련도가 증가합니다"] = {"STAFF_WEAPON_RATING"}, -- Leggings of the Fang ID:10410
 
 		["숙련"] = {"EXPERTISE_RATING"}, -- gems
-		["방어구 관통력"] = {"ARMOR_PENETRATION_RATING"}, -- gems
 		["숙련도가 증가합니다"] = {"EXPERTISE_RATING"},
+		
+		["방어구 관통력"] = {"ARMOR_PENETRATION_RATING"}, -- gems
 		["방어구 관통력이 증가합니다"] = {"ARMOR_PENETRATION_RATING"},
 
+		["특화"] = {"MASTERY_RATING"}, -- gems
+		["특화도가 증가합니다"] = {"MASTERY_RATING"},
+		
 		-- Exclude
 		["초"] = false,
 		["칸 가방"] = false,
@@ -1257,6 +1269,9 @@ DisplayLocale.koKR = {
 	-- Please localize these strings too, global strings were used in the enUS locale just to have minimum
 	-- localization effect when a locale is not available for that language, you don't have to use global
 	-- strings in your localization.
+  ["Stat Multiplier"] = "Stat Multiplier",
+  ["Attack Power Multiplier"] = "Attack Power Multiplier",
+  ["Reduced Physical Damage Taken"] = "Reduced Physical Damage Taken",
 	["StatIDToName"] = {
 		--[StatID] = {FullName, ShortName},
 		---------------------------------------------------------------------------
@@ -1991,6 +2006,9 @@ DisplayLocale.zhTW = {
 	-- Please localize these strings too, global strings were used in the enUS locale just to have minimum
 	-- localization effect when a locale is not available for that language, you don't have to use global
 	-- strings in your localization.
+  ["Stat Multiplier"] = "總屬性提高%",
+  ["Attack Power Multiplier"] = "攻擊強度提高%",
+  ["Reduced Physical Damage Taken"] = "物理傷害減少%",
 	["StatIDToName"] = {
 		--[StatID] = {FullName, ShortName},
 		---------------------------------------------------------------------------
@@ -2354,7 +2372,8 @@ PatternLocale.deDE = {
 		["+37 Ausdauer und +20 Verteidigung"] = {["STA"] = 37, ["DEFENSE_RATING"] = 20}, -- Defense does not equal Defense Rating...
 		["Rune des Schwertbrechens"] = {["PARRY"] = 2}, -- EnchantID: 3594
 		["Rune des Schwertberstens"] = {["PARRY"] = 4}, -- EnchantID: 3365
-		["Rune des Steinhautgargoyles"] = {["DEFENSE"] = 25, ["MOD_STA"] = 2}, -- EnchantID: 
+		["Rune des Steinhautgargoyles"] = {["DEFENSE"] = 25, ["MOD_STA"] = 2}, -- EnchantID: 3847
+		["Rune der nerubischen Panzerung"] = {["DEFENSE"] = 13, ["MOD_STA"] = 1}, -- EnchantID: 3883
 	},
 	----------------------------
 	-- Single Plus Stat Check --
@@ -2626,6 +2645,7 @@ PatternLocale.deDE = {
 		["Erhöht Eure Waffenkundewertung um"] = {"EXPERTISE_RATING"},
 		["Rüstungsdurchschlagwertung"] = {"ARMOR_PENETRATION_RATING"},
 		["Erhöht den Rüstungsdurchschlagwert um"] = {"ARMOR_PENETRATION_RATING"},
+		["Erhöht die Rüstungsdurchschlagwertung um"] = {"ARMOR_PENETRATION_RATING"},
 		["Erhöht Eure Rüstungsdurchschlagwertung um"] = {"ARMOR_PENETRATION_RATING"}, -- ID:43178
 
 		-- Exclude
@@ -2645,6 +2665,9 @@ DisplayLocale.deDE = {
 	-- localization effect when a locale is not available for that language, you don't have to use global
 	-- strings in your localization.
 
+  ["Stat Multiplier"] = "Wertemultiplikatoren",
+  ["Attack Power Multiplier"] = "Angriffskraft-Multiplikatoren",
+  ["Reduced Physical Damage Taken"] = "Reduzierter erlittener physischer Schaden",
 	-- NOTE I left many of the english terms because german players tend to use them and germans are much tooo long
 	["StatIDToName"] = {
 		--[StatID] = {FullName, ShortName},
@@ -2728,9 +2751,9 @@ DisplayLocale.deDE = {
 		["RANGED_CRIT_AVOID_RATING"] = {PLAYERSTAT_RANGED_COMBAT.." Kritvermeidung "..RATING, PLAYERSTAT_RANGED_COMBAT.." Kritvermeidung "..RATING},
 		["SPELL_CRIT_AVOID_RATING"] = {PLAYERSTAT_SPELL_COMBAT.." Kritvermeidung "..RATING, PLAYERSTAT_SPELL_COMBAT.." Kritvermeidung "..RATING},
 		["RESILIENCE_RATING"] = {COMBAT_RATING_NAME15, COMBAT_RATING_NAME15}, -- COMBAT_RATING_NAME15 = "Resilience"
-		["MELEE_HASTE_RATING"] = {"Hast "..RATING, "Hast  "..RATING}, --
-		["RANGED_HASTE_RATING"] = {PLAYERSTAT_RANGED_COMBAT.." Hast  "..RATING, PLAYERSTAT_RANGED_COMBAT.." Hast  "..RATING},
-		["SPELL_HASTE_RATING"] = {PLAYERSTAT_SPELL_COMBAT.." Hast  "..RATING, PLAYERSTAT_SPELL_COMBAT.." Hast  "..RATING},
+		["MELEE_HASTE_RATING"] = {"Hast "..RATING, "Hast "..RATING}, --
+		["RANGED_HASTE_RATING"] = {PLAYERSTAT_RANGED_COMBAT.." Hast "..RATING, PLAYERSTAT_RANGED_COMBAT.." Hast "..RATING},
+		["SPELL_HASTE_RATING"] = {PLAYERSTAT_SPELL_COMBAT.." Hast "..RATING, PLAYERSTAT_SPELL_COMBAT.." Hast "..RATING},
 		["EXPERTISE_RATING"] = {"Waffenkundewertung", "Waffenkundewertung"},
 		["DAGGER_WEAPON_RATING"] = {"Dagger "..SKILL.." "..RATING, "Dagger "..RATING}, -- SKILL = "Skill"
 		["SWORD_WEAPON_RATING"] = {"Sword "..SKILL.." "..RATING, "Sword "..RATING},
@@ -2744,7 +2767,7 @@ DisplayLocale.deDE = {
 		["BOW_WEAPON_RATING"] = {"Bow "..SKILL.." "..RATING, "Bow "..RATING},
 		["FERAL_WEAPON_RATING"] = {"Feral "..SKILL.." "..RATING, "Feral "..RATING},
 		["FIST_WEAPON_RATING"] = {"Unarmed "..SKILL.." "..RATING, "Unarmed "..RATING},
-		["ARMOR_PENETRATION_RATING"] = {"Armor Penetration".." "..RATING, "ArP".." "..RATING},
+		["ARMOR_PENETRATION_RATING"] = {"Rüstungsdurchschlag".." "..RATING, "ArP".." "..RATING},
 
 		---------------------------------------------------------------------------
 		-- Tier2 Stats - Stats that only show up when broken down from a Tier1 stat
@@ -2792,7 +2815,7 @@ DisplayLocale.deDE = {
 		["BOW_WEAPON"] = {"Bow "..SKILL, "Bow"},
 		["FERAL_WEAPON"] = {"Feral "..SKILL, "Feral"},
 		["FIST_WEAPON"] = {"Unarmed "..SKILL, "Unarmed"},
-		["ARMOR_PENETRATION"] = {"Armor Penetration(%)", "ArP(%)"},
+		["ARMOR_PENETRATION"] = {"Rüstungsdurchschlag(%)", "ArP(%)"},
 
 		---------------------------------------------------------------------------
 		-- Tier3 Stats - Stats that only show up when broken down from a Tier2 stat
@@ -3350,6 +3373,9 @@ DisplayLocale.frFR = {
 	-- Please localize these strings too, global strings were used in the enUS locale just to have minimum
 	-- localization effect when a locale is not available for that language, you don't have to use global
 	-- strings in your localization.
+  ["Stat Multiplier"] = "Stat Multiplier",
+  ["Attack Power Multiplier"] = "Attack Power Multiplier",
+  ["Reduced Physical Damage Taken"] = "Reduced Physical Damage Taken",
 	["StatIDToName"] = {
 		--[StatID] = {FullName, ShortName},
 		---------------------------------------------------------------------------
@@ -4099,6 +4125,9 @@ DisplayLocale.zhCN = {
 	-- Please localize these strings too, global strings were used in the enUS locale just to have minimum
 	-- localization effect when a locale is not available for that language, you don't have to use global
 	-- strings in your localization.
+  ["Stat Multiplier"] = "Stat Multiplier",
+  ["Attack Power Multiplier"] = "Attack Power Multiplier",
+  ["Reduced Physical Damage Taken"] = "Reduced Physical Damage Taken",
 	["StatIDToName"] = {
 		--[StatID] = {FullName, ShortName},
 		---------------------------------------------------------------------------
@@ -5243,6 +5272,9 @@ DisplayLocale.esES = {
 	-- Please localize these strings too, global strings were used in the enUS locale just to have minimum
 	-- localization effect when a locale is not available for that language, you don't have to use global
 	-- strings in your localization.
+  ["Stat Multiplier"] = "Stat Multiplier",
+  ["Attack Power Multiplier"] = "Attack Power Multiplier",
+  ["Reduced Physical Damage Taken"] = "Reduced Physical Damage Taken",
 	["StatIDToName"] = {
 		--[StatID] = {FullName, ShortName},
 		---------------------------------------------------------------------------
@@ -5891,7 +5923,9 @@ CR_EXPERTISE = 24;
 CR_ARMOR_PENETRATION = 25;
 --]]
 
-local RatingNameToID = {
+local RatingNameToID
+if toc < 40000 then
+RatingNameToID = {
 	[CR_WEAPON_SKILL] = "WEAPON_RATING",
 	[CR_DEFENSE_SKILL] = "DEFENSE_RATING",
 	[CR_DODGE] = "DODGE_RATING",
@@ -5956,6 +5990,75 @@ local RatingNameToID = {
 	["EXPERTISE_RATING"] = CR_EXPERTISE,
 	["ARMOR_PENETRATION_RATING"] = CR_ARMOR_PENETRATION,
 }
+else
+RatingNameToID = {
+	[CR_WEAPON_SKILL] = "WEAPON_RATING",
+	[CR_DEFENSE_SKILL] = "DEFENSE_RATING",
+	[CR_DODGE] = "DODGE_RATING",
+	[CR_PARRY] = "PARRY_RATING",
+	[CR_BLOCK] = "BLOCK_RATING",
+	[CR_HIT_MELEE] = "MELEE_HIT_RATING",
+	[CR_HIT_RANGED] = "RANGED_HIT_RATING",
+	[CR_HIT_SPELL] = "SPELL_HIT_RATING",
+	[CR_CRIT_MELEE] = "MELEE_CRIT_RATING",
+	[CR_CRIT_RANGED] = "RANGED_CRIT_RATING",
+	[CR_CRIT_SPELL] = "SPELL_CRIT_RATING",
+	[CR_HIT_TAKEN_MELEE] = "MELEE_HIT_AVOID_RATING",
+	[CR_HIT_TAKEN_RANGED] = "RANGED_HIT_AVOID_RATING",
+	[CR_HIT_TAKEN_SPELL] = "SPELL_HIT_AVOID_RATING",
+	[COMBAT_RATING_RESILIENCE_CRIT_TAKEN] = "MELEE_CRIT_AVOID_RATING",
+	[COMBAT_RATING_RESILIENCE_PLAYER_DAMAGE_TAKEN] = "RANGED_CRIT_AVOID_RATING",
+	[CR_CRIT_TAKEN_SPELL] = "SPELL_CRIT_AVOID_RATING",
+	[CR_HASTE_MELEE] = "MELEE_HASTE_RATING",
+	[CR_HASTE_RANGED] = "RANGED_HASTE_RATING",
+	[CR_HASTE_SPELL] = "SPELL_HASTE_RATING",
+	[CR_WEAPON_SKILL_MAINHAND] = "MAINHAND_WEAPON_RATING",
+	[CR_WEAPON_SKILL_OFFHAND] = "OFFHAND_WEAPON_RATING",
+	[CR_WEAPON_SKILL_RANGED] = "RANGED_WEAPON_RATING",
+	[CR_EXPERTISE] = "EXPERTISE_RATING",
+	[CR_ARMOR_PENETRATION] = "ARMOR_PENETRATION_RATING",
+	[CR_MASTERY] = "MASTERY_RATING",
+	["DEFENSE_RATING"] = CR_DEFENSE_SKILL,
+	["DODGE_RATING"] = CR_DODGE,
+	["PARRY_RATING"] = CR_PARRY,
+	["BLOCK_RATING"] = CR_BLOCK,
+	["MELEE_HIT_RATING"] = CR_HIT_MELEE,
+	["RANGED_HIT_RATING"] = CR_HIT_RANGED,
+	["SPELL_HIT_RATING"] = CR_HIT_SPELL,
+	["MELEE_CRIT_RATING"] = CR_CRIT_MELEE,
+	["RANGED_CRIT_RATING"] = CR_CRIT_RANGED,
+	["SPELL_CRIT_RATING"] = CR_CRIT_SPELL,
+	["MELEE_HIT_AVOID_RATING"] = CR_HIT_TAKEN_MELEE,
+	["RANGED_HIT_AVOID_RATING"] = CR_HIT_TAKEN_RANGED,
+	["SPELL_HIT_AVOID_RATING"] = CR_HIT_TAKEN_SPELL,
+	["MELEE_CRIT_AVOID_RATING"] = COMBAT_RATING_RESILIENCE_CRIT_TAKEN,
+	["RANGED_CRIT_AVOID_RATING"] = COMBAT_RATING_RESILIENCE_PLAYER_DAMAGE_TAKEN,
+	["SPELL_CRIT_AVOID_RATING"] = CR_CRIT_TAKEN_SPELL,
+	["RESILIENCE_RATING"] = COMBAT_RATING_RESILIENCE_CRIT_TAKEN,
+	["MELEE_HASTE_RATING"] = CR_HASTE_MELEE,
+	["RANGED_HASTE_RATING"] = CR_HASTE_RANGED,
+	["SPELL_HASTE_RATING"] = CR_HASTE_SPELL,
+	["DAGGER_WEAPON_RATING"] = CR_WEAPON_SKILL,
+	["SWORD_WEAPON_RATING"] = CR_WEAPON_SKILL,
+	["2H_SWORD_WEAPON_RATING"] = CR_WEAPON_SKILL,
+	["AXE_WEAPON_RATING"] = CR_WEAPON_SKILL,
+	["2H_AXE_WEAPON_RATING"] = CR_WEAPON_SKILL,
+	["MACE_WEAPON_RATING"] = CR_WEAPON_SKILL,
+	["2H_MACE_WEAPON_RATING"] = CR_WEAPON_SKILL,
+	["GUN_WEAPON_RATING"] = CR_WEAPON_SKILL,
+	["CROSSBOW_WEAPON_RATING"] = CR_WEAPON_SKILL,
+	["BOW_WEAPON_RATING"] = CR_WEAPON_SKILL,
+	["FERAL_WEAPON_RATING"] = CR_WEAPON_SKILL,
+	["FIST_WEAPON_RATING"] = CR_WEAPON_SKILL,
+	["WEAPON_RATING"] = CR_WEAPON_SKILL,
+	["MAINHAND_WEAPON_RATING"] = CR_WEAPON_SKILL_MAINHAND,
+	["OFFHAND_WEAPON_RATING"] = CR_WEAPON_SKILL_OFFHAND,
+	["RANGED_WEAPON_RATING"] = CR_WEAPON_SKILL_RANGED,
+	["EXPERTISE_RATING"] = CR_EXPERTISE,
+	["ARMOR_PENETRATION_RATING"] = CR_ARMOR_PENETRATION,
+	["MASTERY_RATING"] = CR_MASTERY,
+}
+end
 
 --[[---------------------------------
 	:GetRatingIdOrName(rating)
@@ -6032,7 +6135,9 @@ function StatLogic:GetRatingIdOrStatId(rating)
 	return RatingNameToID[rating]
 end
 
-local RatingIDToConvertedStat = {
+local RatingIDToConvertedStat
+if toc < 40000 then
+RatingIDToConvertedStat = {
 	"WEAPON_SKILL",
 	"DEFENSE",
 	"DODGE",
@@ -6059,6 +6164,36 @@ local RatingIDToConvertedStat = {
 	"EXPERTISE",
 	"ARMOR_PENETRATION",
 }
+else
+RatingIDToConvertedStat = {
+	"WEAPON_SKILL",
+	"DEFENSE",
+	"DODGE",
+	"PARRY",
+	"BLOCK",
+	"MELEE_HIT",
+	"RANGED_HIT",
+	"SPELL_HIT",
+	"MELEE_CRIT",
+	"RANGED_CRIT",
+	"SPELL_CRIT",
+	"MELEE_HIT_AVOID",
+	"RANGED_HIT_AVOID",
+	"SPELL_HIT_AVOID",
+	"MELEE_CRIT_AVOID",
+	"PLAYER_DAMAGE_AVOID",
+	"SPELL_CRIT_AVOID",
+	"MELEE_HASTE",
+	"RANGED_HASTE",
+	"SPELL_HASTE",
+	"WEAPON_SKILL",
+	"WEAPON_SKILL",
+	"WEAPON_SKILL",
+	"EXPERTISE",
+	"ARMOR_PENETRATION",
+	"MASTERY",
+}
+end
 
 ----------------
 -- Stat Tools --
@@ -6077,21 +6212,28 @@ local function GetStanceIcon()
 		return GetShapeshiftFormInfo(currentStance)
 	end
 end
+StatLogic.GetStanceIcon = GetStanceIcon
 
-local function GetPlayerBuffName(buff)
-	return UnitBuff("player", buff)
+local function PlayerHasAura(aura)
+	return UnitBuff("player", aura or "") or UnitDebuff("player", aura or "")
 end
+StatLogic.PlayerHasAura = PlayerHasAura
 
-local function GetPlayerBuffRankStack(buff)
-	--name, rank, icon, count, debuffType, duration, expirationTime, isMine, isStealable = UnitAura("player", buff)
-	local hasBuff, rank, _, count = GetPlayerBuffName(buff)
-	if hasBuff then
-		if not count or count == 0 then
-			count = 1
+
+local function GetPlayerAuraRankStack(buff)
+	--name, rank, icon, stack, debuffType, duration, expirationTime, isMine, isStealable = UnitAura("player", buff)
+	local name, rank, _, stack = UnitBuff("player", buff)
+  if not name then -- if not a buff, check for debuff
+    name, rank, _, stack = UnitDebuff("player", buff)
+  end
+	if name then
+		if not stack or stack == 0 then
+			stack = 1
 		end
-		return tonumber(strmatch(rank, "(%d+)") or 1), count
+		return tonumber(strmatch(rank, "(%d+)") or 1), stack
 	end
 end
+StatLogic.GetPlayerAuraRankStack = GetPlayerAuraRankStack
 
 local function GetTotalDefense(unit)
 	local base, modifier = UnitDefense(unit);
@@ -6106,6 +6248,7 @@ local function PlayerHasGlyph(glyph, talentGroup)
 		end
 	end
 end
+StatLogic.PlayerHasGlyph = PlayerHasGlyph
 
 ---------------
 -- Item Sets --
@@ -6146,6 +6289,10 @@ PlayerItemSets = {
 }
 --]]
 local PlayerItemSets = {}
+-- API
+function StatLogic:PlayerHasItemSet(itemset)
+  return PlayerItemSets[itemset]
+end
 -- Don't set any scripts if the class doesn't have any sets to check
 if table.maxn(ItemToSet) ~= 0 then
 	local WatchInventoryID = {
@@ -6728,7 +6875,7 @@ local StatModInfo = {
 		finalAdjust = 1,
 	},
 }
-
+StatLogic.StatModInfo = StatModInfo -- so other addons can use this directly
 
 ------------------
 -- StatModTable --
@@ -6739,6 +6886,7 @@ local StatModInfo = {
 3. Click on "See also" tab for a spell with a gear icon, the spell id for this page is what you put in here.
 --]]
 local StatModTable = {}
+StatLogic.StatModTable = StatModTable -- so other addons can use this directly
 if playerClass == "DRUID" then
 	StatModTable["DRUID"] = {
 		-- Druid: Master Shapeshifter (Rank 2) - 3,9
@@ -6753,7 +6901,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					0.02, 0.04,
 				},
-				["buff"] = GetSpellInfo(24858),		-- ["Moonkin Form"],
+				["buff"] = 24858,		-- ["Moonkin Form"],
 			},
 			{
 				["tab"] = 1,
@@ -6773,7 +6921,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					0.02, 0.04,
 				},
-				["buff"] = GetSpellInfo(33891),		-- ["Tree of Life"],
+				["buff"] = 33891,		-- ["Tree of Life"],
 			},
 		},
 		--]]
@@ -6786,7 +6934,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					0.1, 0.2, 0.3,
 				},
-				["buff"] = GetSpellInfo(24858), -- ["Moonkin Form"],
+				["buff"] = 24858, -- ["Moonkin Form"],
 			},
 		},
 		-- Druid: Improved Tree of Life (Rank 3) - 3,24
@@ -6798,7 +6946,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					0.05, 0.10, 0.15,
 				},
-				["buff"] = GetSpellInfo(33891), -- ["Tree of Life"],
+				["buff"] = 33891, -- ["Tree of Life"],
 			},
 		},
 		-- Druid: Lunar Guidance (Rank 3) - 1,12
@@ -6871,7 +7019,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					2, 4,
 				},
-				["buff"] = GetSpellInfo(32357),		-- ["Bear Form"],
+				["buff"] = 32357,		-- ["Bear Form"],
 			},
 			{
 				["tab"] = 2,
@@ -6879,7 +7027,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					2, 4,
 				},
-				["buff"] = GetSpellInfo(9634),		-- ["Dire Bear Form"],
+				["buff"] = 9634,		-- ["Dire Bear Form"],
 			},
 			{
 				["tab"] = 2,
@@ -6887,7 +7035,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					2, 4,
 				},
-				["buff"] = GetSpellInfo(32356),		-- ["Cat Form"],
+				["buff"] = 32356,		-- ["Cat Form"],
 			},
 			{
 				["tab"] = 2,
@@ -6895,7 +7043,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					2, 4, 6,
 				},
-				["buff"] = GetSpellInfo(32357),		-- ["Bear Form"],
+				["buff"] = 32357,		-- ["Bear Form"],
 			},
 			{
 				["tab"] = 2,
@@ -6903,7 +7051,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					2, 4, 6,
 				},
-				["buff"] = GetSpellInfo(9634),		-- ["Dire Bear Form"],
+				["buff"] = 9634,		-- ["Dire Bear Form"],
 			},
 		},
 		-- Druid: Survival of the Fittest (Rank 3) - 2,18
@@ -6943,7 +7091,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					-0.2,
 				},
-				["buff"] = GetSpellInfo(22812),		-- ["Barkskin"],
+				["buff"] = 22812,		-- ["Barkskin"],
 			},
 			{-- Improved Barkskin
 				["MELEE"] = true,
@@ -6959,7 +7107,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					-0.05, -0.1,
 				},
-				["buff"] = GetSpellInfo(22812),		-- ["Barkskin"],
+				["buff"] = 22812,		-- ["Barkskin"],
 			},
 			{
 				["MELEE"] = true,
@@ -6975,8 +7123,8 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					-0.02, -0.03, -0.04,
 				},
-				["buff"] = GetSpellInfo(45283),		-- ["Natural Perfection"],
-				["buffStack"] = true,
+				["buff"] = 45283,		-- ["Natural Perfection"],
+				["buffStack"] = 3, -- max number of stacks
 			},
 			{
 				["MELEE"] = true,
@@ -6992,7 +7140,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					-0.01, -0.02, -0.03,
 				},
-				["buff"] = GetSpellInfo(32357),		-- ["Bear Form"],
+				["buff"] = 32357,		-- ["Bear Form"],
 				["condition"] = "GetNumPartyMembers() == 1",
 			},
 			{
@@ -7009,7 +7157,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					-0.02, -0.04, -0.06,
 				},
-				["buff"] = GetSpellInfo(32357),		-- ["Bear Form"],
+				["buff"] = 32357,		-- ["Bear Form"],
 				["condition"] = "GetNumPartyMembers() == 2",
 			},
 			{
@@ -7026,7 +7174,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					-0.03, -0.06, -0.09,
 				},
-				["buff"] = GetSpellInfo(32357),		-- ["Bear Form"],
+				["buff"] = 32357,		-- ["Bear Form"],
 				["condition"] = "GetNumPartyMembers() == 3",
 			},
 			{
@@ -7043,7 +7191,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					-0.04, -0.08, -0.12,
 				},
-				["buff"] = GetSpellInfo(32357),		-- ["Bear Form"],
+				["buff"] = 32357,		-- ["Bear Form"],
 				["condition"] = "GetNumPartyMembers() == 4",
 			},
 			{
@@ -7060,7 +7208,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					-0.01, -0.02, -0.03,
 				},
-				["buff"] = GetSpellInfo(9634),		-- ["Dire Bear Form"],
+				["buff"] = 9634,		-- ["Dire Bear Form"],
 				["condition"] = "GetNumPartyMembers() == 1",
 			},
 			{
@@ -7077,7 +7225,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					-0.02, -0.04, -0.06,
 				},
-				["buff"] = GetSpellInfo(9634),		-- ["Dire Bear Form"],
+				["buff"] = 9634,		-- ["Dire Bear Form"],
 				["condition"] = "GetNumPartyMembers() == 2",
 			},
 			{
@@ -7094,7 +7242,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					-0.03, -0.06, -0.09,
 				},
-				["buff"] = GetSpellInfo(9634),		-- ["Dire Bear Form"],
+				["buff"] = 9634,		-- ["Dire Bear Form"],
 				["condition"] = "GetNumPartyMembers() == 3",
 			},
 			{
@@ -7111,7 +7259,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					-0.04, -0.08, -0.12,
 				},
-				["buff"] = GetSpellInfo(9634),		-- ["Dire Bear Form"],
+				["buff"] = 9634,		-- ["Dire Bear Form"],
 				["condition"] = "GetNumPartyMembers() == 4",
 			},
 			{--Balance of Power
@@ -7174,19 +7322,19 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					1.8,
 				},
-				["buff"] = GetSpellInfo(32357),		-- ["Bear Form"],
+				["buff"] = 32357,		-- ["Bear Form"],
 			},
 			{
 				["rank"] = {
 					3.7,
 				},
-				["buff"] = GetSpellInfo(9634),		-- ["Dire Bear Form"],
+				["buff"] = 9634,		-- ["Dire Bear Form"],
 			},
 			{
 				["rank"] = {
 					3.7,
 				},
-				["buff"] = GetSpellInfo(24858),		-- ["Moonkin Form"],
+				["buff"] = 24858,		-- ["Moonkin Form"],
 			},
 			{
 				["tab"] = 3,
@@ -7194,7 +7342,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					0.67, 1.33, 2,
 				},
-				["buff"] = GetSpellInfo(33891),		-- ["Tree of Life"],
+				["buff"] = 33891,		-- ["Tree of Life"],
 			},
 			{
 				["tab"] = 2,
@@ -7202,7 +7350,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					0.11, 0.22, 0.33,
 				},
-				["buff"] = GetSpellInfo(32357),		-- ["Bear Form"],
+				["buff"] = 32357,		-- ["Bear Form"],
 			},
 			{
 				["tab"] = 2,
@@ -7210,7 +7358,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					0.11, 0.22, 0.33,
 				},
-				["buff"] = GetSpellInfo(9634),		-- ["Dire Bear Form"],
+				["buff"] = 9634,		-- ["Dire Bear Form"],
 			},
 		},
 		-- Druid: Survival Instincts - Buff
@@ -7220,22 +7368,22 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					0.3,
 				},
-				["buff"] = GetSpellInfo(50322),		-- ["Survival Instincts"],
-				["buff2"] = GetSpellInfo(32357),		-- ["Bear Form"],
+				["buff"] = 50322,		-- ["Survival Instincts"],
+				["buff2"] = 32357,		-- ["Bear Form"],
 			},
 			{
 				["rank"] = {
 					0.3,
 				},
-				["buff"] = GetSpellInfo(50322),		-- ["Survival Instincts"],
-				["buff2"] = GetSpellInfo(9634),		-- ["Dire Bear Form"],
+				["buff"] = 50322,		-- ["Survival Instincts"],
+				["buff2"] = 9634,		-- ["Dire Bear Form"],
 			},
 			{
 				["rank"] = {
 					0.3,
 				},
-				["buff"] = GetSpellInfo(50322),		-- ["Survival Instincts"],
-				["buff2"] = GetSpellInfo(32356),		-- ["Cat Form"],
+				["buff"] = 50322,		-- ["Survival Instincts"],
+				["buff2"] = 32356,		-- ["Cat Form"],
 			},
 		},
 		-- Druid: Improved Mark of the Wild (Rank 2) - 3,1
@@ -7265,7 +7413,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					0.02, 0.04, 0.06, 0.08, 0.1,
 				},
-				["buff"] = GetSpellInfo(32357),		-- ["Bear Form"],
+				["buff"] = 32357,		-- ["Bear Form"],
 			},
 			{
 				["tab"] = 2,
@@ -7273,7 +7421,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					0.02, 0.04, 0.06, 0.08, 0.1,
 				},
-				["buff"] = GetSpellInfo(9634),		-- ["Dire Bear Form"],
+				["buff"] = 9634,		-- ["Dire Bear Form"],
 			},
 			{ -- Survival of the Fittest: 2%/4%/6% all stats
 				["tab"] = 2,
@@ -7286,13 +7434,13 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					0.25,
 				},
-				["buff"] = GetSpellInfo(32357),		-- ["Bear Form"],
+				["buff"] = 32357,		-- ["Bear Form"],
 			},
 			{ -- Bear Form / Dire Bear Form: +25% stamina
 				["rank"] = {
 					0.25,
 				},
-				["buff"] = GetSpellInfo(9634),		-- ["Dire Bear Form"],
+				["buff"] = 9634,		-- ["Dire Bear Form"],
 			},
 		},
 		-- Druid: Improved Mark of the Wild (Rank 2) - 3,1
@@ -7337,7 +7485,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					0.02, 0.04, 0.06, 0.08, 0.1,
 				},
-				["buff"] = GetSpellInfo(32356),		-- ["Cat Form"],
+				["buff"] = 32356,		-- ["Cat Form"],
 			},
 			{
 				["tab"] = 2,
@@ -7345,7 +7493,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					0.02, 0.04, 0.06,
 				},
-				["buff"] = GetSpellInfo(32357),		-- ["Bear Form"],
+				["buff"] = 32357,		-- ["Bear Form"],
 			},
 			{
 				["tab"] = 2,
@@ -7353,7 +7501,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					0.02, 0.04, 0.06,
 				},
-				["buff"] = GetSpellInfo(9634),		-- ["Dire Bear Form"],
+				["buff"] = 9634,		-- ["Dire Bear Form"],
 			},
 		},
 		-- Druid: Improved Mark of the Wild (Rank 2) - 3,1
@@ -7414,7 +7562,7 @@ if playerClass == "DRUID" then
 				["rank"] = {
 					0.02, 0.04, 0.06, 0.08, 0.1,
 				},
-				["buff"] = GetSpellInfo(24858),		-- ["Moonkin Form"],
+				["buff"] = 24858,		-- ["Moonkin Form"],
 			},
 		},
 		-- Druid: Improved Mark of the Wild (Rank 2) - 3,1
@@ -7473,7 +7621,7 @@ elseif playerClass == "DEATHKNIGHT" then
 		-- Death Knight: Blade Barrier - Buff - 1,3
 		--               Whenever your Blood Runes are on cooldown, you gain the Blade Barrier effect, which decreases damage taken by 1/2/3/4/5% for the next 10 sec.
 		-- Death Knight: Icebound Fortitude - Buff
-		--               Damage taken reduced by 20%+def*0.15.
+		--               Damage taken reduced by 30%+def*0.15.
 		-- Death Knight: Glyph of Icebound Fortitude - Major Glyph
 		--               Your Icebound Fortitude now always grants at least 30% damage reduction, regardless of your defense skill.
 		-- Death Knight: Bone Shield - Buff
@@ -7509,7 +7657,7 @@ elseif playerClass == "DEATHKNIGHT" then
 				["rank"] = {
 					-0.01, -0.02, -0.03, -0.04, -0.05,
 				},
-				["buff"] = GetSpellInfo(55226),		-- ["Blade Barrier"],
+				["buff"] = 55226,		-- ["Blade Barrier"],
 			},
 			{
 				["MELEE"] = true,
@@ -7521,9 +7669,9 @@ elseif playerClass == "DEATHKNIGHT" then
 				["SHADOW"] = true,
 				["ARCANE"] = true,
 				["rank"] = {
-					-0.20,
+					-0.30,
 				},
-				["buff"] = GetSpellInfo(48792),		-- ["Icebound Fortitude"],
+				["buff"] = 48792,		-- ["Icebound Fortitude"],
 			},
 			{
 				["MELEE"] = true,
@@ -7537,7 +7685,7 @@ elseif playerClass == "DEATHKNIGHT" then
 				["rank"] = {
 					-0.10,
 				},
-				["buff"] = GetSpellInfo(48792),		-- ["Icebound Fortitude"],
+				["buff"] = 48792,		-- ["Icebound Fortitude"],
 				["glyph"] = 58625, -- Glyph of Icebound Fortitude
 			},
 			{
@@ -7552,7 +7700,7 @@ elseif playerClass == "DEATHKNIGHT" then
 				["rank"] = {
 					-0.20,
 				},
-				["buff"] = GetSpellInfo(49222),		-- ["Bone Shield"],
+				["buff"] = 49222,		-- ["Bone Shield"],
 			},
 			{
 				["HOLY"] = true,
@@ -7564,7 +7712,7 @@ elseif playerClass == "DEATHKNIGHT" then
 				["rank"] = {
 					-0.75,
 				},
-				["buff"] = GetSpellInfo(48707),		-- ["Anti-Magic Shell"],
+				["buff"] = 48707,		-- ["Anti-Magic Shell"],
 			},
 			{
 				["MELEE"] = true,
@@ -7721,8 +7869,7 @@ elseif playerClass == "DEATHKNIGHT" then
 		-- Death Knight: Toughness (Rank 5) - 2,3
 		--               Increases your armor value from items by 2/4/6/8/10% and reduces the duration of all movement slowing effects by 50%.
 		-- Death Knight: Unbreakable Armor - Buff
-		--               Increases your armor by 25%, your total Strength by 10% and your Parry chance by 5% for 20 sec.
-		--        3.1.0: Reducing damage from all attacks by [0.05 * ARMOR], your total Strength by 25% for 20 sec.
+		--               Increases your armor by 25%, your total Strength by 20%
 		-- Death Knight: Glyph of Unbreakable Armor - Major Glyph
 		--               Increases the armor granted by Unbreakable Armor by 20%.
 		-- Death Knight: Frost Presence - Buff
@@ -7748,14 +7895,14 @@ elseif playerClass == "DEATHKNIGHT" then
 				["rank"] = {
 					0.25,
 				},
-				["buff"] = GetSpellInfo(51271),		-- ["Unbreakable Armor"],
+				["buff"] = 51271,		-- ["Unbreakable Armor"],
 				["new"] = 10371,
 			},
 			{
 				["rank"] = {
 					0.2,
 				},
-				["buff"] = GetSpellInfo(51271),		-- ["Unbreakable Armor"],
+				["buff"] = 51271,		-- ["Unbreakable Armor"],
 				["glyph"] = 58635,		-- ["Glyph of Unbreakable Armor"],
 			},
 			{
@@ -7803,11 +7950,13 @@ elseif playerClass == "DEATHKNIGHT" then
 		-- Enchant: Rune of the Stoneskin Gargoyle - EnchantID: 3847
 		--          +25 Defense and +2% Stamina to 2h weapon
 		-- Death Knight: Frost Presence - Buff
-		--               Increasing Stamina by 6%, armor contribution from cloth, leather, mail 
+		--               Increasing Stamina by 8%, armor contribution from cloth, leather, mail 
 		--               and plate items by 60%, and reducing damage taken by 5%.
 		-- Death Knight: Improved Frost Presence (Rank 2) - 2,21
 		--               While in Blood Presence or Unholy Presence, you retain 3/6% stamina from Frost Presence, 
 		--               and damage done to you is decreased by an additional 1/2% in Frost Presence.
+		-- Death Knight: Endless Winter (Rank 2) - 2,12
+		--               Your strength is increased by 2%/4%.
 		["MOD_STA"] = {
 			{
 				["tab"] = 1,
@@ -7834,7 +7983,7 @@ elseif playerClass == "DEATHKNIGHT" then
 			},
 			{
 				["rank"] = {
-					0.06,
+					0.08,
 				},
 				["stance"] = "Interface\\Icons\\Spell_Deathknight_FrostPresence",
 				["new"] = 10147,
@@ -7857,11 +8006,19 @@ elseif playerClass == "DEATHKNIGHT" then
 				["stance"] = "Interface\\Icons\\Spell_Deathknight_UnholyPresence",
 				["new"] = 10147,
 			},
+			{-- Endless Winter
+				["tab"] = 2,
+				["num"] = 12,
+				["rank"] = {
+					0.02, 0.04,
+				},
+				["new"] = 11685,
+			},
 		},
 		-- Death Knight: Veteran of the Third War (Rank 3) - 1,14
 		--               Increases your total Strength by 6% and your total Stamina by 3%.
 		-- Death Knight: Unbreakable Armor - Buff
-		--               Reducing damage from all attacks by [0.05 * ARMOR], your total Strength by 25% for 20 sec.
+		--               Increasing your armor by 25% and increasing your Strength by 20% for 20 sec.
 		-- Death Knight: Ravenous Dead (Rank 3) - 3,7
 		--               Increases your total Strength 1%/2%/3% and the contribution your Ghouls get from your Strength and Stamina by 20%/40%/60%
 		-- Death Knight: Abomination's Might - 1,17
@@ -7876,17 +8033,17 @@ elseif playerClass == "DEATHKNIGHT" then
 			},
 			{
 				["rank"] = {
-					0.25,
+					0.1,
 				},
-				["buff"] = GetSpellInfo(51271),		-- ["Unbreakable Armor"],
-				["old"] = 10371,
+				["buff"] = 51271,		-- ["Unbreakable Armor"],
+				["old"] = 11685,
 			},
 			{
 				["rank"] = {
-					0.1,
+					0.2,
 				},
-				["buff"] = GetSpellInfo(51271),		-- ["Unbreakable Armor"],
-				["new"] = 10371,
+				["buff"] = 51271,		-- ["Unbreakable Armor"],
+				["new"] = 11685,
 			},
 			{
 				["tab"] = 3,
@@ -7948,7 +8105,7 @@ elseif playerClass == "HUNTER" then
 				["rank"] = {
 					18,
 				},
-				["buff"] = GetSpellInfo(13163),		-- ["Aspect of the Monkey"],
+				["buff"] = 13163,		-- ["Aspect of the Monkey"],
 			},
 			{
 				["tab"] = 1,
@@ -7956,13 +8113,13 @@ elseif playerClass == "HUNTER" then
 				["rank"] = {
 					2, 4, 6,
 				},
-				["buff"] = GetSpellInfo(13163),		-- ["Aspect of the Monkey"],
+				["buff"] = 13163,		-- ["Aspect of the Monkey"],
 			},
 			{
 				["rank"] = {
 					18, 18,
 				},
-				["buff"] = GetSpellInfo(61846),		-- ["Aspect of the Dragonhawk"],
+				["buff"] = 61846,		-- ["Aspect of the Dragonhawk"],
 			},
 			{
 				["tab"] = 1,
@@ -7970,7 +8127,7 @@ elseif playerClass == "HUNTER" then
 				["rank"] = {
 					2, 4, 6,
 				},
-				["buff"] = GetSpellInfo(61846),		-- ["Aspect of the Dragonhawk"],
+				["buff"] = 61846,		-- ["Aspect of the Dragonhawk"],
 			},
 		},
 		-- Hunter: Survival Instincts (Rank 2) - 3,7
@@ -8007,7 +8164,7 @@ elseif playerClass == "HUNTER" then
 				["rank"] = {
 					-0.05,
 				},
-				["buff"] = GetSpellInfo(13163),		-- ["Aspect of the Monkey"],
+				["buff"] = 13163,		-- ["Aspect of the Monkey"],
 			},
 		},
 		-- Hunter: Thick Hide (Rank 3) - 1,5
@@ -8098,27 +8255,27 @@ elseif playerClass == "MAGE" then
 				["rank"] = {
 					0.35, 0.35, 0.35, 0.35, 0.35, 0.35, -- 3 ranks
 				},
-				["buff"] = GetSpellInfo(30482), -- ["Molten Armor"],
+				["buff"] = 30482, -- ["Molten Armor"],
 			},
 			{
 				["rank"] = {
 					0.2, 0.2, 0.2, 0.2, 0.2, 0.2, -- 3 ranks
 				},
-				["buff"] = GetSpellInfo(30482), -- ["Molten Armor"],
+				["buff"] = 30482, -- ["Molten Armor"],
 				["glyph"] = 56382, -- Glyph of Molten Armor,
 			},
 			{
 				["rank"] = {
 					0.15, 0.15, 0.15, 0.15, 0.15, 0.15, -- 3 ranks
 				},
-				["buff"] = GetSpellInfo(30482), -- ["Molten Armor"],
+				["buff"] = 30482, -- ["Molten Armor"],
 				["itemset"] = {843, 2}, -- Khadgar's Regalia,
 			},
 			{
 				["rank"] = {
 					0.15, 0.15, 0.15, 0.15, 0.15, 0.15, -- 3 ranks
 				},
-				["buff"] = GetSpellInfo(30482), -- ["Molten Armor"],
+				["buff"] = 30482, -- ["Molten Armor"],
 				["itemset"] = {844, 2}, -- Sunstrider's Regalia,
 			},
 		},
@@ -8156,27 +8313,27 @@ elseif playerClass == "MAGE" then
 				["rank"] = {
 					0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -- 6 ranks
 				},
-				["buff"] = GetSpellInfo(6117), -- ["Mage Armor"],
+				["buff"] = 6117, -- ["Mage Armor"],
 			},
 			{
 				["rank"] = {
 					0.1, 0.1, 0.1, 0.1, 0.1, 0.1, -- 3 ranks
 				},
-				["buff"] = GetSpellInfo(6117), -- ["Mage Armor"],
+				["buff"] = 6117, -- ["Mage Armor"],
 				["itemset"] = {843, 2}, -- Khadgar's Regalia,
 			},
 			{
 				["rank"] = {
 					0.1, 0.1, 0.1, 0.1, 0.1, 0.1, -- 3 ranks
 				},
-				["buff"] = GetSpellInfo(6117), -- ["Mage Armor"],
+				["buff"] = 6117, -- ["Mage Armor"],
 				["itemset"] = {844, 2}, -- Sunstrider's Regalia,
 			},
 			{
 				["rank"] = {
 					0.2, 0.2, 0.2, 0.2, 0.2, 0.2, -- 6 ranks
 				},
-				["buff"] = GetSpellInfo(6117), -- ["Mage Armor"],
+				["buff"] = 6117, -- ["Mage Armor"],
 				["glyph"] = 56383, -- Glyph of Mage Armor,
 			},
 			{
@@ -8237,7 +8394,7 @@ elseif playerClass == "MAGE" then
 				["rank"] = {
 					-0.15, -0.30,
 				},
-				["buff"] = GetSpellInfo(46989),		-- ["Improved Blink"],
+				["buff"] = 46989,		-- ["Improved Blink"],
 			},
 		},
 		-- Mage: Prismatic Cloak (Rank 3) - 1,16
@@ -8522,7 +8679,7 @@ elseif playerClass == "PALADIN" then
 				["rank"] = {
 					-0.02, -0.04, -0.06,
 				},
-				["buff"] = GetSpellInfo(25781),		-- ["Righteous Fury"],
+				["buff"] = 25781,		-- ["Righteous Fury"],
 			},
 			{-- Guarded by the Light
 				["HOLY"] = true,
@@ -8564,7 +8721,7 @@ elseif playerClass == "PALADIN" then
 				["rank"] = {
 					-0.03,
 				},
-				["buff"] = GetSpellInfo(54428),		-- ["Divine Plea"],
+				["buff"] = 54428,		-- ["Divine Plea"],
 				["glyph"] = 63223, -- Glyph of Shield Wall,
 			},
 		},
@@ -8592,6 +8749,7 @@ elseif playerClass == "PALADIN" then
 		},
 		-- Paladin: Sacred Duty (Rank 2) - 2,14
 		--          Increases your total Stamina by 4%/8%
+		--          Sacred Duty now provides 2 / 4% Stamina, down from 4 / 8% Stamina.
 		-- Paladin: Combat Expertise (Rank 3) - 2,20
 		--          Increases your expertise by 2/4/6, total Stamina and chance to critically hit by 2%/4%/6%.
 		["MOD_STA"] = {
@@ -8599,7 +8757,7 @@ elseif playerClass == "PALADIN" then
 				["tab"] = 2,
 				["num"] = 14,
 				["rank"] = {
-					0.04, 0.08,
+					0.02, 0.04,
 				},
 			},
 			{
@@ -8766,7 +8924,7 @@ elseif playerClass == "PRIEST" then
 				["rank"] = {
 					-0.9,
 				},
-				["buff"] = GetSpellInfo(47585),		-- ["Dispersion"],
+				["buff"] = 47585,		-- ["Dispersion"],
 			},
 		},
 		-- Priest: Enlightenment (Rank 5) - 1,17
@@ -8861,13 +9019,13 @@ elseif playerClass == "ROGUE" then
 				["rank"] = {
 					50, 50,
 				},
-				["buff"] = GetSpellInfo(26669),		-- ["Evasion"],
+				["buff"] = 26669,		-- ["Evasion"],
 			},
 			{
 				["rank"] = {
 					15,
 				},
-				["buff"] = GetSpellInfo(31022),		-- ["Ghostly Strike"],
+				["buff"] = 31022,		-- ["Ghostly Strike"],
 			},
 		},
 		-- Rogue: Sleight of Hand (Rank 2) - 3,4
@@ -8914,14 +9072,14 @@ elseif playerClass == "ROGUE" then
 				["rank"] = {
 					-0.9,
 				},
-				["buff"] = GetSpellInfo(39666),		-- ["Cloak of Shadows"],
+				["buff"] = 39666,		-- ["Cloak of Shadows"],
 			},
 			{
 				["RANGED"] = true,
 				["rank"] = {
 					0, -0.25,
 				},
-				["buff"] = GetSpellInfo(26669),		-- ["Evasion"],
+				["buff"] = 26669,		-- ["Evasion"],
 			},
 		},
 		-- Rogue: Deadened Nerves (Rank 3) - 1,20
@@ -8968,16 +9126,6 @@ elseif playerClass == "ROGUE" then
 	}
 elseif playerClass == "SHAMAN" then
 	StatModTable["SHAMAN"] = {
-		-- Shaman: Unleashed Rage - Buff
-		--         Melee attack power increased by 4/7/10%.
-		["MOD_AP"] = {
-			{
-				["rank"] = {
-					0.04, 0.07, 0.1,
-				},
-				["buff"] = GetSpellInfo(30803),		-- ["Unleashed Rage"],
-			},
-		},
 		-- Shaman: Mental Dexterity (Rank 3) - 2,15
 		--         Increases your Attack Power by 33%/66%/100% of your Intellect.
 		["ADD_AP_MOD_INT"] = {
@@ -9080,7 +9228,7 @@ elseif playerClass == "SHAMAN" then
 				["rank"] = {
 					-0.3,
 				},
-				["buff"] = GetSpellInfo(30823),		-- ["Shamanistic Rage"],
+				["buff"] = 30823,		-- ["Shamanistic Rage"],
 			},
 			{
 				["MELEE"] = true,
@@ -9094,7 +9242,7 @@ elseif playerClass == "SHAMAN" then
 				["rank"] = {
 					-0.3,
 				},
-				["buff"] = GetSpellInfo(51479),		-- ["Astral Shift"],
+				["buff"] = 51479,		-- ["Astral Shift"],
 			},
 		},
 		-- Shaman: Toughness (Rank 5) - 2,12
@@ -9130,7 +9278,7 @@ elseif playerClass == "WARLOCK" then
 				["rank"] = {
 					-0.06,
 				},
-				["buff"] = GetSpellInfo(47241),		-- ["Metamorphosis"],
+				["buff"] = 47241,		-- ["Metamorphosis"],
 			},
 		},
 		-- Warlock: Metamorphosis - Buff
@@ -9140,7 +9288,7 @@ elseif playerClass == "WARLOCK" then
 				["rank"] = {
 					6,
 				},
-				["buff"] = GetSpellInfo(47241),		-- ["Metamorphosis"],
+				["buff"] = 47241,		-- ["Metamorphosis"],
 			},
 		},
 		-- Warlock: Demonic Pact - 2,26
@@ -9155,7 +9303,7 @@ elseif playerClass == "WARLOCK" then
 				["rank"] = {
 					0.02, 0.04, 0.06, 0.08, 0.1,
 				},
-				["buff"] = GetSpellInfo(47240),		-- ["Demonic Pact"],
+				["buff"] = 47240,		-- ["Demonic Pact"],
 			},
 		},
 		-- Warlock: Demonic Pact - 2,26
@@ -9167,7 +9315,7 @@ elseif playerClass == "WARLOCK" then
 				["rank"] = {
 					0.02, 0.04, 0.06, 0.08, 0.1,
 				},
-				["buff"] = GetSpellInfo(47240),		-- ["Demonic Pact"],
+				["buff"] = 47240,		-- ["Demonic Pact"],
 			},
 		},
 		-- Warlock: Fel Armor (Rank 4) - Buff
@@ -9182,7 +9330,7 @@ elseif playerClass == "WARLOCK" then
 				["rank"] = {
 					0.3, 0.3, 0.3, 0.3, -- 4 ranks
 				},
-				["buff"] = GetSpellInfo(28176), -- ["Fel Armor"],
+				["buff"] = 28176, -- ["Fel Armor"],
 			},
 			{
 				["tab"] = 2,
@@ -9190,13 +9338,13 @@ elseif playerClass == "WARLOCK" then
 				["rank"] = {
 					0.03, 0.06, 0.09,
 				},
-				["buff"] = GetSpellInfo(28176), -- ["Fel Armor"],
+				["buff"] = 28176, -- ["Fel Armor"],
 			},
 			{
 				["rank"] = {
 					0.2,
 				},
-				["buff"] = GetSpellInfo(63321), -- ["Life Tap"],
+				["buff"] = 63321, -- ["Life Tap"],
 			},
 		},
 		-- Warlock: Fel Armor (Rank 4) - Buff
@@ -9209,7 +9357,7 @@ elseif playerClass == "WARLOCK" then
 				["rank"] = {
 					0.3, 0.3, 0.3, 0.3, -- 4 ranks
 				},
-				["buff"] = GetSpellInfo(28176),		-- ["Fel Armor"],
+				["buff"] = 28176,		-- ["Fel Armor"],
 			},
 			{
 				["tab"] = 2,
@@ -9217,13 +9365,13 @@ elseif playerClass == "WARLOCK" then
 				["rank"] = {
 					0.03, 0.06, 0.09,
 				},
-				["buff"] = GetSpellInfo(28176),		-- ["Fel Armor"],
+				["buff"] = 28176,		-- ["Fel Armor"],
 			},
 			{
 				["rank"] = {
 					0.2,
 				},
-				["buff"] = GetSpellInfo(63321), -- ["Life Tap"],
+				["buff"] = 63321, -- ["Life Tap"],
 			},
 		},
 		-- 3.3.0 Imp stam total 233: pet base 118, player base 90, pet sta from player sta 0.75, pet kings 1.1, fel vitality 1.15
@@ -9242,6 +9390,7 @@ elseif playerClass == "WARLOCK" then
 				["rank"] = {
 					0.1,
 				}, -- BoK, BoSanc
+        ["oldtoc"] = 38000,
 				["condition"] = "UnitBuff('pet', GetSpellInfo(20217)) or UnitBuff('pet', GetSpellInfo(25898)) or UnitBuff('pet', GetSpellInfo(20911)) or UnitBuff('pet', GetSpellInfo(25899))",
 			},
 			{ -- Fel Vitality: floor() * 1.15
@@ -9264,6 +9413,7 @@ elseif playerClass == "WARLOCK" then
 				["rank"] = {
 					0.1,
 				},
+        ["oldtoc"] = 38000,
 				["condition"] = "UnitBuff('pet', GetSpellInfo(20217)) or UnitBuff('pet', GetSpellInfo(25898)) or UnitBuff('pet', GetSpellInfo(20911)) or UnitBuff('pet', GetSpellInfo(25899))",
 			},
 			{ -- Fel Vitality
@@ -9376,7 +9526,7 @@ elseif playerClass == "WARLOCK" then
 				["rank"] = {
 					-0.15,
 				},
-				["buff"] = GetSpellInfo(25228),		-- ["Soul Link"],
+				["buff"] = 25228,		-- ["Soul Link"],
 			},
 		},
 		-- Warlock: Fel Vitality (Rank 3) - 2,7
@@ -9490,7 +9640,7 @@ elseif playerClass == "WARRIOR" then
 				["rank"] = {
 					-0.6,
 				},
-				["buff"] = GetSpellInfo(41196),		-- ["Shield Wall"],
+				["buff"] = 41196,		-- ["Shield Wall"],
 			},
 			{
 				["MELEE"] = true,
@@ -9504,7 +9654,7 @@ elseif playerClass == "WARRIOR" then
 				["rank"] = {
 					0.2,
 				},
-				["buff"] = GetSpellInfo(41196),		-- ["Shield Wall"],
+				["buff"] = 41196,		-- ["Shield Wall"],
 				["glyph"] = 63329, -- Glyph of Shield Wall,
 			},
 			{
@@ -9547,7 +9697,7 @@ elseif playerClass == "WARRIOR" then
 				["rank"] = {
 					0.05,
 				},
-				["buff"] = GetSpellInfo(12292),		-- ["Death Wish"],
+				["buff"] = 12292,		-- ["Death Wish"],
 			},
 			{
 				["MELEE"] = true,
@@ -9561,7 +9711,7 @@ elseif playerClass == "WARRIOR" then
 				["rank"] = {
 					0.2,
 				},
-				["buff"] = GetSpellInfo(13847),		-- ["Recklessness"],
+				["buff"] = 13847,		-- ["Recklessness"],
 			},
 			{ -- Improved Defensive Stance
 				["HOLY"] = true,
@@ -9584,7 +9734,7 @@ elseif playerClass == "WARRIOR" then
 				["rank"] = {
 					0.3,
 				},
-				["buff"] = GetSpellInfo(12975),		-- ["Last Stand"],
+				["buff"] = 12975,		-- ["Last Stand"],
 			},
 		},
 		-- Warrior: Toughness (Rank 5) - 3,9
@@ -9599,7 +9749,7 @@ elseif playerClass == "WARRIOR" then
 			},
 		},
 		-- Warrior: Vitality (Rank 3) - 3,20
-		--          Increases your total Strength and Stamina by 2%/4%/6% and your Expertise by 2/4/6.
+		--          Increases your total Strength and Stamina by 3/6/9% and your Expertise by 2/4/6.
 		-- Warrior: Strength of Arms (Rank 2) - 1,22
 		--          Increases your total Strength and Stamina by 2%/4% and your Expertise by 2/4.
 		["MOD_STA"] = {
@@ -9609,6 +9759,15 @@ elseif playerClass == "WARRIOR" then
 				["rank"] = {
 					0.02, 0.04, 0.06,
 				},
+				["old"] = 11685,
+			},
+			{
+				["tab"] = 3,
+				["num"] = 20,
+				["rank"] = {
+					0.03, 0.06, 0.09,
+				},
+				["new"] = 11685,
 			},
 			{
 				["tab"] = 1,
@@ -9663,20 +9822,32 @@ elseif playerClass == "WARRIOR" then
 	}
 end
 	StatModTable["ALL"] = {
+		-- ICC: Chill of the Throne
+		--      Chance to dodge reduced by 20%.
+		["ADD_DODGE"] = {
+			{
+				["rank"] = {
+					-20, 
+				},
+				["buff"] = 69127,		-- ["Chill of the Throne"],
+			},
+		},
 		-- Replenishment - Buff
-		-- Replenishes 0.25% of maximum mana every sec. 0.0025*5=0.0125 mp5
+		--   Replenishes 1% of maximum mana per 5 sec.
 		-- Priest: Vampiric Touch
-		--         Priest's party or raid members gain 0.25% of their maximum mana per second when the priest deals damage from Mind Blast.
+		--         Priest's party or raid members gain 1% of their maximum mana per 5 sec when the priest deals damage from Mind Blast.
 		-- Paladin: Judgements of the Wise
-		--          Your Judgement spells have a 100% chance to grant the Replenishment effect to up to 10 party or raid members mana regeneration equal to 0.25% of their maximum mana per second, and to immediately grant you 15% of your base mana.
+		--          Your damaging Judgement spells have a 100% chance to grant the Replenishment effect to 
+    --          up to 10 party or raid members mana regeneration equal to 1% of their maximum mana per 5 sec for 15 sec
 		-- Hunter: Hunting Party
-		--         Your Arcane Shot, Explosive Shot and Steady Shot critical strikes have a 100% chance to grant up to 10 party or raid members mana regeneration equal to 0.25% of the maximum mana per second. Lasts for 15 sec.
+		--         Your Arcane Shot, Explosive Shot and Steady Shot critical strikes have a 100% chance to 
+    --         grant up to 10 party or raid members mana regeneration equal to 1% of the maximum mana per 5 sec.
 		["ADD_MANA_REG_MOD_MANA"] = {
 			{
 				["rank"] = {
-					0.0125,
+					0.01,
 				},
-				["buff"] = GetSpellInfo(57669),		-- ["Replenishment"],
+				["buff"] = 57669,		-- ["Replenishment"],
 			},
 		},
 		-- Priest: Pain Suppression - Buff
@@ -9708,7 +9879,7 @@ end
 				["rank"] = {
 					-0.4,
 				},
-				["buff"] = GetSpellInfo(33206),		-- ["Pain Suppression"],
+				["buff"] = 33206,		-- ["Pain Suppression"],
 			},
 			{-- Grace
 				["MELEE"] = true,
@@ -9722,7 +9893,7 @@ end
 				["rank"] = {
 					-0.01,
 				},
-				["buff"] = GetSpellInfo(47930),		-- ["Grace"],
+				["buff"] = 47930,		-- ["Grace"],
 			},
 			{-- Vigilance
 				["MELEE"] = true,
@@ -9736,7 +9907,7 @@ end
 				["rank"] = {
 					-0.03,
 				},
-				["buff"] = GetSpellInfo(50720),		-- ["Vigilance"],
+				["buff"] = 50720,		-- ["Vigilance"],
 			},
 			{-- Blessing of Sanctuary
 				["MELEE"] = true,
@@ -9750,7 +9921,7 @@ end
 				["rank"] = {
 					-0.03,
 				},
-				["buff"] = GetSpellInfo(20911),		-- ["Blessing of Sanctuary"],
+				["buff"] = 20911,		-- ["Blessing of Sanctuary"],
 			},
 			{-- Greater Blessing of Sanctuary
 				["MELEE"] = true,
@@ -9764,7 +9935,7 @@ end
 				["rank"] = {
 					-0.03,
 				},
-				["buff"] = GetSpellInfo(25899),		-- ["Greater Blessing of Sanctuary"],
+				["buff"] = 25899,		-- ["Greater Blessing of Sanctuary"],
 			},
 			{-- Effulgent Skyflare Diamond
 				["HOLY"] = true,
@@ -9784,7 +9955,7 @@ end
 				["rank"] = {
 					-0.1, -0.2,
 				},
-				["buff"] = GetSpellInfo(27154),		-- ["Lay on Hands"],
+				["buff"] = 20236,		-- ["Lay on Hands"],
 				["new"] = 10147,
 			},
 			{
@@ -9793,7 +9964,8 @@ end
 				["rank"] = {
 					-0.03, -0.07, -0.1,
 				},
-				["buff"] = GetSpellInfo(15363),		-- ["Inspiration"],
+				["buff"] = 15363,		-- ["Inspiration"],
+        ["group"] = D["Reduced Physical Damage Taken"],
 				["new"] = 10147,
 			},
 			{
@@ -9802,7 +9974,8 @@ end
 				["rank"] = {
 					-0.03, -0.07, -0.1,
 				},
-				["buff"] = GetSpellInfo(16237),		-- ["Ancestral Fortitude"],
+				["buff"] = 16237,		-- ["Ancestral Fortitude"],
+        ["group"] = D["Reduced Physical Damage Taken"],
 				["new"] = 10147,
 			},
 		},
@@ -9813,7 +9986,7 @@ end
 				["rank"] = {
 					0.2,
 				},
-				["buff"] = GetSpellInfo(37274),		-- ["Power Infusion"],
+				["buff"] = 37274,		-- ["Power Infusion"],
 			},
 		},
 		-- Priest: Power Infusion - Buff
@@ -9823,7 +9996,7 @@ end
 				["rank"] = {
 					0.2,
 				},
-				["buff"] = GetSpellInfo(37274),		-- ["Power Infusion"],
+				["buff"] = 37274,		-- ["Power Infusion"],
 			},
 		},
 		-- Night Elf : Quickness - Racial
@@ -9869,21 +10042,21 @@ end
 				["rank"] = {
 					0.15, 0.30,
 				},
-				["buff"] = GetSpellInfo(27154),		-- ["Lay on Hands"],
+				["buff"] = 20236,		-- ["Lay on Hands"],
 				["old"] = 10147,
 			},
 			{
 				["rank"] = {
 					0.08, 0.16, 0.25,
 				},
-				["buff"] = GetSpellInfo(15363),		-- ["Inspiration"],
+				["buff"] = 15363,		-- ["Inspiration"],
 				["old"] = 10147,
 			},
 			{
 				["rank"] = {
 					0.08, 0.16, 0.25,
 				},
-				["buff"] = GetSpellInfo(16237),		-- ["Ancestral Fortitude"],
+				["buff"] = 16237,		-- ["Ancestral Fortitude"],
 				["old"] = 10147,
 			},
 			{
@@ -9893,14 +10066,33 @@ end
 				["meta"] = 41380,
 			},
 		},
-		-- Death Knight: Abominable Might - Buff
-		--               Attack power increased by 10%.
+		-- Hunter: Trueshot Aura - Buff
+		--         Attack power increased by 10%.
+		-- Death Knight: Abomination's Might - Buff
+		--               Attack power increased by 5/10%.
+		-- Shaman: Unleashed Rage - Buff
+		--         Melee attack power increased by 4/7/10%.
 		["MOD_AP"] = {
 			{
 				["rank"] = {
 					0.1,
 				},
-				["buff"] = GetSpellInfo(55972),		-- ["Abominable Might"],
+				["buff"] = 19506,		-- ["Trueshot Aura"],
+        ["group"] = D["Attack Power Multiplier"],
+			},
+			{
+				["rank"] = {
+					0.05, 0.1,
+				},
+				["buff"] = 55972,		-- ["Abominable Might"],
+        ["group"] = D["Attack Power Multiplier"],
+			},
+			{
+				["rank"] = {
+					0.04, 0.07, 0.1,
+				},
+				["buff"] = 30809,		-- ["Unleashed Rage"],
+        ["group"] = D["Attack Power Multiplier"],
 			},
 		},
 		-- MetaGem: Beaming Earthsiege Diamond - 41389
@@ -9917,88 +10109,123 @@ end
 		--          Increases stats by 10%.
 		-- Paladin: Blessing of Sanctuary, Greater Blessing of Sanctuary - Buff
 		--          Damage taken reduced by up to 3%, strength and stamina increased by 10%. Does not stack with Blessing of Kings.
+		-- Leatherworking: Blessing of Forgotten Kings - Buff
+		--                 Increases stats by 8%.
 		["MOD_STR"] = {
 			{
 				["rank"] = {
 					0.1,
 				},
-				["buff"] = GetSpellInfo(20217),		-- ["Blessing of Kings"],
+				["buff"] = 20217,		-- ["Blessing of Kings"],
+        ["group"] = D["Stat Multiplier"],
 			},
 			{
 				["rank"] = {
 					0.1,
 				},
-				["buff"] = GetSpellInfo(25898),		-- ["Greater Blessing of Kings"],
+				["buff"] = 25898,		-- ["Greater Blessing of Kings"],
+        ["group"] = D["Stat Multiplier"],
 			},
 			{-- Blessing of Sanctuary
 				["rank"] = {
 					0.1,
 				},
-				["buff"] = GetSpellInfo(20911),		-- ["Blessing of Sanctuary"],
+				["buff"] = 20911,		-- ["Blessing of Sanctuary"],
 				["new"] = 10371,
-				["condition"] = "not (UnitBuff('player', GetSpellInfo(20217)) or UnitBuff('player', GetSpellInfo(25898)))",
+        ["group"] = D["Stat Multiplier"],
 			},
 			{-- Greater Blessing of Sanctuary
 				["rank"] = {
 					0.1,
 				},
-				["buff"] = GetSpellInfo(25899),		-- ["Greater Blessing of Sanctuary"],
+				["buff"] = 25899,		-- ["Greater Blessing of Sanctuary"],
 				["new"] = 10371,
-				["condition"] = "not (UnitBuff('player', GetSpellInfo(20217)) or UnitBuff('player', GetSpellInfo(25898)))",
+        ["group"] = D["Stat Multiplier"],
+			},
+			{
+				["rank"] = {
+					0.08,
+				},
+				["buff"] = 69378,		-- ["Blessing of Forgotten Kings"],
+        ["group"] = D["Stat Multiplier"],
 			},
 		},
 		-- Paladin: Blessing of Kings, Greater Blessing of Kings - Buff
 		--          Increases stats by 10%.
+		-- Leatherworking: Blessing of Forgotten Kings - Buff
+		--                 Increases stats by 8%.
 		["MOD_AGI"] = {
 			{
 				["rank"] = {
 					0.1,
 				},
-				["buff"] = GetSpellInfo(20217),		-- ["Blessing of Kings"],
+				["buff"] = 20217,		-- ["Blessing of Kings"],
+        ["group"] = D["Stat Multiplier"],
 			},
 			{
 				["rank"] = {
 					0.1,
 				},
-				["buff"] = GetSpellInfo(25898),		-- ["Greater Blessing of Kings"],
+				["buff"] = 25898,		-- ["Greater Blessing of Kings"],
+        ["group"] = D["Stat Multiplier"],
+			},
+			{
+				["rank"] = {
+					0.08,
+				},
+				["buff"] = 69378,		-- ["Blessing of Forgotten Kings"],
+        ["group"] = D["Stat Multiplier"],
 			},
 		},
 		-- Paladin: Blessing of Kings, Greater Blessing of Kings - Buff
 		--          Increases stats by 10%.
 		-- Paladin: Blessing of Sanctuary, Greater Blessing of Sanctuary - Buff
 		--          Damage taken reduced by up to 3%, strength and stamina increased by 10%. Does not stack with Blessing of Kings.
+		-- Leatherworking: Blessing of Forgotten Kings - Buff
+		--                 Increases stats by 8%.
 		["MOD_STA"] = {
 			{
 				["rank"] = {
 					0.1,
 				},
-				["buff"] = GetSpellInfo(20217),		-- ["Blessing of Kings"],
+				["buff"] = 20217,		-- ["Blessing of Kings"],
+        ["group"] = D["Stat Multiplier"],
 			},
 			{
 				["rank"] = {
 					0.1,
 				},
-				["buff"] = GetSpellInfo(25898),		-- ["Greater Blessing of Kings"],
+				["buff"] = 25898,		-- ["Greater Blessing of Kings"],
+        ["group"] = D["Stat Multiplier"],
 			},
 			{-- Blessing of Sanctuary
 				["rank"] = {
 					0.1,
 				},
-				["buff"] = GetSpellInfo(20911),		-- ["Blessing of Sanctuary"],
+				["buff"] = 20911,		-- ["Blessing of Sanctuary"],
 				["new"] = 10147,
-				["condition"] = "not (UnitBuff('player', GetSpellInfo(20217)) or UnitBuff('player', GetSpellInfo(25898)))",
+        ["group"] = D["Stat Multiplier"],
 			},
 			{-- Greater Blessing of Sanctuary
 				["rank"] = {
 					0.1,
 				},
-				["buff"] = GetSpellInfo(25899),		-- ["Greater Blessing of Sanctuary"],
+				["buff"] = 25899,		-- ["Greater Blessing of Sanctuary"],
 				["new"] = 10147,
-				["condition"] = "not (UnitBuff('player', GetSpellInfo(20217)) or UnitBuff('player', GetSpellInfo(25898)))",
+        ["group"] = D["Stat Multiplier"],
+			},
+			{
+				["rank"] = {
+					0.08,
+				},
+				["buff"] = 69378,		-- ["Blessing of Forgotten Kings"],
+        ["group"] = D["Stat Multiplier"],
 			},
 		},
 		-- Paladin: Blessing of Kings, Greater Blessing of Kings - Buff
 		--          Increases stats by 10%.
+		-- Leatherworking: Blessing of Forgotten Kings - Buff
+		--                 Increases stats by 8%.
 		-- Gnome: Expansive Mind - Racial
 		--        Increase Intelligence by 5%.
 		-- MetaGem: Ember Skyfire Diamond - 35503
@@ -10010,13 +10237,22 @@ end
 				["rank"] = {
 					0.1,
 				},
-				["buff"] = GetSpellInfo(20217),		-- ["Blessing of Kings"],
+				["buff"] = 20217,		-- ["Blessing of Kings"],
+        ["group"] = D["Stat Multiplier"],
 			},
 			{
 				["rank"] = {
 					0.1,
 				},
-				["buff"] = GetSpellInfo(25898),		-- ["Greater Blessing of Kings"],
+				["buff"] = 25898,		-- ["Greater Blessing of Kings"],
+        ["group"] = D["Stat Multiplier"],
+			},
+			{
+				["rank"] = {
+					0.08,
+				},
+				["buff"] = 69378,		-- ["Blessing of Forgotten Kings"],
+        ["group"] = D["Stat Multiplier"],
 			},
 			{
 				["rank"] = {
@@ -10039,6 +10275,8 @@ end
 		},
 		-- Paladin: Blessing of Kings, Greater Blessing of Kings - Buff
 		--          Increases stats by 10%.
+		-- Leatherworking: Blessing of Forgotten Kings - Buff
+		--                 Increases stats by 8%.
 		-- Human: The Human Spirit - Racial
 		--        Increase Spirit by 10%.
 		-- 3.0.2: Spirit increased by 3%.
@@ -10047,13 +10285,22 @@ end
 				["rank"] = {
 					0.1,
 				},
-				["buff"] = GetSpellInfo(20217),		-- ["Blessing of Kings"],
+				["buff"] = 20217,		-- ["Blessing of Kings"],
+        ["group"] = D["Stat Multiplier"],
 			},
 			{
 				["rank"] = {
 					0.1,
 				},
-				["buff"] = GetSpellInfo(25898),		-- ["Greater Blessing of Kings"],
+				["buff"] = 25898,		-- ["Greater Blessing of Kings"],
+        ["group"] = D["Stat Multiplier"],
+			},
+			{
+				["rank"] = {
+					0.08,
+				},
+				["buff"] = 69378,		-- ["Blessing of Forgotten Kings"],
+        ["group"] = D["Stat Multiplier"],
 			},
 			{
 				["rank"] = {
@@ -10064,7 +10311,21 @@ end
 		},
 	}
 
-function StatLogic:IsMetaGemActive(item)
+-- Generate buff names
+for class, tables in pairs(StatModTable) do
+  for modName, mods in pairs(tables) do
+    for key, mod in pairs(mods) do
+      if mod.buff then
+        mod.buffName = GetSpellInfo(mod.buff)
+      end
+      if mod.buff2 then
+        mod.buff2Name = GetSpellInfo(mod.buff2)
+      end
+    end
+  end
+end
+
+local function IsMetaGemActive(item)
 	-- Check item
 	if (type(item) == "string") or (type(item) == "number") then
 	elseif type(item) == "table" and type(item.GetItem) == "function" then
@@ -10084,15 +10345,16 @@ function StatLogic:IsMetaGemActive(item)
 		-- Metagem requirements satisfied, check if metagem is equipped
 		local headLink = GetInventoryItemLink("player", 1)
 		if not headLink then return end
-		local gemId = self:GetGemID(item)
+		local gemId = StatLogic:GetGemID(item)
 		if not gemId then return end
 		if strfind(headLink, ":"..gemId..":") then
 			return true
 		end
 	end
 end
+StatLogic.IsMetaGemActive = IsMetaGemActive
 
-function StatLogic:SlotHasEnchant(enchantId, slotId)
+local function SlotHasEnchant(enchantId, slotId)
 	-- Check args
 	if type(enchantId) ~= "number" then return end
 	if (type(slotId) ~= "number") and (type(slotId) ~= "nil") then return end
@@ -10117,6 +10379,7 @@ function StatLogic:SlotHasEnchant(enchantId, slotId)
 		end
 	end
 end
+StatLogic.SlotHasEnchant = SlotHasEnchant
 
 --[[---------------------------------
 	:GetStatMod(stat, school)
@@ -10221,24 +10484,30 @@ Returns:
 Example:
 	StatLogic:GetStatMod("MOD_INT")
 -----------------------------------]]
+local buffGroup = {}
 function StatLogic:GetStatMod(stat, school, talentGroup)
 	local statModInfo = StatModInfo[stat]
 	local mod = statModInfo.initialValue
 	-- if school is required for this statMod but not given
-	if statModInfo.school and not school then return mod end
+	if statModInfo.school and not school then return mod + statModInfo.finalAdjust end
+  -- disable for 4.0.1 until we get talent/buffs data implemented
+  if toc >= 40000 then return mod + statModInfo.finalAdjust end
+  wipe(buffGroup)
 	-- Class specific mods
 	if type(StatModTable[playerClass][stat]) == "table" then
 		for _, case in ipairs(StatModTable[playerClass][stat]) do
 			local ok = true
 			if school and not case[school] then ok = nil end
+			if ok and case.newtoc and toc < case.newtoc then ok = nil end
+			if ok and case.oldtoc and toc >= case.oldtoc then ok = nil end
 			if ok and case.new and wowBuildNo < case.new then ok = nil end
 			if ok and case.old and wowBuildNo >= case.old then ok = nil end
 			if ok and case.condition and not loadstring("return "..case.condition)() then ok = nil end
-			if ok and case.buff and not GetPlayerBuffName(case.buff) then ok = nil end
-			if ok and case.buff2 and not GetPlayerBuffName(case.buff2) then ok = nil end
+			if ok and case.buffName and not PlayerHasAura(case.buffName) then ok = nil end
+			if ok and case.buff2Name and not PlayerHasAura(case.buff2Name) then ok = nil end
 			if ok and case.stance and case.stance ~= GetStanceIcon() then ok = nil end
 			if ok and case.glyph and not PlayerHasGlyph(case.glyph, talentGroup) then ok = nil end
-			if ok and case.enchant and not self:SlotHasEnchant(case.enchant, case.slot) then ok = nil end
+			if ok and case.enchant and not SlotHasEnchant(case.enchant, case.slot) then ok = nil end
 			if ok and case.itemset and ((not PlayerItemSets[case.itemset[1]]) or PlayerItemSets[case.itemset[1]] < case.itemset[2]) then ok = nil end
 			if ok then
 				local r, _
@@ -10246,12 +10515,12 @@ function StatLogic:GetStatMod(stat, school, talentGroup)
 				-- if talent field
 				if case.tab and case.num then
 					_, _, _, _, r = GetTalentInfo(case.tab, case.num, nil, nil, talentGroup)
-					if case.buff and case.buffStack then
-						_, s = GetPlayerBuffRankStack(case.buff) -- Gets buff stack count, but use talent as rank
+					if case.buffName and case.buffStack then
+						_, s = GetPlayerAuraRankStack(case.buffName) -- Gets buff stack count, but use talent as rank
 					end
 				-- no talent but buff is given
-				elseif case.buff then
-					r, s = GetPlayerBuffRankStack(case.buff)
+				elseif case.buffName then
+					r, s = GetPlayerAuraRankStack(case.buffName)
 					if not case.buffStack then
 						s = 1
 					end
@@ -10261,9 +10530,27 @@ function StatLogic:GetStatMod(stat, school, talentGroup)
 				end
 				if r and r ~= 0 and case.rank[r] then
 					if statModInfo.initialValue == 0 then
-						mod = mod + case.rank[r] * s
+            if not case.group then
+              mod = mod + case.rank[r] * s
+            elseif not buffGroup[case.group] then -- this mod is part of a group, but not seen before
+              mod = mod + case.rank[r] * s
+              buffGroup[case.group] = case.rank[r] * s
+            elseif (case.rank[r] * s) > buffGroup[case.group] then -- seen before and this one is better, do upgrade
+              mod = mod + case.rank[r] * s - buffGroup[case.group]
+              buffGroup[case.group] = case.rank[r] * s
+            else -- seen before but not better, do nothing
+            end
 					else
-						mod = mod * (case.rank[r] * s + 1)
+            if not case.group then
+              mod = mod * (case.rank[r] * s + 1)
+            elseif not buffGroup[case.group] then -- this mod is part of a group, but not seen before
+              mod = mod * (case.rank[r] * s + 1)
+              buffGroup[case.group] = (case.rank[r] * s + 1)
+            elseif (case.rank[r] * s + 1) > buffGroup[case.group] then -- seen before and this one is better, do upgrade
+              mod = mod * (case.rank[r] * s + 1) / buffGroup[case.group]
+              buffGroup[case.group] = (case.rank[r] * s + 1)
+            else -- seen before but not better, do nothing
+            end
 					end
 				end
 			end
@@ -10277,22 +10564,22 @@ function StatLogic:GetStatMod(stat, school, talentGroup)
 			if ok and case.new and wowBuildNo < case.new then ok = nil end
 			if ok and case.old and wowBuildNo >= case.old then ok = nil end
 			if ok and case.condition and not loadstring("return "..case.condition)() then ok = nil end
-			if ok and case.buff and not GetPlayerBuffName(case.buff) then ok = nil end
+			if ok and case.buffName and not PlayerHasAura(case.buffName) then ok = nil end
 			if ok and case.stance and case.stance ~= GetStanceIcon() then ok = nil end
 			if ok and case.race and case.race ~= playerRace then ok = nil end
-			if ok and case.meta and not self:IsMetaGemActive(case.meta) then ok = nil end
+			if ok and case.meta and not IsMetaGemActive(case.meta) then ok = nil end
 			if ok then
 				local r, _
 				local s = 1
 				-- if talent field
 				if case.tab and case.num then
 					_, _, _, _, r = GetTalentInfo(case.tab, case.num, nil, nil, talentGroup)
-					if case.buff and case.buffStack then
-						_, s = GetPlayerBuffRankStack(case.buff) -- Gets buff rank and stack count
+					if case.buffName and case.buffStack then
+						_, s = GetPlayerAuraRankStack(case.buffName) -- Gets buff rank and stack count
 					end
 				-- no talent but buff is given
-				elseif case.buff then
-					r, s = GetPlayerBuffRankStack(case.buff)
+				elseif case.buffName then
+					r, s = GetPlayerAuraRankStack(case.buffName)
 					if not case.buffStack then
 						s = 1
 					end
@@ -10302,9 +10589,27 @@ function StatLogic:GetStatMod(stat, school, talentGroup)
 				end
 				if r and r ~= 0 and case.rank[r] then
 					if statModInfo.initialValue == 0 then
-						mod = mod + case.rank[r] * s
+            if not case.group then
+              mod = mod + case.rank[r] * s
+            elseif not buffGroup[case.group] then -- this mod is part of a group, but not seen before
+              mod = mod + case.rank[r] * s
+              buffGroup[case.group] = case.rank[r] * s
+            elseif (case.rank[r] * s) > buffGroup[case.group] then -- seen before and this one is better, do upgrade
+              mod = mod + case.rank[r] * s - buffGroup[case.group]
+              buffGroup[case.group] = case.rank[r] * s
+            else -- seen before but not better, do nothing
+            end
 					else
-						mod = mod * (case.rank[r] * s + 1)
+            if not case.group then
+              mod = mod * (case.rank[r] * s + 1)
+            elseif not buffGroup[case.group] then -- this mod is part of a group, but not seen before
+              mod = mod * (case.rank[r] * s + 1)
+              buffGroup[case.group] = (case.rank[r] * s + 1)
+            elseif (case.rank[r] * s + 1) > buffGroup[case.group] then -- seen before and this one is better, do upgrade
+              mod = mod * (case.rank[r] * s + 1) / buffGroup[case.group]
+              buffGroup[case.group] = (case.rank[r] * s + 1)
+            else -- seen before but not better, do nothing
+            end
 					end
 				end
 			end
@@ -10382,6 +10687,47 @@ local C_d = {
 	--["WARLOCK"]     = 1/0.006650,
 	--["DRUID"]       = 1/0.008555,
 }
+if toc >= 40000 then
+K = {
+	0.956, 0.956, 0.988, 0.988, 0.983, 0.956, 0.988, 0.983, 0.983, 0.972,
+	--["WARRIOR"]     = 0.956,
+	--["PALADIN"]     = 0.956,
+	--["HUNTER"]      = 0.988,
+	--["ROGUE"]       = 0.988,
+	--["PRIEST"]      = 0.983,
+	--["DEATHKNIGHT"] = 0.956,
+	--["SHAMAN"]      = 0.988,
+	--["MAGE"]        = 0.983,
+	--["WARLOCK"]     = 0.983,
+	--["DRUID"]       = 0.972,
+}
+C_p = {
+	1/0.0152366, 1/0.0152366, 1/0.006870, 1/0.006870, 1/0.0152366, 1/0.0152366, 1/0.006870, 1/0.0152366, 1/0.0152366, 1/0.0152366,
+	--["WARRIOR"]     = 1/0.0152366,
+	--["PALADIN"]     = 1/0.0152366,
+	--["HUNTER"]      = 1/0.006870,
+	--["ROGUE"]       = 1/0.006870,
+	--["PRIEST"]      = 0, --use tank stats
+	--["DEATHKNIGHT"] = 1/0.0152366,
+	--["SHAMAN"]      = 1/0.006870,
+	--["MAGE"]        = 0, --use tank stats
+	--["WARLOCK"]     = 0, --use tank stats
+	--["DRUID"]       = 0, --use tank stats
+}
+C_d = {
+	1/0.0152366, 1/0.0152366, 1/0.006870, 1/0.006870, 1/0.006650, 1/0.0152366, 1/0.006870, 1/0.006650, 1/0.006650, 1/0.008555,
+	--["WARRIOR"]     = 1/0.0152366,
+	--["PALADIN"]     = 1/0.0152366,
+	--["HUNTER"]      = 1/0.006870,
+	--["ROGUE"]       = 1/0.006870,
+	--["PRIEST"]      = 1/0.006650,
+	--["DEATHKNIGHT"] = 1/0.0152366,
+	--["SHAMAN"]      = 1/0.006870,
+	--["MAGE"]        = 1/0.006650,
+	--["WARLOCK"]     = 1/0.006650,
+	--["DRUID"]       = 1/0.008555,
+}
+end
 
 -- I've done extensive tests that show the miss cap is 16% for warriors.
 -- Because the only tank I have with 150 pieces of epic gear required for the tests is a warrior,
@@ -10626,7 +10972,9 @@ function StatLogic:GetReductionFromArmor(armor, attackerLevel)
 	end
 
 	local levelModifier = attackerLevel
-	if ( levelModifier > 59 ) then
+	if ( levelModifier > 80 ) then
+		levelModifier = levelModifier + (4.5 * (levelModifier - 59)) + (20 * (levelModifier - 80));
+	elseif ( levelModifier > 59 ) then
 		levelModifier = levelModifier + (4.5 * (levelModifier - 59))
 	end
 	local temp = armor / (85 * levelModifier + 400)
@@ -10802,7 +11150,10 @@ CR_ARMOR_PENETRATION = 25;
 --]]
 
 -- Level 60 rating base
-local RatingBase = {
+local RatingBase
+local Level34Ratings
+if toc < 40000 then
+RatingBase = {
 	[CR_WEAPON_SKILL] = 2.5,
 	[CR_DEFENSE_SKILL] = 1.5,
 	[CR_DODGE] = 12,
@@ -10827,9 +11178,9 @@ local RatingBase = {
 	[CR_WEAPON_SKILL_OFFHAND] = 2.5,
 	[CR_WEAPON_SKILL_RANGED] = 2.5,
 	[CR_EXPERTISE] = 2.5,
-	[CR_ARMOR_PENETRATION] = 4.69512176513672 / 1.25,
+	[CR_ARMOR_PENETRATION] = 4.69512176513672 / 1.25, --1.25 in gtOCTClassCombatRatingScalar.csv
 }
-local Level34Ratings = {
+Level34Ratings = {
 	[CR_DEFENSE_SKILL] = true,
 	[CR_DODGE] = true,
 	[CR_PARRY] = true,
@@ -10837,6 +11188,54 @@ local Level34Ratings = {
 	[CR_CRIT_TAKEN_MELEE] = true,
 	[CR_CRIT_TAKEN_RANGED] = true,
 	[CR_CRIT_TAKEN_SPELL] = true,
+}
+else
+RatingBase = {
+	[CR_WEAPON_SKILL] = 2.5,
+	[CR_DEFENSE_SKILL] = 1.5,
+	[CR_DODGE] = 13.8,
+	[CR_PARRY] = 13.8,
+	[CR_BLOCK] = 6.9,
+	[CR_HIT_MELEE] = 9.37931,
+	[CR_HIT_RANGED] = 9.37931,
+	[CR_HIT_SPELL] = 8,
+	[CR_CRIT_MELEE] = 14,
+	[CR_CRIT_RANGED] = 14,
+	[CR_CRIT_SPELL] = 14,
+	[CR_HIT_TAKEN_MELEE] = 10, -- hit avoidance
+	[CR_HIT_TAKEN_RANGED] = 10,
+	[CR_HIT_TAKEN_SPELL] = 8,
+	[COMBAT_RATING_RESILIENCE_CRIT_TAKEN] = 21.5625, -- resilience
+	[COMBAT_RATING_RESILIENCE_PLAYER_DAMAGE_TAKEN] = 21.5625,
+	[CR_CRIT_TAKEN_SPELL] = 28.75,
+	[CR_HASTE_MELEE] = 10, -- changed in 2.2
+	[CR_HASTE_RANGED] = 10, -- changed in 2.2
+	[CR_HASTE_SPELL] = 10, -- changed in 2.2
+	[CR_WEAPON_SKILL_MAINHAND] = 2.5,
+	[CR_WEAPON_SKILL_OFFHAND] = 2.5,
+	[CR_WEAPON_SKILL_RANGED] = 2.5,
+	[CR_EXPERTISE] = 2.34483,
+	[CR_ARMOR_PENETRATION] = 4.69512176513672 / 1.25, -- still manually calculated cause its still 4.69 in dbc
+	[CR_MASTERY] = 14,
+}
+Level34Ratings = {
+	[CR_DEFENSE_SKILL] = true,
+	[CR_DODGE] = true,
+	[CR_PARRY] = true,
+	[CR_BLOCK] = true,
+	[COMBAT_RATING_RESILIENCE_CRIT_TAKEN] = true,
+	[COMBAT_RATING_RESILIENCE_PLAYER_DAMAGE_TAKEN] = true,
+	[CR_CRIT_TAKEN_SPELL] = true,
+}
+end
+-- 80-85 H data
+local H = {
+  [80] = 3.2789989471436,
+  [81] = 4.3056015014648,
+  [82] = 5.6539749145508,
+  [83] = 7.4275451660156,
+  [84] = 9.7527236938477,
+  [85] = 12.8057159423828,
 }
 --[[
 3.1.0
@@ -10856,7 +11255,7 @@ local ExtraHasteClasses = {
 - Parry Rating: The amount of parry rating required per percentage of parry has been reduced by 8%.
 - Resilience: The amount of resilience needed to reduce critical strike chance, critical strike damage and overall damage has been increased by 15%.
 --]]
-if wowBuildNo >= 10147 then
+if wowBuildNo >= 10147 and toc < 40000 then
 	RatingBase[CR_DODGE] = 13.8
 	RatingBase[CR_PARRY] = 13.8
 	RatingBase[CR_CRIT_TAKEN_MELEE] = 28.75
@@ -10889,7 +11288,7 @@ function StatLogic:GetEffectFromRating(rating, id, level, class)
 		id = RatingNameToID[id]
 	end
 	-- check for invalid input
-	if type(rating) ~= "number" or id < 1 or id > 25 then return 0 end
+	if type(rating) ~= "number" or id < 1 or id > 26 then return 0 end
 	-- defaults to player level if not given
 	level = level or UnitLevel("player")
 	-- argCheck for invalid input
@@ -10911,7 +11310,9 @@ function StatLogic:GetEffectFromRating(rating, id, level, class)
 	if (id == CR_HASTE_MELEE) and ExtraHasteClasses[class] then
 		rating = rating * 1.3
 	end
-	if level >= 70 then
+  if level >= 80 and level <= 85 then
+		return rating/RatingBase[id]/H[level], RatingIDToConvertedStat[id]
+	elseif level >= 70 then
 		return rating/RatingBase[id]/((82/52)*(131/63)^((level-70)/10)), RatingIDToConvertedStat[id]
 	elseif level >= 60 then
 		return rating/RatingBase[id]/(82/(262-3*level)), RatingIDToConvertedStat[id]
@@ -10952,6 +11353,21 @@ local APPerStr = {
 	--["WARLOCK"] = 1,
 	--["DRUID"] = 2,
 }
+if toc >= 40000 then
+APPerStr = {
+	2, 2, 1, 1, 2, 2, 1, 2, 2, 2,
+	--["WARRIOR"] = 2,
+	--["PALADIN"] = 2,
+	--["HUNTER"] = 1,
+	--["ROGUE"] = 1,
+	--["PRIEST"] = 2,
+	--["DEATHKNIGHT"] = 2,
+	--["SHAMAN"] = 1,
+	--["MAGE"] = 2,
+	--["WARLOCK"] = 2,
+	--["DRUID"] = 2,
+}
+end
 
 function StatLogic:GetAPPerStr(class)
 	-- argCheck for invalid input
@@ -11028,6 +11444,21 @@ local BlockValuePerStr = {
 	--["WARLOCK"] = 0,
 	--["DRUID"] = 0,
 }
+if toc >= 40000 then
+BlockValuePerStr = {
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	--["WARRIOR"] = 0.5,
+	--["PALADIN"] = 0.5,
+	--["HUNTER"] = 0,
+	--["ROGUE"] = 0,
+	--["PRIEST"] = 0,
+	--["DEATHKNIGHT"] = 0,
+	--["SHAMAN"] = 0.5,
+	--["MAGE"] = 0,
+	--["WARLOCK"] = 0,
+	--["DRUID"] = 0,
+}
+end
 
 function StatLogic:GetBlockValuePerStr(class)
 	-- argCheck for invalid input
@@ -11119,8 +11550,12 @@ function StatLogic:GetAPPerAgi(class)
 		class = ClassNameToID[playerClass]
 	end
 	-- Check druid cat form
-	if (class == 10) and GetPlayerBuffName((GetSpellInfo(32356))) then		-- ["Cat Form"]
-		return 1
+	if (class == 10) and PlayerHasAura((GetSpellInfo(32356))) then		-- ["Cat Form"]
+    if toc >= 40000 then
+      return 2
+    else
+      return 1
+    end
 	end
 	return APPerAgi[class], "AP"
 end
@@ -11282,6 +11717,21 @@ BaseDodge = {
 	--["DRUID"] =       5.6097,
 }
 end
+if toc >= 40000 then
+BaseDodge = {
+	3.7580, 3.6520, -5.450, -0.590, 3.1830, 3.6640, 1.6750, 3.4575, 2.0350, 4.9510,
+	--["WARRIOR"] =     3.7580,
+	--["PALADIN"] =     3.6520,
+	--["HUNTER"] =      -5.450,
+	--["ROGUE"] =       -0.590,
+	--["PRIEST"] =      3.1830,
+	--["DEATHKNIGHT"] = 3.6640,
+	--["SHAMAN"] =      1.6750,
+	--["MAGE"] =        3.4575,
+	--["WARLOCK"] =     2.0350,
+	--["DRUID"] =       4.9510,
+}
+end
 
 function StatLogic:GetBaseDodge(class)
 	-- argCheck for invalid input
@@ -11350,6 +11800,21 @@ local DodgePerAgiStatic = {
 	--["WARLOCK"] =     0.0167,
 	--["DRUID"] =       0.0209,
 }
+if toc >= 40000 then
+DodgePerAgiStatic = {
+	0.0135962, 0.0192366, 0.0133266, 0.0240537, 0.0192366, 0.0135962, 0.0192366, 0.0195253, 0.0192366, 0.0240458, 
+	--["WARRIOR"] =     0.0135962,
+	--["PALADIN"] =     0.0192366,
+	--["HUNTER"] =      0.0133266,
+	--["ROGUE"] =       0.0240537,
+	--["PRIEST"] =      0.0192366,
+	--["DEATHKNIGHT"] = 0.0135962,
+	--["SHAMAN"] =      0.0192366,
+	--["MAGE"] =        0.0195253, 
+	--["WARLOCK"] =     0.0192366,
+	--["DRUID"] =       0.0240458,
+}
+end
 
 local ModAgiClasses = {
 	["DRUID"] = true,
@@ -11357,7 +11822,7 @@ local ModAgiClasses = {
 	["ROGUE"] = true,
 }
 local BoK = GetSpellInfo(20217)
-local GBoK = GetSpellInfo(25898)
+local GBoK = GetSpellInfo(25898) -- 4.0 removed
 function StatLogic:GetDodgePerAgi()
 	local level = UnitLevel("player")
 	local class = ClassNameToID[playerClass]
@@ -11368,6 +11833,9 @@ function StatLogic:GetDodgePerAgi()
 	local D_dr = GetDodgeChance()
 	local dodgeFromDodgeRating = self:GetEffectFromRating(GetCombatRating(CR_DODGE), CR_DODGE, level)
 	local baseDefense, modDefense = UnitDefense("player")
+  if toc >= 40000 then
+    baseDefense, modDefense = level * 5, 0
+  end
 	local dodgeFromModDefense = modDefense * 0.04
 	local D_r = dodgeFromDodgeRating + dodgeFromModDefense
 	local D_b = BaseDodge[class] + self:GetStatMod("ADD_DODGE") + (baseDefense - level * 5) * 0.04
@@ -11377,7 +11845,7 @@ function StatLogic:GetDodgePerAgi()
 	local modAgi = 1
 	if ModAgiClasses[playerClass] then
 		modAgi = self:GetStatMod("MOD_AGI")
-		if GetPlayerBuffName(BoK) or GetPlayerBuffName(GBoK) then
+		if PlayerHasAura(BoK) or PlayerHasAura(GBoK) then
 			modAgi = modAgi - 0.1
 		end
 	end
@@ -11396,7 +11864,8 @@ function StatLogic:GetDodgePerAgi()
 		dodgePerAgi = -c / b
 	end
 	--return dodgePerAgi
-	return floor(dodgePerAgi*10000+0.5)/10000, "DODGE"
+	--return floor(dodgePerAgi*10000+0.5)/10000, "DODGE"
+	return dodgePerAgi, "DODGE"
 end
 
 --[[---------------------------------
@@ -11445,7 +11914,9 @@ Example:
 -----------------------------------]]
 
 -- Numbers reverse engineered by Whitetooth (hotdogee [at] gmail [dot] com)
-local CritPerAgi = {
+local CritPerAgi
+if toc < 40000 then
+CritPerAgi = {
 	[1] = {0.2587, 0.2164, 0.2840, 0.4476, 0.0912, 0.2587, 0.1039, 0.0773, 0.1189, 0.1262, },
 	[2] = {0.2264, 0.2164, 0.2834, 0.4290, 0.0912, 0.2264, 0.1039, 0.0773, 0.1189, 0.1262, },
 	[3] = {0.2264, 0.2164, 0.2711, 0.4118, 0.0912, 0.2264, 0.0990, 0.0773, 0.1132, 0.1202, },
@@ -11540,14 +12011,117 @@ local CritPerAgi = {
 	[92] = {0.0067, 0.0104, 0.0111, 0.0065, 0.0339, 0.0067, 0.0314, 0.0111, 0.0316, 0.0325, },
 	[93] = {0.0062, 0.0100, 0.0109, 0.0063, 0.0333, 0.0062, 0.0311, 0.0107, 0.0313, 0.0320, },
 	[94] = {0.0057, 0.0097, 0.0108, 0.0061, 0.0328, 0.0057, 0.0308, 0.0104, 0.0309, 0.0318, },
-	[95] = {0.0053, 0.0093, 0.0106, 0.0059, 0.0328, 0.0053, 0.0300, 0.0100, 0.0303, 0.0311, },
+	[95] = {0.0053, 0.0093, 0.0106, 0.0059, 0.0328, 0.0053, 0.030, 0.0100, 0.0303, 0.0311, },
 	[96] = {0.0050, 0.0090, 0.0105, 0.0057, 0.0323, 0.0050, 0.0297, 0.0097, 0.0300, 0.0308, },
 	[97] = {0.0046, 0.0087, 0.0103, 0.0055, 0.0317, 0.0046, 0.0295, 0.0094, 0.0297, 0.0304, },
 	[98] = {0.0043, 0.0084, 0.0102, 0.0053, 0.0313, 0.0043, 0.0289, 0.0091, 0.0291, 0.0299, },
 	[99] = {0.0040, 0.0082, 0.0100, 0.0052, 0.0308, 0.0040, 0.0287, 0.0089, 0.0288, 0.0297, },
 	[100] = {0.0037, 0.0080, 0.0099, 0.0050, 0.0308, 0.0037, 0.0282, 0.0086, 0.0283, 0.0291, },
 }
-
+else
+CritPerAgi = {
+  [1] = {0.24999999, 0.21740000, 0.28400000, 0.44760900, 0.09117500, 0.24999999, 0.10390000, 0.07730000, 0.11890000, 0.12622500, },
+  [2] = {0.23809499, 0.20704800, 0.28343401, 0.42895800, 0.09117500, 0.23809499, 0.10390000, 0.07730000, 0.11890000, 0.12622500, },
+  [3] = {0.23809499, 0.20704800, 0.27107401, 0.41180002, 0.09117500, 0.23809499, 0.09895239, 0.07730000, 0.11323800, 0.12021400, },
+  [4] = {0.22727300, 0.19763601, 0.25299001, 0.38129601, 0.08683330, 0.22727300, 0.09895239, 0.07361900, 0.11323800, 0.12021400, },
+  [5] = {0.21739099, 0.19763601, 0.24300499, 0.36767900, 0.08683330, 0.21739099, 0.09445450, 0.07361900, 0.11323800, 0.11475000, },
+  [6] = {0.20833299, 0.18904300, 0.23373601, 0.35500000, 0.08683330, 0.20833299, 0.09445450, 0.07361900, 0.10809100, 0.11475000, },
+  [7] = {0.20833299, 0.18904300, 0.22510700, 0.33209701, 0.08683330, 0.20833299, 0.09445450, 0.07361900, 0.10809100, 0.10976100, },
+  [8] = {0.20000001, 0.18116700, 0.21705499, 0.32171900, 0.08288640, 0.20000001, 0.09034780, 0.07361900, 0.10809100, 0.10976100, },
+  [9] = {0.19230800, 0.18116700, 0.20513700, 0.31196999, 0.08288640, 0.19230800, 0.09034780, 0.07361900, 0.10339100, 0.10518699, },
+  [10] = {0.19230800, 0.17392000, 0.19836400, 0.29414301, 0.08288640, 0.19230800, 0.08658330, 0.07027270, 0.10339100, 0.09709620, },
+  [11] = {0.18518500, 0.17392000, 0.18475300, 0.26397400, 0.08288640, 0.18518500, 0.08658330, 0.07027270, 0.09908330, 0.09350000, },
+  [12] = {0.17857100, 0.16723101, 0.16697299, 0.23941901, 0.07928260, 0.17857100, 0.08312000, 0.07027270, 0.09908330, 0.09350000, },
+  [13] = {0.16666700, 0.15528600, 0.15469900, 0.21447900, 0.07928260, 0.16666700, 0.08312000, 0.07027270, 0.09908330, 0.09016070, },
+  [14] = {0.16129001, 0.15528600, 0.14408800, 0.19798100, 0.07928260, 0.16129001, 0.07992310, 0.07027270, 0.09588690, 0.09016070, },
+  [15] = {0.15625000, 0.14493300, 0.13299300, 0.17750000, 0.07928260, 0.15625000, 0.07696300, 0.06721740, 0.09435100, 0.08415000, },
+  [16] = {0.15151500, 0.14493300, 0.12666400, 0.16604800, 0.07597920, 0.15151500, 0.07421430, 0.06721740, 0.09284450, 0.08415000, },
+  [17] = {0.14705900, 0.14025799, 0.11942200, 0.15598499, 0.07597920, 0.14705900, 0.07421430, 0.06721740, 0.09136670, 0.08143550, },
+  [18] = {0.13888900, 0.13175800, 0.11166499, 0.14500000, 0.07597920, 0.13888900, 0.07165520, 0.06721740, 0.08991690, 0.07889060, },
+  [19] = {0.13513500, 0.13175800, 0.10597800, 0.13546100, 0.07294000, 0.13513500, 0.07165520, 0.06721740, 0.08849440, 0.07889060, },
+  [20] = {0.12820500, 0.12422900, 0.09980580, 0.12709900, 0.07294000, 0.12820500, 0.06703230, 0.06441670, 0.08709860, 0.07012500, },
+  [21] = {0.12820500, 0.12077800, 0.09615530, 0.11970900, 0.07294000, 0.12820500, 0.06703230, 0.06441670, 0.08572890, 0.07012500, },
+  [22] = {0.12500000, 0.12077800, 0.09103050, 0.11438900, 0.07294000, 0.12500000, 0.06493750, 0.06441670, 0.08438450, 0.06822970, },
+  [23] = {0.11904800, 0.11442100, 0.08718610, 0.10836800, 0.07013460, 0.11904800, 0.06493750, 0.06441670, 0.08306500, 0.06643420, },
+  [24] = {0.11627900, 0.11148700, 0.08293830, 0.10399000, 0.07013460, 0.11627900, 0.06296970, 0.06184000, 0.08176980, 0.06643420, },
+  [25] = {0.11111100, 0.10870000, 0.07972230, 0.09804760, 0.07013460, 0.11111100, 0.06111760, 0.06184000, 0.08049830, 0.06311250, },
+  [26] = {0.10869600, 0.10604900, 0.07674040, 0.09359090, 0.06753700, 0.10869600, 0.05937140, 0.06184000, 0.07924990, 0.06311250, },
+  [27] = {0.10638300, 0.10352400, 0.07341370, 0.09030700, 0.06753700, 0.10638300, 0.05937140, 0.06184000, 0.07802420, 0.06157320, },
+  [28] = {0.10204100, 0.10111600, 0.07086710, 0.08651260, 0.06753700, 0.10204100, 0.05772220, 0.06184000, 0.07682060, 0.06010710, },
+  [29] = {0.10000000, 0.09881820, 0.06801100, 0.08302420, 0.06512500, 0.10000000, 0.05772220, 0.05946150, 0.07563860, 0.06010710, },
+  [30] = {0.09615380, 0.09452170, 0.06537160, 0.07919230, 0.06512500, 0.09615380, 0.05468420, 0.05946150, 0.07447780, 0.05488040, },
+  [31] = {0.09433960, 0.09251060, 0.06374390, 0.07682840, 0.06512500, 0.09433960, 0.05468420, 0.05946150, 0.07333770, 0.05371280, },
+  [32] = {0.09259260, 0.09251060, 0.06141140, 0.07406470, 0.06287930, 0.09259260, 0.05328210, 0.05946150, 0.07221780, 0.05371280, },
+  [33] = {0.08928570, 0.08873470, 0.05923970, 0.07149310, 0.06287930, 0.08928570, 0.05195000, 0.05725930, 0.07111760, 0.05259370, },
+  [34] = {0.08771930, 0.08696000, 0.05754870, 0.06909400, 0.06287930, 0.08771930, 0.05195000, 0.05725930, 0.07003690, 0.05152040, },
+  [35] = {0.08474580, 0.08361540, 0.05563030, 0.06641940, 0.06078330, 0.08474580, 0.04947620, 0.05725930, 0.06897500, 0.05049000, },
+  [36] = {0.08333330, 0.08203770, 0.05412970, 0.06434370, 0.06078330, 0.08333330, 0.04832560, 0.05521430, 0.06793170, 0.04950000, },
+  [37] = {0.08196720, 0.08203770, 0.05242280, 0.06277440, 0.06078330, 0.08196720, 0.04832560, 0.05521430, 0.06690650, 0.04854810, },
+  [38] = {0.07936510, 0.07905450, 0.05081710, 0.06091720, 0.05882260, 0.07936510, 0.04722730, 0.05521430, 0.06589910, 0.04854810, },
+  [39] = {0.07812500, 0.07764290, 0.04930400, 0.05916670, 0.05882260, 0.07812500, 0.04722730, 0.05521430, 0.06490910, 0.04763210, },
+  [40] = {0.07575760, 0.07496550, 0.04811060, 0.05719440, 0.05882260, 0.07575760, 0.04517390, 0.05331030, 0.06393600, 0.04428950, },
+  [41] = {0.07352940, 0.07369490, 0.04697090, 0.05564860, 0.05698440, 0.07352940, 0.04421280, 0.05331030, 0.06297960, 0.04352590, },
+  [42] = {0.07246380, 0.07369490, 0.04566750, 0.05418420, 0.05698440, 0.07246380, 0.04421280, 0.05331030, 0.06203950, 0.04352590, },
+  [43] = {0.07042250, 0.07127870, 0.04443200, 0.05279490, 0.05525760, 0.07042250, 0.04329170, 0.05331030, 0.06111540, 0.04278810, },
+  [44] = {0.06944440, 0.07012900, 0.04325920, 0.05121890, 0.05525760, 0.06944440, 0.04240820, 0.05153330, 0.06020690, 0.04207500, },
+  [45] = {0.06756760, 0.06793750, 0.04214440, 0.04973430, 0.05525760, 0.06756760, 0.04156000, 0.05153330, 0.05931370, 0.04071770, },
+  [46] = {0.06666670, 0.06689230, 0.04125640, 0.04856130, 0.05363240, 0.06666670, 0.04074510, 0.05153330, 0.05843550, 0.04007140, },
+  [47] = {0.06493510, 0.06587880, 0.04023690, 0.04744240, 0.05363240, 0.06493510, 0.03996150, 0.04987100, 0.05757210, 0.04007140, },
+  [48] = {0.06329110, 0.06394120, 0.03910780, 0.04637390, 0.05210000, 0.06329110, 0.03920750, 0.04987100, 0.05672300, 0.03944530, },
+  [49] = {0.06250000, 0.06301450, 0.03818660, 0.04535240, 0.05210000, 0.06250000, 0.03920750, 0.04987100, 0.05588810, 0.03883850, },
+  [50] = {0.06097560, 0.06123940, 0.03730590, 0.04399570, 0.05210000, 0.06097560, 0.03778180, 0.04831250, 0.05506700, 0.03658700, },
+  [51] = {0.05952380, 0.06038890, 0.03659920, 0.04307530, 0.05065280, 0.05952380, 0.03710710, 0.04831250, 0.05425950, 0.03606430, },
+  [52] = {0.05882350, 0.05956160, 0.03578580, 0.04219260, 0.05065280, 0.05882350, 0.03645610, 0.04831250, 0.05346520, 0.03555630, },
+  [53] = {0.05747130, 0.05797330, 0.03500600, 0.04118000, 0.04928380, 0.05747130, 0.03645610, 0.04684850, 0.05268400, 0.03506250, },
+  [54] = {0.05617980, 0.05721050, 0.03413840, 0.04037250, 0.04928380, 0.05617980, 0.03582760, 0.04684850, 0.05191560, 0.03506250, },
+  [55] = {0.05494510, 0.05574360, 0.03342470, 0.03944440, 0.04798680, 0.05494510, 0.03463330, 0.04684850, 0.05115970, 0.03411490, },
+  [56] = {0.05434780, 0.05503800, 0.03284840, 0.03855810, 0.04798680, 0.05434780, 0.03406560, 0.04547060, 0.05041610, 0.03366000, },
+  [57] = {0.05319150, 0.05435000, 0.03207870, 0.03784930, 0.04675640, 0.05319150, 0.03351610, 0.04547060, 0.04968460, 0.03321710, },
+  [58] = {0.05208330, 0.05302440, 0.03144320, 0.03703240, 0.04675640, 0.05208330, 0.03351610, 0.04547060, 0.04896490, 0.03278570, },
+  [59] = {0.05102040, 0.05238550, 0.03073430, 0.03637810, 0.04558750, 0.05102040, 0.03298410, 0.04417140, 0.04825680, 0.03236540, },
+  [60] = {0.05000000, 0.05115290, 0.03014770, 0.03550000, 0.04558750, 0.05000000, 0.03196920, 0.04417140, 0.04756000, 0.03078660, },
+  [61] = {0.04761900, 0.04940910, 0.02967120, 0.03343390, 0.04449120, 0.04761900, 0.03102490, 0.04417140, 0.04687440, 0.02988460, },
+  [62] = {0.04545450, 0.04831110, 0.02903510, 0.03217750, 0.04458550, 0.04545450, 0.03040300, 0.04417140, 0.04619980, 0.02950110, },
+  [63] = {0.04347830, 0.04726090, 0.02842440, 0.03063990, 0.04426580, 0.04347830, 0.02935380, 0.04294440, 0.04553590, 0.02849640, },
+  [64] = {0.04166670, 0.04576840, 0.02791680, 0.02959690, 0.04344670, 0.04166670, 0.02848270, 0.04294440, 0.04488250, 0.02791070, },
+  [65] = {0.04000000, 0.04482470, 0.02734930, 0.02861530, 0.04271900, 0.04000000, 0.02807010, 0.04294440, 0.04423950, 0.02738060, },
+  [66] = {0.03846150, 0.04391920, 0.02695050, 0.02767470, 0.04207770, 0.03846150, 0.02734040, 0.04178380, 0.04360670, 0.02690250, },
+  [67] = {0.03703700, 0.04262750, 0.02641880, 0.02680990, 0.04151880, 0.03703700, 0.02668210, 0.04178380, 0.04298380, 0.02647340, },
+  [68] = {0.03571430, 0.04180770, 0.02590650, 0.02618690, 0.04133470, 0.03571430, 0.02608150, 0.04178380, 0.04237070, 0.02577280, },
+  [69] = {0.03448280, 0.04101890, 0.02541250, 0.02560950, 0.04117830, 0.03448280, 0.02552060, 0.04068420, 0.04176730, 0.02537310, },
+  [70] = {0.03333330, 0.04025930, 0.02499810, 0.02499880, 0.04014610, 0.03333330, 0.02499630, 0.04068420, 0.04117320, 0.02499810, },
+  [71] = {0.03105590, 0.03716240, 0.02323340, 0.02323930, 0.03721430, 0.03105590, 0.02323170, 0.03770730, 0.03835480, 0.02323340, },
+  [72] = {0.02873560, 0.03450790, 0.02159330, 0.02158280, 0.03440570, 0.02873560, 0.02159180, 0.03513640, 0.03549250, 0.02159330, },
+  [73] = {0.02673800, 0.03220740, 0.02006910, 0.02006820, 0.03199120, 0.02673800, 0.02006760, 0.03289360, 0.03302780, 0.02006910, },
+  [74] = {0.02487560, 0.02978080, 0.01865240, 0.01865040, 0.02989340, 0.02487560, 0.01865100, 0.03031370, 0.03088310, 0.01865240, },
+  [75] = {0.02314810, 0.02769430, 0.01733570, 0.01733160, 0.02762880, 0.02314810, 0.01733440, 0.02810910, 0.02865060, 0.01733570, },
+  [76] = {0.02145920, 0.02572780, 0.01611190, 0.01611110, 0.02568310, 0.02145920, 0.01611080, 0.02620340, 0.02642220, 0.01611190, },
+  [77] = {0.01992030, 0.02389010, 0.01497460, 0.01496370, 0.02399340, 0.01992030, 0.01497350, 0.02415630, 0.02451550, 0.01497460, },
+  [78] = {0.01851850, 0.02229740, 0.01391750, 0.01391220, 0.02223780, 0.01851850, 0.01391650, 0.02273530, 0.02286540, 0.01391750, },
+  [79] = {0.01724140, 0.02070480, 0.01293510, 0.01293340, 0.02072160, 0.01724140, 0.01293410, 0.02089190, 0.02123210, 0.01293510, },
+  [80] = {0.01602560, 0.01923890, 0.01202200, 0.01202690, 0.01919470, 0.01602560, 0.01202110, 0.01956960, 0.01981670, 0.01202200, },
+  [81] = {0.01219510, 0.01463970, 0.00915552, 0.00915925, 0.01461810, 0.01220460, 0.00915486, 0.01486540, 0.01509170, 0.00915552, },
+  [82] = {0.00929368, 0.01114870, 0.00697209, 0.00697493, 0.01113190, 0.00929400, 0.00697159, 0.01136760, 0.01149260, 0.00697209, },
+  [83] = {0.00707214, 0.00849219, 0.00530727, 0.00530944, 0.00847380, 0.00707475, 0.00530689, 0.00863687, 0.00874836, 0.00530727, },
+  [84] = {0.00538793, 0.00647024, 0.00404195, 0.00404360, 0.00645353, 0.00538804, 0.00404166, 0.00657872, 0.00666263, 0.00404195, },
+  [85] = {0.00410509, 0.00492412, 0.00307831, 0.00307957, 0.00491496, 0.00410348, 0.00307809, 0.00500324, 0.00507420, 0.00307831, },
+  [86] = {0.00192160, 0.00230663, 0.00144129, 0.00144188, 0.00230122, 0.00192160, 0.00144118, 0.00234598, 0.00237578, 0.00144129, },
+  [87] = {0.00134916, 0.00161937, 0.00101208, 0.00101249, 0.00161592, 0.00134916, 0.00101200, 0.00164819, 0.00166828, 0.00101208, },
+  [88] = {0.00094733, 0.00113733, 0.00071069, 0.00071098, 0.00113472, 0.00094733, 0.00071064, 0.00115719, 0.00117148, 0.00071069, },
+  [89] = {0.00066525, 0.00079868, 0.01154730, 0.00049925, 0.03508770, 0.00066525, 0.03300000, 0.00081240, 0.03296700, 0.03388430, },
+  [90] = {0.00046711, 0.00056081, 0.01136360, 0.00035058, 0.03448280, 0.00046711, 0.03235290, 0.00057048, 0.03225810, 0.03333330, },
+  [91] = {0.00032802, 0.00039381, 0.01123600, 0.00024617, 0.03448280, 0.00032802, 0.03203880, 0.00040052, 0.03191490, 0.03280000, },
+  [92] = {0.00023034, 0.00027652, 0.01106190, 0.00017286, 0.03389830, 0.00023034, 0.03142860, 0.00028130, 0.03157890, 0.03253970, },
+  [93] = {0.00016174, 0.00019418, 0.01089320, 0.00012139, 0.03333330, 0.00016174, 0.03113210, 0.00019752, 0.03125000, 0.03203130, },
+  [94] = {0.00011358, 0.00013635, 0.01075270, 0.00008524, 0.03278690, 0.00011358, 0.03084110, 0.00013869, 0.03092780, 0.03178290, },
+  [95] = {0.00007976, 0.00009575, 0.01059320, 0.00005985, 0.03278690, 0.00007976, 0.03000000, 0.00009739, 0.03030300, 0.03106060, },
+  [96] = {0.00005600, 0.00006723, 0.01046030, 0.00004203, 0.03225810, 0.00005600, 0.02972970, 0.00006839, 0.03000000, 0.03082710, },
+  [97] = {0.00003933, 0.00004721, 0.01030930, 0.00002951, 0.03174600, 0.00003933, 0.02946430, 0.00004802, 0.02970300, 0.03037040, },
+  [98] = {0.00002762, 0.00003315, 0.01016260, 0.00002072, 0.03125000, 0.00002762, 0.02894740, 0.00003372, 0.02912620, 0.02992700, },
+  [99] = {0.00001939, 0.00002328, 0.01002000, 0.00001455, 0.03076920, 0.00001939, 0.02869570, 0.00002368, 0.02884620, 0.02971010, },
+  [100] = {0.00001362, 0.00001635, 0.00988142, 0.00001022, 0.03076920, 0.00001362, 0.02820510, 0.00001663, 0.02830190, 0.02907800, },
+}
+end
 function StatLogic:GetCritFromAgi(agi, class, level)
 	-- argCheck for invalid input
 	self:argCheck(agi, 2, "number")
@@ -11591,7 +12165,9 @@ Example:
 -----------------------------------]]
 
 -- Numbers reverse engineered by Whitetooth (hotdogee [at] gmail [dot] com)
-local SpellCritPerInt = {
+local SpellCritPerInt
+if toc < 40000 then
+SpellCritPerInt = {
 	--WARRIOR, PALADIN, HUNTER, ROGUE, PRIEST, DEATHKNIGHT, SHAMAN, MAGE, WARLOCK, DRUID
 	[1] = {0.0000, 0.0832, 0.0699, 0.0000, 0.1710, 0.0000, 0.1333, 0.1637, 0.1500, 0.1431, },
 	[2] = {0.0000, 0.0793, 0.0666, 0.0000, 0.1636, 0.0000, 0.1272, 0.1574, 0.1435, 0.1369, },
@@ -11694,6 +12270,112 @@ local SpellCritPerInt = {
 	[99] = {0.0000, 0.0026, 0.0026, 0.0000, 0.0026, 0.0000, 0.0026, 0.0026, 0.0026, 0.0026, },
 	[100] = {0.0000, 0.0025, 0.0025, 0.0000, 0.0025, 0.0000, 0.0025, 0.0025, 0.0025, 0.0025, },
 }
+else
+
+SpellCritPerInt = {
+	--WARRIOR, PALADIN, HUNTER, ROGUE, PRIEST, DEATHKNIGHT, SHAMAN, MAGE, WARLOCK, DRUID
+  [1] = {0.00000000, 0.08322500, 0.06990000, 0.00000000, 0.17102300, 0.00000000, 0.13328600, 0.16370000, 0.15000000, 0.14311400, },
+  [2] = {0.00000000, 0.07926190, 0.06657140, 0.00000000, 0.16358700, 0.00000000, 0.12722700, 0.15740400, 0.14347800, 0.13689100, },
+  [3] = {0.00000000, 0.07926190, 0.06657140, 0.00000000, 0.15677100, 0.00000000, 0.12169600, 0.15157399, 0.13750000, 0.13118699, },
+  [4] = {0.00000000, 0.07565910, 0.06354550, 0.00000000, 0.15050001, 0.00000000, 0.12169600, 0.14112100, 0.13200000, 0.12594000, },
+  [5] = {0.00000000, 0.07565910, 0.06354550, 0.00000000, 0.13935200, 0.00000000, 0.11662500, 0.13641700, 0.12692300, 0.12109600, },
+  [6] = {0.00000000, 0.07236960, 0.06078260, 0.00000000, 0.13437500, 0.00000000, 0.11196000, 0.13201600, 0.12222200, 0.11661100, },
+  [7] = {0.00000000, 0.06935420, 0.06078260, 0.00000000, 0.12974100, 0.00000000, 0.10765400, 0.12789100, 0.11785700, 0.11244600, },
+  [8] = {0.00000000, 0.06935420, 0.05825000, 0.00000000, 0.12541700, 0.00000000, 0.10366699, 0.12401500, 0.11379300, 0.11244600, },
+  [9] = {0.00000000, 0.06658000, 0.05825000, 0.00000000, 0.12137101, 0.00000000, 0.09996430, 0.11692900, 0.11000000, 0.10856900, },
+  [10] = {0.00000000, 0.06658000, 0.05592000, 0.00000000, 0.11401500, 0.00000000, 0.09996430, 0.11368101, 0.10645200, 0.09839060, },
+  [11] = {0.00000000, 0.06401920, 0.05592000, 0.00000000, 0.10451400, 0.00000000, 0.09330000, 0.10493600, 0.09705880, 0.09260290, },
+  [12] = {0.00000000, 0.06164810, 0.05376920, 0.00000000, 0.09406250, 0.00000000, 0.08746880, 0.09301140, 0.08918920, 0.08509460, },
+  [13] = {0.00000000, 0.05944640, 0.04992860, 0.00000000, 0.08750000, 0.00000000, 0.07997140, 0.08707450, 0.08250000, 0.08073080, },
+  [14] = {0.00000000, 0.05739660, 0.04992860, 0.00000000, 0.07838540, 0.00000000, 0.07564860, 0.07308040, 0.07674420, 0.07496430, },
+  [15] = {0.00000000, 0.05369350, 0.04660000, 0.00000000, 0.07235580, 0.00000000, 0.06997500, 0.06709020, 0.07173910, 0.06844570, },
+  [16] = {0.00000000, 0.05369350, 0.04660000, 0.00000000, 0.06840910, 0.00000000, 0.06664290, 0.06394530, 0.06875000, 0.06559370, },
+  [17] = {0.00000000, 0.05201560, 0.04509680, 0.00000000, 0.06270830, 0.00000000, 0.06361360, 0.06018380, 0.06346150, 0.06173530, },
+  [18] = {0.00000000, 0.04895590, 0.04236360, 0.00000000, 0.05972220, 0.00000000, 0.05955320, 0.05684030, 0.06000000, 0.05940570, },
+  [19] = {0.00000000, 0.04895590, 0.04236360, 0.00000000, 0.05615670, 0.00000000, 0.05712240, 0.05384870, 0.05689660, 0.05622320, },
+  [20] = {0.00000000, 0.04623610, 0.03994290, 0.00000000, 0.05225690, 0.00000000, 0.05382690, 0.05052470, 0.05409840, 0.05161480, },
+  [21] = {0.00000000, 0.04498650, 0.03883330, 0.00000000, 0.05016670, 0.00000000, 0.05183330, 0.04872020, 0.05156250, 0.04997620, },
+  [22] = {0.00000000, 0.04380260, 0.03883330, 0.00000000, 0.04703120, 0.00000000, 0.04998210, 0.04598310, 0.04925370, 0.04770450, },
+  [23] = {0.00000000, 0.04267950, 0.03678950, 0.00000000, 0.04533130, 0.00000000, 0.04744070, 0.04448370, 0.04714290, 0.04630150, },
+  [24] = {0.00000000, 0.04161250, 0.03584620, 0.00000000, 0.04275570, 0.00000000, 0.04588520, 0.04219070, 0.04459460, 0.04372920, },
+  [25] = {0.00000000, 0.03963100, 0.03495000, 0.00000000, 0.04089670, 0.00000000, 0.04373440, 0.04051980, 0.04285710, 0.04198000, },
+  [26] = {0.00000000, 0.03870930, 0.03409760, 0.00000000, 0.03919270, 0.00000000, 0.04240910, 0.03897620, 0.04177220, 0.04088960, },
+  [27] = {0.00000000, 0.03870930, 0.03328570, 0.00000000, 0.03762500, 0.00000000, 0.04116180, 0.03720450, 0.03975900, 0.03935630, },
+  [28] = {0.00000000, 0.03698890, 0.03251160, 0.00000000, 0.03617790, 0.00000000, 0.03942250, 0.03382230, 0.03837210, 0.03839630, },
+  [29] = {0.00000000, 0.03618480, 0.03177270, 0.00000000, 0.03483800, 0.00000000, 0.03834250, 0.03248020, 0.03666670, 0.03661050, },
+  [30] = {0.00000000, 0.03467710, 0.03039130, 0.00000000, 0.03329650, 0.00000000, 0.03682890, 0.03124050, 0.03548390, 0.03459890, },
+  [31] = {0.00000000, 0.03396940, 0.02974470, 0.00000000, 0.03215810, 0.00000000, 0.03543040, 0.03054100, 0.03473680, 0.03385480, },
+  [32] = {0.00000000, 0.03329000, 0.02974470, 0.00000000, 0.03109500, 0.00000000, 0.03455560, 0.02944240, 0.03333330, 0.03245880, },
+  [33] = {0.00000000, 0.03263730, 0.02853060, 0.00000000, 0.03010000, 0.00000000, 0.03332140, 0.02861890, 0.03235290, 0.03180300, },
+  [34] = {0.00000000, 0.03200960, 0.02796000, 0.00000000, 0.02894230, 0.00000000, 0.03254650, 0.02784010, 0.03113210, 0.03086760, },
+  [35] = {0.00000000, 0.03082410, 0.02688460, 0.00000000, 0.02807840, 0.00000000, 0.03144940, 0.02692430, 0.03027520, 0.02970280, },
+  [36] = {0.00000000, 0.03026360, 0.02637740, 0.00000000, 0.02726450, 0.00000000, 0.03042390, 0.02623400, 0.02946430, 0.02915280, },
+  [37] = {0.00000000, 0.02972320, 0.02637740, 0.00000000, 0.02631120, 0.00000000, 0.02977660, 0.02541930, 0.02844830, 0.02836490, },
+  [38] = {0.00000000, 0.02869830, 0.02541820, 0.00000000, 0.02559520, 0.00000000, 0.02885570, 0.02480300, 0.02773110, 0.02761840, },
+  [39] = {0.00000000, 0.02821190, 0.02496430, 0.00000000, 0.02491720, 0.00000000, 0.02827270, 0.02407350, 0.02682930, 0.02691030, },
+  [40] = {0.00000000, 0.02728690, 0.02410340, 0.00000000, 0.02411860, 0.00000000, 0.02717480, 0.02352010, 0.02619050, 0.02559760, },
+  [41] = {0.00000000, 0.02684680, 0.02369490, 0.00000000, 0.02351560, 0.00000000, 0.02665710, 0.02299160, 0.02558140, 0.02518800, },
+  [42] = {0.00000000, 0.02642060, 0.02369490, 0.00000000, 0.02280300, 0.00000000, 0.02615890, 0.02153950, 0.02481200, 0.02440700, },
+  [43] = {0.00000000, 0.02560770, 0.02291800, 0.00000000, 0.02226330, 0.00000000, 0.02544550, 0.02109540, 0.02426470, 0.02403440, },
+  [44] = {0.00000000, 0.02560770, 0.02254840, 0.00000000, 0.02162360, 0.00000000, 0.02476990, 0.02056530, 0.02357140, 0.02332220, },
+  [45] = {0.00000000, 0.02484330, 0.02184380, 0.00000000, 0.02101960, 0.00000000, 0.02412930, 0.02006130, 0.02291670, 0.02281520, },
+  [46] = {0.00000000, 0.02447790, 0.02150770, 0.00000000, 0.02056010, 0.00000000, 0.02352100, 0.01967550, 0.02244900, 0.02232980, },
+  [47] = {0.00000000, 0.02377860, 0.02118180, 0.00000000, 0.02001330, 0.00000000, 0.02313220, 0.01921360, 0.02200000, 0.02186460, },
+  [48] = {0.00000000, 0.02311810, 0.02055880, 0.00000000, 0.01959640, 0.00000000, 0.02257260, 0.01877290, 0.02142860, 0.02141840, },
+  [49] = {0.00000000, 0.02280140, 0.02026090, 0.00000000, 0.01909900, 0.00000000, 0.02203940, 0.01835200, 0.02088610, 0.02085100, },
+  [50] = {0.00000000, 0.02219330, 0.01969010, 0.00000000, 0.01862620, 0.00000000, 0.02153080, 0.01794960, 0.02037040, 0.02018270, },
+  [51] = {0.00000000, 0.02190130, 0.01941670, 0.00000000, 0.01826460, 0.00000000, 0.02104510, 0.01764010, 0.02000000, 0.01980190, },
+  [52] = {0.00000000, 0.02161690, 0.01915070, 0.00000000, 0.01783180, 0.00000000, 0.02073330, 0.01726790, 0.01952660, 0.01931600, },
+  [53] = {0.00000000, 0.02106960, 0.01864000, 0.00000000, 0.01750000, 0.00000000, 0.02013670, 0.01698130, 0.01907510, 0.01908180, },
+  [54] = {0.00000000, 0.02080620, 0.01839470, 0.00000000, 0.01710230, 0.00000000, 0.01985110, 0.01656880, 0.01864410, 0.01863020, },
+  [55] = {0.00000000, 0.02029880, 0.01792310, 0.00000000, 0.01664820, 0.00000000, 0.01930340, 0.01624010, 0.01823200, 0.01819940, },
+  [56] = {0.00000000, 0.02005420, 0.01769620, 0.00000000, 0.01635870, 0.00000000, 0.01904080, 0.01544340, 0.01793480, 0.01788920, },
+  [57] = {0.00000000, 0.01981550, 0.01747500, 0.00000000, 0.01601060, 0.00000000, 0.01866000, 0.01510150, 0.01755320, 0.01758940, },
+  [58] = {0.00000000, 0.01913220, 0.01704880, 0.00000000, 0.01574270, 0.00000000, 0.01817530, 0.01488180, 0.01718750, 0.01729950, },
+  [59] = {0.00000000, 0.01891480, 0.01684340, 0.00000000, 0.01535710, 0.00000000, 0.01794230, 0.01456410, 0.01683670, 0.01692740, },
+  [60] = {0.00000000, 0.01849440, 0.01644710, 0.00000000, 0.01505000, 0.00000000, 0.01749370, 0.01430940, 0.01650000, 0.01639840, },
+  [61] = {0.00000000, 0.01585240, 0.01571290, 0.00000000, 0.01481300, 0.00000000, 0.01638980, 0.01430940, 0.01590570, 0.01615360, },
+  [62] = {0.00000000, 0.01541200, 0.01539680, 0.00000000, 0.01447120, 0.00000000, 0.01585240, 0.01430940, 0.01540280, 0.01565850, },
+  [63] = {0.00000000, 0.01486160, 0.01496970, 0.00000000, 0.01425190, 0.00000000, 0.01519880, 0.01430940, 0.01476210, 0.01502430, },
+  [64] = {0.00000000, 0.01447390, 0.01442100, 0.00000000, 0.01393520, 0.00000000, 0.01467380, 0.01425960, 0.01428430, 0.01457140, },
+  [65] = {0.00000000, 0.01398740, 0.01406840, 0.00000000, 0.01368180, 0.00000000, 0.01422450, 0.01421010, 0.01384890, 0.01415760, },
+  [66] = {0.00000000, 0.01364340, 0.01375000, 0.00000000, 0.01343750, 0.00000000, 0.01378730, 0.01377950, 0.01345140, 0.01373170, },
+  [67] = {0.00000000, 0.01342340, 0.01333460, 0.00000000, 0.01320180, 0.00000000, 0.01338800, 0.01337420, 0.01302730, 0.01334290, },
+  [68] = {0.00000000, 0.01310630, 0.01303730, 0.00000000, 0.01297410, 0.00000000, 0.01307380, 0.01311700, 0.01273350, 0.01305880, },
+  [69] = {0.00000000, 0.01280380, 0.01275940, 0.00000000, 0.01271110, 0.00000000, 0.01277850, 0.01282920, 0.01261620, 0.01277080, },
+  [70] = {0.00000000, 0.01251500, 0.01250000, 0.00000000, 0.01250000, 0.00000000, 0.01250000, 0.01251530, 0.01250000, 0.01250000, },
+  [71] = {0.00000000, 0.01162640, 0.01162640, 0.00000000, 0.01162640, 0.00000000, 0.01162640, 0.01162640, 0.01162640, 0.01162640, },
+  [72] = {0.00000000, 0.01079820, 0.01079820, 0.00000000, 0.01079820, 0.00000000, 0.01079820, 0.01079820, 0.01079820, 0.01079820, },
+  [73] = {0.00000000, 0.01005530, 0.01005530, 0.00000000, 0.01005530, 0.00000000, 0.01005530, 0.01005530, 0.01005530, 0.01005530, },
+  [74] = {0.00000000, 0.00934361, 0.00934361, 0.00000000, 0.00934361, 0.00000000, 0.00934361, 0.00934361, 0.00934361, 0.00934361, },
+  [75] = {0.00000000, 0.00868896, 0.00868896, 0.00000000, 0.00868896, 0.00000000, 0.00868896, 0.00868896, 0.00868896, 0.00868896, },
+  [76] = {0.00000000, 0.00807199, 0.00807199, 0.00000000, 0.00807199, 0.00000000, 0.00807199, 0.00807199, 0.00807199, 0.00807199, },
+  [77] = {0.00000000, 0.00749542, 0.00749542, 0.00000000, 0.00749542, 0.00000000, 0.00749542, 0.00749542, 0.00749542, 0.00749542, },
+  [78] = {0.00000000, 0.00697189, 0.00697189, 0.00000000, 0.00697189, 0.00000000, 0.00697189, 0.00697189, 0.00697189, 0.00697189, },
+  [79] = {0.00000000, 0.00647547, 0.00647547, 0.00000000, 0.00647547, 0.00000000, 0.00647547, 0.00647547, 0.00647547, 0.00647547, },
+  [80] = {0.00000000, 0.00601838, 0.00601838, 0.00000000, 0.00601838, 0.00000000, 0.00601838, 0.00601838, 0.00601838, 0.00601838, },
+  [81] = {0.00000000, 0.00458339, 0.00458339, 0.00000000, 0.00458339, 0.00000000, 0.00458339, 0.00458339, 0.00458339, 0.00458339, },
+  [82] = {0.00000000, 0.00349034, 0.00349034, 0.00000000, 0.00349034, 0.00000000, 0.00349034, 0.00349034, 0.00349034, 0.00349034, },
+  [83] = {0.00000000, 0.00265690, 0.00265690, 0.00000000, 0.00265690, 0.00000000, 0.00265690, 0.00265690, 0.00265690, 0.00265690, },
+  [84] = {0.00000000, 0.00202346, 0.00202346, 0.00000000, 0.00202346, 0.00000000, 0.00202346, 0.00202346, 0.00202346, 0.00202346, },
+  [85] = {0.00000000, 0.00154105, 0.00154105, 0.00000000, 0.00154105, 0.00000000, 0.00154105, 0.00154105, 0.00154105, 0.00154105, },
+  [86] = {0.00000000, 0.00072153, 0.00072153, 0.00000000, 0.00072153, 0.00000000, 0.00072153, 0.00072153, 0.00072153, 0.00072153, },
+  [87] = {0.00000000, 0.00050666, 0.00050666, 0.00000000, 0.00050666, 0.00000000, 0.00050666, 0.00050666, 0.00050666, 0.00050666, },
+  [88] = {0.00000000, 0.00035578, 0.00035578, 0.00000000, 0.00035578, 0.00000000, 0.00035578, 0.00035578, 0.00035578, 0.00035578, },
+  [89] = {0.00000000, 0.00024983, 0.00024983, 0.00000000, 0.00024983, 0.00000000, 0.00024983, 0.00024983, 0.00024983, 0.00024983, },
+  [90] = {0.00000000, 0.00017543, 0.00017543, 0.00000000, 0.00017543, 0.00000000, 0.00017543, 0.00017543, 0.00017543, 0.00017543, },
+  [91] = {0.00000000, 0.00012319, 0.00012319, 0.00000000, 0.00012319, 0.00000000, 0.00012319, 0.00012319, 0.00012319, 0.00012319, },
+  [92] = {0.00000000, 0.00008650, 0.00008650, 0.00000000, 0.00008650, 0.00000000, 0.00008650, 0.00008650, 0.00008650, 0.00008650, },
+  [93] = {0.00000000, 0.00006074, 0.00006074, 0.00000000, 0.00006074, 0.00000000, 0.00006074, 0.00006074, 0.00006074, 0.00006074, },
+  [94] = {0.00000000, 0.00004265, 0.00004265, 0.00000000, 0.00004265, 0.00000000, 0.00004265, 0.00004265, 0.00004265, 0.00004265, },
+  [95] = {0.00000000, 0.00002995, 0.00002995, 0.00000000, 0.00002995, 0.00000000, 0.00002995, 0.00002995, 0.00002995, 0.00002995, },
+  [96] = {0.00000000, 0.00002103, 0.00002103, 0.00000000, 0.00002103, 0.00000000, 0.00002103, 0.00002103, 0.00002103, 0.00002103, },
+  [97] = {0.00000000, 0.00001477, 0.00001477, 0.00000000, 0.00001477, 0.00000000, 0.00001477, 0.00001477, 0.00001477, 0.00001477, },
+  [98] = {0.00000000, 0.00001037, 0.00001037, 0.00000000, 0.00001037, 0.00000000, 0.00001037, 0.00001037, 0.00001037, 0.00001037, },
+  [99] = {0.00000000, 0.00000728, 0.00000728, 0.00000000, 0.00000728, 0.00000000, 0.00000728, 0.00000728, 0.00000728, 0.00000728, },
+  [100] = {0.00000000, 0.00000511, 0.00000511, 0.00000000, 0.00000511, 0.00000000, 0.00000511, 0.00000511, 0.00000511, 0.00000511, },
+}
+end
 
 function StatLogic:GetSpellCritFromInt(int, class, level)
 	-- argCheck for invalid input
@@ -11820,6 +12502,11 @@ local BaseManaRegenPerSpi = {
 	[78] = 0.003708,
 	[79] = 0.003522,
 	[80] = 0.003345,
+	[81] = 0.003345,
+	[82] = 0.003345,
+	[83] = 0.003345,
+	[84] = 0.003345,
+	[85] = 0.003345,
 }
 
 function StatLogic:GetNormalManaRegenFromSpi(spi, int, level)
