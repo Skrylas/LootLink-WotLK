@@ -48,3 +48,85 @@
 	["c"] = "ffffffff",
 --- Full tooltip text, if full search is turned off this is turned off.
 	["t"] = "Tuxedo Pants of the Owl·Legs·Cloth·153 Armor·|cffffffff+2 Intellect|r·|cffffffff+2 Spirit|r·Item Level 35·",
+
+----
+				iStart, iEnd, val1 = string.find(left, "(%d+) Strength");
+				if( val1 ) then
+					value.d = value.d.."sg"..val1.."·";
+				end
+				val1 = string.match(left, "(%d+) Agility");
+				if( val1 ) then
+					value.d = value.d.."ag"..val1.."·";
+				end
+				iStart, iEnd, val1 = string.find(left, "(%d+) Stamina");
+				if( val1 ) then
+					value.d = value.d.."st"..val1.."·";
+				end
+				iStart, iEnd, val1 = string.find(left, "(%d+) Intellect");
+				if( val1 ) then
+					value.d = value.d.."in"..val1.."·";
+				end
+				iStart, iEnd, val1 = string.find(left, "(%d+) Spirit");
+				if( val1 ) then
+					value.d = value.d.."si"..val1.."·";
+				end
+				iStart, iEnd, val1 = string.find(left, "attack power by (%d+)");
+				if( val1 ) then
+					value.d = value.d.."ap"..val1.."·";
+				end
+				iStart, iEnd, val1 = string.find(left, "expertise rating by (%d+)");
+				if( val1 ) then
+					value.d = value.d.."er"..val1.."·";
+				end
+				iStart, iEnd, val1 = string.find(left, "armor penetration rating by (%d+)");
+				if( val1 ) then
+					value.d = value.d.."am"..val1.."·";
+				end
+				iStart, iEnd, val1 = string.find(left, "hit rating by (%d+)");
+				if( val1 ) then
+					value.d = value.d.."ht"..val1.."·";
+				end
+				iStart, iEnd, val1 = string.find(left, "critical strike rating by (%d+)");
+				if( val1 ) then
+					value.d = value.d.."cr"..val1.."·";
+				end
+				iStart, iEnd, val1 = string.find(left, "haste rating by (%d+)");
+				if( val1 ) then
+					value.d = value.d.."hr"..val1.."·";
+				end
+				iStart, iEnd, val1 = string.find(left, "spell power by (%d+)");
+				if( val1 ) then
+					value.d = value.d.."sr"..val1.."·";
+				end
+				iStart, iEnd, val1 = string.find(left, "(%d+) mana per 5");
+				if( val1 ) then
+					value.d = value.d.."mr"..val1.."·";
+				end
+				iStart, iEnd, val1 = string.find(left, "spell penetration by (%d+)");
+				if( val1 ) then
+					value.d = value.d.."sn"..val1.."·";
+				end
+				iStart, iEnd, val1 = string.find(left, "resilience rating by (%d+)");
+				if( val1 ) then
+					value.d = value.d.."rr"..val1.."·";
+				end
+				iStart, iEnd, val1 = string.find(left, "defense rating by (%d+)");
+				if( val1 ) then
+					value.d = value.d.."dr"..val1.."·";
+				end
+				iStart, iEnd, val1 = string.find(left, "dodge rating by (%d+)");
+				if( val1 ) then
+					value.d = value.d.."do"..val1.."·";
+				end
+				iStart, iEnd, val1 = string.find(left, "parry rating by (%d+)");
+				if( val1 ) then
+					value.d = value.d.."pr"..val1.."·";
+				end
+				iStart, iEnd, val1 = string.find(left, "block rating by (%d+)");
+				if( val1 ) then
+					value.d = value.d.."br"..val1.."·";
+				end
+				iStart, iEnd, val1 = string.find(left, "block value of your shield by (%d+)");
+				if( val1 ) then
+					value.d = value.d.."bv"..val1.."·";
+				end	

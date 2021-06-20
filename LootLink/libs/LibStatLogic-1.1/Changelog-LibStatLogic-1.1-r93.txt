@@ -1,0 +1,25 @@
+------------------------------------------------------------------------
+r93 | Whitetooth | 2009-12-08 20:45:27 +0000 (Tue, 08 Dec 2009) | 1 line
+Changed paths:
+   M /trunk/LibStatLogic-1.1.toc
+
+- toc 30300
+------------------------------------------------------------------------
+r92 | Whitetooth | 2009-11-07 17:15:58 +0000 (Sat, 07 Nov 2009) | 1 line
+Changed paths:
+   M /trunk/LibStatLogic-1.1/LibStatLogic-1.1.lua
+
+- Optimized StatModTable for load time
+------------------------------------------------------------------------
+r91 | Whitetooth | 2009-11-07 17:02:16 +0000 (Sat, 07 Nov 2009) | 1 line
+Changed paths:
+   M /trunk/LibStatLogic-1.1/LibStatLogic-1.1.lua
+
+- Improved support for Warlock: Demonic Knowledge: Now uses ADD_SPELL_DMG_MOD_PET_STA, ADD_SPELL_DMG_MOD_PET_INT, ADD_PET_STA_MOD_STA, ADD_PET_INT_MOD_INT. Where PET_BONUS_STAM is actually 0.75 instead of 0.3.
+------------------------------------------------------------------------
+r90 | Whitetooth | 2009-10-01 17:57:45 +0000 (Thu, 01 Oct 2009) | 1 line
+Changed paths:
+   M /trunk/LibStatLogic-1.1/LibStatLogic-1.1.lua
+
+- Fixed itemset detection
+------------------------------------------------------------------------
