@@ -236,7 +236,7 @@ local LootLinkPanelLayout = {
 };
 
 -- The SimpleDropDown library
-local sdd = LibStub:GetLibrary("SimpleDropDown-1.0");
+local sdd = LibStub:GetLibrary("SimpleDropDown-1.0")
 
 LL.STATE_NAME = 0;
 LL.STATE_HEROIC = 1;
@@ -1087,6 +1087,93 @@ local function LootLink_BuildSearchData(llid, value)
 		value.d = value.d.."il"..iLevel.."·";
 	end
 	
+	local _, _, _, _, _, itemType = GetItemInfo(itemLink);
+	if (itemType == "Armor" or itemType == "Weapon") then
+		itemStats = GetItemStats(itemLink);
+		if itemStats then
+		local val1 = itemStats["ITEM_MOD_STRENGTH_SHORT"];
+		if (val1) then
+			value.d = value.d.."sg"..val1.."·";
+		end
+		local val1 = itemStats["ITEM_MOD_AGILITY_SHORT"];
+		if (val1) then
+			value.d = value.d.."ag"..val1.."·";
+		end
+		local val1 = itemStats["ITEM_MOD_STAMINA_SHORT"];
+		if (val1) then
+			value.d = value.d.."st"..val1.."·";
+		end
+		local val1 = itemStats["ITEM_MOD_INTELLECT_SHORT"];
+		if (val1) then
+			value.d = value.d.."in"..val1.."·";
+		end
+		local val1 = itemStats["ITEM_MOD_SPIRIT_SHORT"];
+		if (val1) then
+			value.d = value.d.."si"..val1.."·";
+		end
+		local val1 = itemStats["ITEM_MOD_ATTACK_POWER_SHORT"];
+		if (val1) then
+			value.d = value.d.."ap"..val1.."·";
+		end
+		local val1 = itemStats["ITEM_MOD_EXPERTISE_RATING_SHORT"];
+		if (val1) then
+			value.d = value.d.."er"..val1.."·";
+		end
+		local val1 = itemStats["ITEM_MOD_ARMOR_PENETRATION_RATING_SHORT"];
+		if (val1) then
+			value.d = value.d.."am"..val1.."·";
+		end
+		local val1 = itemStats["ITEM_MOD_HIT_RATING_SHORT"];
+		if (val1) then
+			value.d = value.d.."ht"..val1.."·";
+		end
+		local val1 = itemStats["ITEM_MOD_CRIT_RATING_SHORT"];
+		if (val1) then
+			value.d = value.d.."cr"..val1.."·";
+		end
+		local val1 = itemStats["ITEM_MOD_HASTE_RATING_SHORT"];
+		if (val1) then
+			value.d = value.d.."hr"..val1.."·";
+		end
+		local val1 = itemStats["ITEM_MOD_SPELL_POWER_SHORT"];
+		if (val1) then
+			value.d = value.d.."sr"..val1.."·";
+		end
+		local val1 = itemStats["ITEM_MOD_POWER_REGEN0_SHORT"];
+		if (val1) then
+			value.d = value.d.."mr"..val1.."·";
+		end
+		local val1 = itemStats["ITEM_MOD_SPELL_PENETRATION_SHORT"];
+		if (val1) then
+			value.d = value.d.."sn"..val1.."·";
+		end
+		local val1 = itemStats["ITEM_MOD_RESILIENCE_RATING_SHORT"];
+		if (val1) then
+			value.d = value.d.."rr"..val1.."·";
+		end
+		local val1 = itemStats["ITEM_MOD_DEFENSE_SKILL_RATING_SHORT"];
+		if (val1) then
+			value.d = value.d.."dr"..val1.."·";
+		end
+		local val1 = itemStats["ITEM_MOD_DODGE_RATING_SHORT"];
+		if (val1) then
+			value.d = value.d.."do"..val1.."·";
+		end
+		local val1 = itemStats["ITEM_MOD_PARRY_RATING_SHORT"];
+		if (val1) then
+			value.d = value.d.."pr"..val1.."·";
+		end
+		local val1 = itemStats["ITEM_MOD_BLOCK_RATING_SHORT"];
+		if (val1) then
+			value.d = value.d.."br"..val1.."·";
+		end
+		local val1 = itemStats["ITEM_MOD_BLOCK_VALUE_SHORT"];
+		if (val1) then
+			value.d = value.d.."bv"..val1.."·";
+		end	
+		end
+	end
+	
 	-- We'll use our own tooltip to parse the information to avoid
 	-- picking up any changes made by other mods to the tooltip text
 	LLHiddenTooltip:SetOwner(UIParent, "ANCHOR_NONE");
@@ -1501,6 +1588,65 @@ local function LootLink_MatchesSearch(llid, value, ud)
 			end
 		end
 		
+--		if( sp.stat >= 1 ) then
+			if ( sp.stat == 2 ) then
+				local SearchStat = "sg";
+			elseif ( sp.stat == 3 ) then
+				local SearchStat = "ag";
+			elseif ( sp.stat == 4 ) then
+				local SearchStat = "st";
+			elseif ( sp.stat == 5 ) then
+				local SearchStat = "in";
+			elseif ( sp.stat == 6 ) then
+				local SearchStat = "si";
+			elseif ( sp.stat == 7 ) then
+				local SearchStat = "ap";
+			elseif ( sp.stat == 8 ) then
+				local SearchStat = "er";
+			elseif ( sp.stat == 9 ) then
+				local SearchStat = "am";
+			elseif ( sp.stat == 10 ) then
+				local SearchStat = "ht";
+			elseif ( sp.stat == 11 ) then
+				local SearchStat = "cr";
+			elseif ( sp.stat == 12 ) then
+				local SearchStat = "hr";
+			elseif ( sp.stat == 13 ) then
+				local SearchStat = "sr";
+			elseif ( sp.stat == 14 ) then
+				local SearchStat = "mr";
+			elseif ( sp.stat == 15 ) then
+				local SearchStat = "sn";
+			elseif ( sp.stat == 16 ) then
+				local SearchStat = "rr";			
+			elseif ( sp.stat == 17 ) then
+				local SearchStat = "dr";
+			elseif ( sp.stat == 18 ) then
+				local SearchStat = "do";
+			elseif ( sp.stat == 19 ) then
+				local SearchStat = "pr";
+			elseif ( sp.stat == 20 ) then
+				local SearchStat = "br";
+			elseif ( sp.stat == 21 ) then
+				local SearchStat = "bv";				
+			print(sp.stat)
+			print(SearchStat)
+			if( sp.minStat ) then
+				local level = LootLink_SearchData(value, SearchStat);
+				if( not level or level < sp.minStat ) then
+					return nil;
+				end
+			end
+		
+			if( sp.maxStat ) then
+				local level = LootLink_SearchData(value, SearchStat);
+				if( level and level > sp.maxStat ) then
+					return nil;
+				end
+			end		
+			end
+--		end
+		
 		if( sp.minLevel ) then
 			local level = LootLink_SearchData(value, "le");
 			if( not level or level < sp.minLevel ) then
@@ -1900,6 +2046,266 @@ local function LootLink_LevelComparison(elem1, elem2)
 	end
 	if( ItemLinks[elem2] and ItemLinks[elem2].d ) then
 		v2 = LootLink_SearchData(ItemLinks[elem2], "le");
+	end
+	
+	return LootLink_GenericComparison(elem1, elem2, v1, v2);
+end
+
+local function LootLink_StrengthComparison(elem1, elem2)
+	local v1, v2;
+	
+	if( ItemLinks[elem1] and ItemLinks[elem1].d ) then
+		v1 = LootLink_SearchData(ItemLinks[elem1], "sg");
+	end
+	if( ItemLinks[elem2] and ItemLinks[elem2].d ) then
+		v2 = LootLink_SearchData(ItemLinks[elem2], "sg");
+	end
+	
+	return LootLink_GenericComparison(elem1, elem2, v1, v2);
+end
+
+local function LootLink_AgilityComparison(elem1, elem2)
+	local v1, v2;
+	
+	if( ItemLinks[elem1] and ItemLinks[elem1].d ) then
+		v1 = LootLink_SearchData(ItemLinks[elem1], "ag");
+	end
+	if( ItemLinks[elem2] and ItemLinks[elem2].d ) then
+		v2 = LootLink_SearchData(ItemLinks[elem2], "ag");
+	end
+	
+	return LootLink_GenericComparison(elem1, elem2, v1, v2);
+end
+
+local function LootLink_StaminaComparison(elem1, elem2)
+	local v1, v2;
+	
+	if( ItemLinks[elem1] and ItemLinks[elem1].d ) then
+		v1 = LootLink_SearchData(ItemLinks[elem1], "st");
+	end
+	if( ItemLinks[elem2] and ItemLinks[elem2].d ) then
+		v2 = LootLink_SearchData(ItemLinks[elem2], "st");
+	end
+	
+	return LootLink_GenericComparison(elem1, elem2, v1, v2);
+end
+
+local function LootLink_IntellectComparison(elem1, elem2)
+	local v1, v2;
+	
+	if( ItemLinks[elem1] and ItemLinks[elem1].d ) then
+		v1 = LootLink_SearchData(ItemLinks[elem1], "in");
+	end
+	if( ItemLinks[elem2] and ItemLinks[elem2].d ) then
+		v2 = LootLink_SearchData(ItemLinks[elem2], "in");
+	end
+	
+	return LootLink_GenericComparison(elem1, elem2, v1, v2);
+end
+
+local function LootLink_SpiritComparison(elem1, elem2)
+	local v1, v2;
+	
+	if( ItemLinks[elem1] and ItemLinks[elem1].d ) then
+		v1 = LootLink_SearchData(ItemLinks[elem1], "si");
+	end
+	if( ItemLinks[elem2] and ItemLinks[elem2].d ) then
+		v2 = LootLink_SearchData(ItemLinks[elem2], "si");
+	end
+	
+	return LootLink_GenericComparison(elem1, elem2, v1, v2);
+end
+
+local function LootLink_AttackPowerComparison(elem1, elem2)
+	local v1, v2;
+	
+	if( ItemLinks[elem1] and ItemLinks[elem1].d ) then
+		v1 = LootLink_SearchData(ItemLinks[elem1], "ap");
+	end
+	if( ItemLinks[elem2] and ItemLinks[elem2].d ) then
+		v2 = LootLink_SearchData(ItemLinks[elem2], "ap");
+	end
+	
+	return LootLink_GenericComparison(elem1, elem2, v1, v2);
+end
+
+local function LootLink_ExpertiseComparison(elem1, elem2)
+	local v1, v2;
+	
+	if( ItemLinks[elem1] and ItemLinks[elem1].d ) then
+		v1 = LootLink_SearchData(ItemLinks[elem1], "er");
+	end
+	if( ItemLinks[elem2] and ItemLinks[elem2].d ) then
+		v2 = LootLink_SearchData(ItemLinks[elem2], "er");
+	end
+	
+	return LootLink_GenericComparison(elem1, elem2, v1, v2);
+end
+
+local function LootLink_ARPComparison(elem1, elem2)
+	local v1, v2;
+	
+	if( ItemLinks[elem1] and ItemLinks[elem1].d ) then
+		v1 = LootLink_SearchData(ItemLinks[elem1], "am");
+	end
+	if( ItemLinks[elem2] and ItemLinks[elem2].d ) then
+		v2 = LootLink_SearchData(ItemLinks[elem2], "am");
+	end
+	
+	return LootLink_GenericComparison(elem1, elem2, v1, v2);
+end
+
+local function LootLink_HitComparison(elem1, elem2)
+	local v1, v2;
+	
+	if( ItemLinks[elem1] and ItemLinks[elem1].d ) then
+		v1 = LootLink_SearchData(ItemLinks[elem1], "ht");
+	end
+	if( ItemLinks[elem2] and ItemLinks[elem2].d ) then
+		v2 = LootLink_SearchData(ItemLinks[elem2], "ht");
+	end
+	
+	return LootLink_GenericComparison(elem1, elem2, v1, v2);
+end
+
+local function LootLink_CritComparison(elem1, elem2)
+	local v1, v2;
+	
+	if( ItemLinks[elem1] and ItemLinks[elem1].d ) then
+		v1 = LootLink_SearchData(ItemLinks[elem1], "cr");
+	end
+	if( ItemLinks[elem2] and ItemLinks[elem2].d ) then
+		v2 = LootLink_SearchData(ItemLinks[elem2], "cr");
+	end
+	
+	return LootLink_GenericComparison(elem1, elem2, v1, v2);
+end
+
+local function LootLink_HasteComparison(elem1, elem2)
+	local v1, v2;
+	
+	if( ItemLinks[elem1] and ItemLinks[elem1].d ) then
+		v1 = LootLink_SearchData(ItemLinks[elem1], "hr");
+	end
+	if( ItemLinks[elem2] and ItemLinks[elem2].d ) then
+		v2 = LootLink_SearchData(ItemLinks[elem2], "hr");
+	end
+	
+	return LootLink_GenericComparison(elem1, elem2, v1, v2);
+end
+
+local function LootLink_SPComparison(elem1, elem2)
+	local v1, v2;
+	
+	if( ItemLinks[elem1] and ItemLinks[elem1].d ) then
+		v1 = LootLink_SearchData(ItemLinks[elem1], "sr");
+	end
+	if( ItemLinks[elem2] and ItemLinks[elem2].d ) then
+		v2 = LootLink_SearchData(ItemLinks[elem2], "sr");
+	end
+	
+	return LootLink_GenericComparison(elem1, elem2, v1, v2);
+end
+
+local function LootLink_MP5Comparison(elem1, elem2)
+	local v1, v2;
+	
+	if( ItemLinks[elem1] and ItemLinks[elem1].d ) then
+		v1 = LootLink_SearchData(ItemLinks[elem1], "mr");
+	end
+	if( ItemLinks[elem2] and ItemLinks[elem2].d ) then
+		v2 = LootLink_SearchData(ItemLinks[elem2], "mr");
+	end
+	
+	return LootLink_GenericComparison(elem1, elem2, v1, v2);
+end
+
+local function LootLink_SpellPenComparison(elem1, elem2)
+	local v1, v2;
+	
+	if( ItemLinks[elem1] and ItemLinks[elem1].d ) then
+		v1 = LootLink_SearchData(ItemLinks[elem1], "sn");
+	end
+	if( ItemLinks[elem2] and ItemLinks[elem2].d ) then
+		v2 = LootLink_SearchData(ItemLinks[elem2], "sn");
+	end
+	
+	return LootLink_GenericComparison(elem1, elem2, v1, v2);
+end
+
+local function LootLink_ResilienceComparison(elem1, elem2)
+	local v1, v2;
+	
+	if( ItemLinks[elem1] and ItemLinks[elem1].d ) then
+		v1 = LootLink_SearchData(ItemLinks[elem1], "rr");
+	end
+	if( ItemLinks[elem2] and ItemLinks[elem2].d ) then
+		v2 = LootLink_SearchData(ItemLinks[elem2], "rr");
+	end
+	
+	return LootLink_GenericComparison(elem1, elem2, v1, v2);
+end
+
+local function LootLink_DefenseComparison(elem1, elem2)
+	local v1, v2;
+	
+	if( ItemLinks[elem1] and ItemLinks[elem1].d ) then
+		v1 = LootLink_SearchData(ItemLinks[elem1], "dr");
+	end
+	if( ItemLinks[elem2] and ItemLinks[elem2].d ) then
+		v2 = LootLink_SearchData(ItemLinks[elem2], "dr");
+	end
+	
+	return LootLink_GenericComparison(elem1, elem2, v1, v2);
+end
+
+local function LootLink_DodgeComparison(elem1, elem2)
+	local v1, v2;
+	
+	if( ItemLinks[elem1] and ItemLinks[elem1].d ) then
+		v1 = LootLink_SearchData(ItemLinks[elem1], "do");
+	end
+	if( ItemLinks[elem2] and ItemLinks[elem2].d ) then
+		v2 = LootLink_SearchData(ItemLinks[elem2], "do");
+	end
+	
+	return LootLink_GenericComparison(elem1, elem2, v1, v2);
+end
+
+local function LootLink_ParryComparison(elem1, elem2)
+	local v1, v2;
+	
+	if( ItemLinks[elem1] and ItemLinks[elem1].d ) then
+		v1 = LootLink_SearchData(ItemLinks[elem1], "pr");
+	end
+	if( ItemLinks[elem2] and ItemLinks[elem2].d ) then
+		v2 = LootLink_SearchData(ItemLinks[elem2], "pr");
+	end
+	
+	return LootLink_GenericComparison(elem1, elem2, v1, v2);
+end
+
+local function LootLink_BlockRComparison(elem1, elem2)
+	local v1, v2;
+	
+	if( ItemLinks[elem1] and ItemLinks[elem1].d ) then
+		v1 = LootLink_SearchData(ItemLinks[elem1], "br");
+	end
+	if( ItemLinks[elem2] and ItemLinks[elem2].d ) then
+		v2 = LootLink_SearchData(ItemLinks[elem2], "br");
+	end
+	
+	return LootLink_GenericComparison(elem1, elem2, v1, v2);
+end
+
+local function LootLink_BlockVComparison(elem1, elem2)
+	local v1, v2;
+	
+	if( ItemLinks[elem1] and ItemLinks[elem1].d ) then
+		v1 = LootLink_SearchData(ItemLinks[elem1], "bv");
+	end
+	if( ItemLinks[elem2] and ItemLinks[elem2].d ) then
+		v2 = LootLink_SearchData(ItemLinks[elem2], "bv");
 	end
 	
 	return LootLink_GenericComparison(elem1, elem2, v1, v2);
@@ -3382,6 +3788,14 @@ function LootLinkSearch_LoadValues()
 	sdd:Initialize(LLS_StatDropDown, LLS_StatDropDown_Initialize);
 	sdd:SetSelectedID(LLS_StatDropDown, sp and sp.stat or 1);
 	
+	field = _G["LLS_MinimumStatEditBox"];
+	field:SetText(sp and sp.minStat or "");
+	tinsert(fields, field);
+
+	field = _G["LLS_MaximumStatEditBox"];
+	field:SetText(sp and sp.maxStat or "");
+	tinsert(fields, field);
+	
 	_G["LLS_UsableCheckButton"]:SetChecked(sp and sp.usable);
 	
 	field = _G["LLS_MinimumLevelEditBox"];
@@ -3477,6 +3891,20 @@ function LootLinkSearch_SaveValues()
 	value = sdd:GetSelectedID(LLS_StatDropDown);
 	if( value and value ~= 1 ) then
 		sp.stat = value;
+		interesting = 1;
+	end
+	
+	field = _G["LLS_MinimumStatEditBox"];
+	value = field:GetText();
+	if( value and LootLink_CheckNumeric(value) ) then
+		sp.minStat = tonumber(value);
+		interesting = 1;
+	end
+	
+	field = _G["LLS_MaximumStatEditBox"];
+	value = field:GetText();
+	if( value and LootLink_CheckNumeric(value) ) then
+		sp.maxStat = tonumber(value);
 		interesting = 1;
 	end
 	
@@ -3777,7 +4205,7 @@ function LootLink_AddItem(name, item, color)
 			itemString, valid = string.gsub(item, "^(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+)$", "%1:0:0:0:0:0:%3:%4:0");
 		else
 			-- Remove instance-specific data from the given item (2nd is enchantment, 3rd-5th are sockets, 9th is the linking character's level)
-			itemString, valid = string.gsub(item, "(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+)", "%1:0:0:0:0:%6:%7:%8:0");
+			itemString, valid = string.gsub(item, "(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+)", "%1:0:0:0:0:0:%7:%8:0");
 		end
 
 		if( valid and valid == 1) then
@@ -3802,7 +4230,7 @@ function LootLink_ProcessLinks(text)
 	if( LL.lReady and text ) then
 	for color, item, name in string.gmatch(text, "|c(%x+)|Hitem:(%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+)|h%[(.-)%]|h|r") do
 			if( color and item and name and name ~= "" ) then
-				itemString, valid = string.gsub(item, "^(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+)$", "%1:0:0:0:0:%6:%7:%8:%9");
+				itemString, valid = string.gsub(item, "^(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+)$", "%1:0:0:0:0:0:%7:%8:0");
 
 				if( valid and valid == 1) then
 					local itemid = string.match(itemString, "^(%-?%d+):");

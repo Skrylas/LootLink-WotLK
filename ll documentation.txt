@@ -9,7 +9,7 @@
 --- il = Item Level
 --- bi = Binding
 --- lo = Location
---- ar = armor
+--- ar = armor = RESISTANCE0_NAME
 --- ty = type
 --- su = subtype
 --- un = unique
@@ -22,26 +22,28 @@
 --- bl = block
 --- sl = slots
 
---- sg = strength
---- ag = agility
---- st = stamina
---- in = intellect
---- si = spirit
---- ap = attack power
---- er = expertise rating
---- am = armor penetration rating
---- ht = hit rating
---- cr = crit rating
---- hr = haste rating
---- sr = spell power
---- mr = mana per 5
---- sn = spell pen
---- rr = resilience rating
---- dr = defense rating
---- do = dodge rating
---- pr = parry rating
---- br = block rating
---- bv = block value
+2--- sg = strength = ITEM_MOD_STRENGTH_SHORT
+3--- ag = agility = ITEM_MOD_AGILITY_SHORT
+4--- st = stamina = ITEM_MOD_STAMINA_SHORT
+5--- in = intellect = ITEM_MOD_INTELLECT_SHORT
+6--- si = spirit = ITEM_MOD_SPIRIT_SHORT
+7--- ap = attack power = ITEM_MOD_ATTACK_POWER_SHORT
+8--- er = expertise rating = ITEM_MOD_EXPERTISE_RATING_SHORT
+9--- am = armor penetration rating = ITEM_MOD_ARMOR_PENETRATION_RATING_SHORT
+10--- ht = hit rating = ITEM_MOD_HIT_RATING_SHORT
+11--- cr = crit rating = ITEM_MOD_CRIT_RATING_SHORT
+12--- hr = haste rating = ITEM_MOD_HASTE_RATING_SHORT
+13--- sr = spell power = ITEM_MOD_SPELL_POWER_SHORT
+14--- mr = mana per 5 = ITEM_MOD_POWER_REGEN0_SHORT
+15--- sn = spell pen = ITEM_MOD_SPELL_PENETRATION_SHORT
+16--- rr = resilience rating = ITEM_MOD_RESILIENCE_RATING_SHORT
+17--- dr = defense rating = ITEM_MOD_DEFENSE_SKILL_RATING_SHORT
+18--- do = dodge rating = ITEM_MOD_DODGE_RATING_SHORT
+19--- pr = parry rating = ITEM_MOD_PARRY_RATING_SHORT
+20--- br = block rating = ITEM_MOD_BLOCK_RATING_SHORT
+21--- bv = block value = ITEM_MOD_BLOCK_VALUE_SHORT
+
+--- Can also do: Resistances, Sockets, Ranged/Spell/Melee Crit, Spell Damage, Healing Power
 
 	["d"] = "il35·bi0·lo7·ar153·ty0·su0·",
 --- Name color
