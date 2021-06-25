@@ -931,7 +931,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</OnLoad>
 				</Scripts>
 			</Button>
-			<CheckButton name="LLS_UniqueCheckButton">
+			<CheckButton name="LLS_UniqueCheckButton" inherits="ChatConfigCheckButtonTemplate">
 				<Size>
 					<AbsDimension x="32" y="32"/>
 				</Size>
@@ -955,11 +955,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</FontString>
 					</Layer>
 				</Layers>
-				<NormalTexture file="Interface\Buttons\UI-CheckBox-Up"/>
-				<PushedTexture file="Interface\Buttons\UI-CheckBox-Down"/>
-				<HighlightTexture file="Interface\Buttons\UI-CheckBox-Highlight" alphaMode="ADD"/>
-				<CheckedTexture file="Interface\Buttons\UI-CheckBox-Check"/>
-				<DisabledCheckedTexture file="Interface\Buttons\UI-CheckBox-Check-Disabled"/>
 			</CheckButton>
 			<Button name="LLS_LocationDropDown" inherits="SimpleDropDownTemplate" id="1">
 				<Anchors>
@@ -975,7 +970,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</OnLoad>
 				</Scripts>
 			</Button>
-			<CheckButton name="LLS_UsableCheckButton">
+			<CheckButton name="LLS_UsableCheckButton" inherits="ChatConfigCheckButtonTemplate">
 				<Size>
 					<AbsDimension x="32" y="32"/>
 				</Size>
@@ -999,11 +994,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</FontString>
 					</Layer>
 				</Layers>
-				<NormalTexture file="Interface\Buttons\UI-CheckBox-Up"/>
-				<PushedTexture file="Interface\Buttons\UI-CheckBox-Down"/>
-				<HighlightTexture file="Interface\Buttons\UI-CheckBox-Highlight" alphaMode="ADD"/>
-				<CheckedTexture file="Interface\Buttons\UI-CheckBox-Check"/>
-				<DisabledCheckedTexture file="Interface\Buttons\UI-CheckBox-Check-Disabled"/>
 			</CheckButton>
 			<EditBox name="LLS_MinimumLevelEditBox" letters="2" numeric="true" inherits="LLS_EditBoxTemplate">
 				<Anchors>
@@ -1084,7 +1074,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				</Scripts>
 			</Button>
 			<!-- stat search dropdown -->
-			<Button name="LLS_StatDropDown" inherits="SimpleDropDownTemplate" id="1">
+			<Button name="LLS_StatDropDown1" inherits="SimpleDropDownTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="LLS_StatLabel1" relativePoint="TOPLEFT">
 						<Offset>
@@ -1094,11 +1084,11 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						LLS_StatDropDown_OnLoad(self);
+						LLS_StatDropDown1_OnLoad(self);
 					</OnLoad>
 				</Scripts>
-			</Button>		
-			<EditBox name="LLS_MinimumStatEditBox" letters="4" numeric="true" inherits="LLS_EditBoxTemplate">
+			</Button>
+			<EditBox name="LLS_MinimumStatEditBox1" letters="4" numeric="true" inherits="LLS_EditBoxTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="LLS_StatLabel1" relativePoint="TOPRIGHT">
 						<Offset>
@@ -1116,15 +1106,179 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</Layer>
 				</Layers>
 			</EditBox>
-			<EditBox name="LLS_MaximumStatEditBox" letters="4" numeric="true" inherits="LLS_EditBoxTemplate">
+			<EditBox name="LLS_MaximumStatEditBox1" letters="4" numeric="true" inherits="LLS_EditBoxTemplate">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="LLS_MinimumStatEditBox" relativePoint="TOPRIGHT">
+					<Anchor point="TOPLEFT" relativeTo="LLS_MinimumStatEditBox1" relativePoint="TOPRIGHT">
 						<Offset>
 							<AbsDimension x="16" y="0"/>
 						</Offset>
 					</Anchor>
 				</Anchors>
 			</EditBox>
+			<Button name="LLS_StatDropDown2" inherits="SimpleDropDownTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="LLS_StatLabel2" relativePoint="TOPLEFT">
+						<Offset>
+							<AbsDimension x="5" y="5"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						LLS_StatDropDown2_OnLoad(self);
+					</OnLoad>
+				</Scripts>
+			</Button>
+			<EditBox name="LLS_MinimumStatEditBox2" letters="4" numeric="true" inherits="LLS_EditBoxTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="LLS_StatLabel2" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="16" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString inherits="GameFontHighlightSmall" text="-">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT" x="2" y="0"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+			</EditBox>
+			<EditBox name="LLS_MaximumStatEditBox2" letters="4" numeric="true" inherits="LLS_EditBoxTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="LLS_MinimumStatEditBox2" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="16" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</EditBox>
+			<Button name="LLS_StatDropDown3" inherits="SimpleDropDownTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="LLS_StatLabel3" relativePoint="TOPLEFT">
+						<Offset>
+							<AbsDimension x="5" y="5"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						LLS_StatDropDown3_OnLoad(self);
+					</OnLoad>
+				</Scripts>
+			</Button>
+			<EditBox name="LLS_MinimumStatEditBox3" letters="4" numeric="true" inherits="LLS_EditBoxTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="LLS_StatLabel3" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="16" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString inherits="GameFontHighlightSmall" text="-">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT" x="2" y="0"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+			</EditBox>
+			<EditBox name="LLS_MaximumStatEditBox3" letters="4" numeric="true" inherits="LLS_EditBoxTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="LLS_MinimumStatEditBox3" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="16" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</EditBox>
+			<Button name="LLS_StatDropDown4" inherits="SimpleDropDownTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="LLS_StatLabel4" relativePoint="TOPLEFT">
+						<Offset>
+							<AbsDimension x="5" y="5"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						LLS_StatDropDown4_OnLoad(self);
+					</OnLoad>
+				</Scripts>
+			</Button>
+			<EditBox name="LLS_MinimumStatEditBox4" letters="4" numeric="true" inherits="LLS_EditBoxTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="LLS_StatLabel4" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="16" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString inherits="GameFontHighlightSmall" text="-">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT" x="2" y="0"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+			</EditBox>
+			<EditBox name="LLS_MaximumStatEditBox4" letters="4" numeric="true" inherits="LLS_EditBoxTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="LLS_MinimumStatEditBox4" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="16" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</EditBox>	
+			<Button name="LLS_StatDropDown5" inherits="SimpleDropDownTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="LLS_StatLabel5" relativePoint="TOPLEFT">
+						<Offset>
+							<AbsDimension x="5" y="5"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						LLS_StatDropDown5_OnLoad(self);
+					</OnLoad>
+				</Scripts>
+			</Button>
+			<EditBox name="LLS_MinimumStatEditBox5" letters="4" numeric="true" inherits="LLS_EditBoxTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="LLS_StatLabel5" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="16" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString inherits="GameFontHighlightSmall" text="-">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT" x="2" y="0"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+			</EditBox>
+			<EditBox name="LLS_MaximumStatEditBox5" letters="4" numeric="true" inherits="LLS_EditBoxTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="LLS_MinimumStatEditBox5" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="16" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</EditBox>		
 			<!-- container items -->
 			<EditBox name="LLS_MinimumSlotsEditBox" letters="3" numeric="true" inherits="LLS_EditBoxTemplate" hidden="true">
 				<Anchors>

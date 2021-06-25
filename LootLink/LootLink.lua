@@ -551,26 +551,26 @@ local LLS_BINDS_LIST = {
 
 local LLS_STAT_LIST = {
 	{ name = LL.NONE, value = nil },
-	{ name = LL.STRENGTH, value = LL.STAT_STRENGTH },
-	{ name = LL.AGILITY, value = LL.STAT_AGILITY },
-	{ name = LL.STAMINA, value = LL.STAT_STAMINA },
-	{ name = LL.INTELLECT, value = LL.STAT_INTELLECT },
-	{ name = LL.SPIRIT, value = LL.STAT_SPIRIT },
-	{ name = LL.ATTACK_POWER, value = LL.STAT_ATTACK_POWER },
-	{ name = LL.EXPERTISE_RATING, value = LL.STAT_EXPERTISE_RATING },
-	{ name = LL.ARMOR_PENETRATION_RATING, value = LL.STAT_ARMOR_PENETRATION_RATING },
-	{ name = LL.HIT_RATING, value = LL.STAT_HIT_RATING },
-	{ name = LL.CRIT_RATING, value = LL.STAT_CRIT_RATING },
-	{ name = LL.HASTE_RATING, value = LL.STAT_HASTE_RATING },
-	{ name = LL.SPELL_POWER, value = LL.STAT_SPELL_POWER },
-	{ name = LL.MANA_REGENERATION, value = LL.STAT_MANA_REGENERATION },
-	{ name = LL.SPELL_PENETRATION, value = LL.STAT_SPELL_PENETRATION },
-	{ name = LL.RESILIENCE_RATING, value = LL.STAT_RESILIENCE_RATING },
-	{ name = LL.DEFENSE_RATING, value = LL.STAT_DEFENSE_RATING },
-	{ name = LL.DODGE_RATING, value = LL.STAT_DODGE_RATING },
-	{ name = LL.PARRY_RATING, value = LL.STAT_PARRY_RATING },
-	{ name = LL.BLOCK_RATING, value = LL.STAT_BLOCK_RATING },
-	{ name = LL.BLOCK_VALUE, value = LL.STAT_BLOCK_VALUE },
+	{ name = LL.STRENGTH, value = "sg" },
+	{ name = LL.AGILITY, value = "ag" },
+	{ name = LL.STAMINA, value = "st" },
+	{ name = LL.INTELLECT, value = "in" },
+	{ name = LL.SPIRIT, value = "si" },
+	{ name = LL.ATTACK_POWER, value = "ap" },
+	{ name = LL.EXPERTISE_RATING, value = "er" },
+	{ name = LL.ARMOR_PENETRATION_RATING, value = "am" },
+	{ name = LL.HIT_RATING, value = "ht" },
+	{ name = LL.CRIT_RATING, value = "cr" },
+	{ name = LL.HASTE_RATING, value = "hr" },
+	{ name = LL.SPELL_POWER, value = "sr" },
+	{ name = LL.MANA_REGENERATION, value = "mr"},
+	{ name = LL.SPELL_PENETRATION, value = "sn" },
+	{ name = LL.RESILIENCE_RATING, value = "rr" },
+	{ name = LL.DEFENSE_RATING, value = "dr" },
+	{ name = LL.DODGE_RATING, value = "do" },
+	{ name = LL.PARRY_RATING, value = "pr" },
+	{ name = LL.BLOCK_RATING, value = "br" },
+	{ name = LL.BLOCK_VALUE, value = "bv" },
 };
 
 local LLS_TYPE_LIST = {
@@ -1530,7 +1530,9 @@ local function LootLink_MatchesSearch(llid, value, ud)
 		end
 		
 		if( sp.rarity ) then
+		print(sp.rarity)
 			if( LLS_RARITY_LIST[sp.rarity].value ~= value.c ) then
+				print(LLS_RARITY_LIST[sp.rarity].value)
 				return nil;
 			end
 		end
@@ -1588,64 +1590,90 @@ local function LootLink_MatchesSearch(llid, value, ud)
 			end
 		end
 		
---		if( sp.stat >= 1 ) then
-			if ( sp.stat == 2 ) then
-				local SearchStat = "sg";
-			elseif ( sp.stat == 3 ) then
-				local SearchStat = "ag";
-			elseif ( sp.stat == 4 ) then
-				local SearchStat = "st";
-			elseif ( sp.stat == 5 ) then
-				local SearchStat = "in";
-			elseif ( sp.stat == 6 ) then
-				local SearchStat = "si";
-			elseif ( sp.stat == 7 ) then
-				local SearchStat = "ap";
-			elseif ( sp.stat == 8 ) then
-				local SearchStat = "er";
-			elseif ( sp.stat == 9 ) then
-				local SearchStat = "am";
-			elseif ( sp.stat == 10 ) then
-				local SearchStat = "ht";
-			elseif ( sp.stat == 11 ) then
-				local SearchStat = "cr";
-			elseif ( sp.stat == 12 ) then
-				local SearchStat = "hr";
-			elseif ( sp.stat == 13 ) then
-				local SearchStat = "sr";
-			elseif ( sp.stat == 14 ) then
-				local SearchStat = "mr";
-			elseif ( sp.stat == 15 ) then
-				local SearchStat = "sn";
-			elseif ( sp.stat == 16 ) then
-				local SearchStat = "rr";			
-			elseif ( sp.stat == 17 ) then
-				local SearchStat = "dr";
-			elseif ( sp.stat == 18 ) then
-				local SearchStat = "do";
-			elseif ( sp.stat == 19 ) then
-				local SearchStat = "pr";
-			elseif ( sp.stat == 20 ) then
-				local SearchStat = "br";
-			elseif ( sp.stat == 21 ) then
-				local SearchStat = "bv";				
-			print(sp.stat)
-			print(SearchStat)
-			if( sp.minStat ) then
-				local level = LootLink_SearchData(value, SearchStat);
-				if( not level or level < sp.minStat ) then
+		if( sp.stat1 ) then
+--				print(LLS_STAT_LIST[sp.stat].value)
+			if( sp.minStat1 ) then
+				local level = LootLink_SearchData(value, LLS_STAT_LIST[sp.stat1].value);
+				if( not level or level < sp.minStat1 ) then
 					return nil;
 				end
 			end
 		
-			if( sp.maxStat ) then
-				local level = LootLink_SearchData(value, SearchStat);
-				if( level and level > sp.maxStat ) then
+			if( sp.maxStat1 ) then
+				local level = LootLink_SearchData(value, LLS_STAT_LIST[sp.stat1].value);
+				if( level and level > sp.maxStat1 ) then
 					return nil;
 				end
 			end		
+		end
+		
+		if( sp.stat2 ) then
+--				print(LLS_STAT_LIST[sp.stat].value)
+			if( sp.minStat2 ) then
+				local level = LootLink_SearchData(value, LLS_STAT_LIST[sp.stat2].value);
+				if( not level or level < sp.minStat2 ) then
+					return nil;
+				end
 			end
---		end
+		
+			if( sp.maxStat2 ) then
+				local level = LootLink_SearchData(value, LLS_STAT_LIST[sp.stat2].value);
+				if( level and level > sp.maxStat2 ) then
+					return nil;
+				end
+			end		
+		end		
+		
+		if( sp.stat3 ) then
+--				print(LLS_STAT_LIST[sp.stat].value)
+			if( sp.minStat3 ) then
+				local level = LootLink_SearchData(value, LLS_STAT_LIST[sp.stat3].value);
+				if( not level or level < sp.minStat3 ) then
+					return nil;
+				end
+			end
+		
+			if( sp.maxStat3 ) then
+				local level = LootLink_SearchData(value, LLS_STAT_LIST[sp.stat3].value);
+				if( level and level > sp.maxStat3 ) then
+					return nil;
+				end
+			end		
+		end
+			
+		if( sp.stat4 ) then
+--				print(LLS_STAT_LIST[sp.stat].value)
+			if( sp.minStat4 ) then
+				local level = LootLink_SearchData(value, LLS_STAT_LIST[sp.stat4].value);
+				if( not level or level < sp.minStat4 ) then
+					return nil;
+				end
+			end
+		
+			if( sp.maxStat4 ) then
+				local level = LootLink_SearchData(value, LLS_STAT_LIST[sp.stat4].value);
+				if( level and level > sp.maxStat4 ) then
+					return nil;
+				end
+			end		
+		end		
+			
+		if( sp.stat5 ) then
+--				print(LLS_STAT_LIST[sp.stat].value)
+			if( sp.minStat5 ) then
+				local level = LootLink_SearchData(value, LLS_STAT_LIST[sp.stat5].value);
+				if( not level or level < sp.minStat5 ) then
+					return nil;
+				end
+			end
+		
+			if( sp.maxStat5 ) then
+				local level = LootLink_SearchData(value, LLS_STAT_LIST[sp.stat5].value);
+				if( level and level > sp.maxStat5 ) then
+					return nil;
+				end
+			end		
+		end	
 		
 		if( sp.minLevel ) then
 			local level = LootLink_SearchData(value, "le");
@@ -2441,12 +2469,52 @@ local function LLS_LocationDropDown_Initialize()
 	end
 end
 
-local function LLS_StatDropDown_Initialize()
+local function LLS_StatDropDown1_Initialize()
 	local info;
 	for i = 1, #LLS_STAT_LIST, 1 do
 		info = { };
 		info.text = LLS_STAT_LIST[i].name;
-		info.func = LLS_StatDropDown_OnClick;
+		info.func = LLS_StatDropDown1_OnClick;
+		sdd:AddButton(info);
+	end
+end
+
+local function LLS_StatDropDown2_Initialize()
+	local info;
+	for i = 1, #LLS_STAT_LIST, 1 do
+		info = { };
+		info.text = LLS_STAT_LIST[i].name;
+		info.func = LLS_StatDropDown2_OnClick;
+		sdd:AddButton(info);
+	end
+end
+
+local function LLS_StatDropDown3_Initialize()
+	local info;
+	for i = 1, #LLS_STAT_LIST, 1 do
+		info = { };
+		info.text = LLS_STAT_LIST[i].name;
+		info.func = LLS_StatDropDown3_OnClick;
+		sdd:AddButton(info);
+	end
+end
+
+local function LLS_StatDropDown4_Initialize()
+	local info;
+	for i = 1, #LLS_STAT_LIST, 1 do
+		info = { };
+		info.text = LLS_STAT_LIST[i].name;
+		info.func = LLS_StatDropDown4_OnClick;
+		sdd:AddButton(info);
+	end
+end
+
+local function LLS_StatDropDown5_Initialize()
+	local info;
+	for i = 1, #LLS_STAT_LIST, 1 do
+		info = { };
+		info.text = LLS_STAT_LIST[i].name;
+		info.func = LLS_StatDropDown5_OnClick;
 		sdd:AddButton(info);
 	end
 end
@@ -3506,13 +3574,49 @@ function LLS_SubtypeDropDown_OnClick(self)
 	sdd:SetSelectedID(LLS_SubtypeDropDown, self:GetID());
 end
 
-function LLS_StatDropDown_OnLoad(self)
+function LLS_StatDropDown1_OnLoad(self)
 	sdd:SetWidth(self, 90);
 	sdd:JustifyText(self, "LEFT");
 end
 
-function LLS_StatDropDown_OnClick(self)
-	sdd:SetSelectedID(LLS_StatDropDown, self:GetID());
+function LLS_StatDropDown1_OnClick(self)
+	sdd:SetSelectedID(LLS_StatDropDown1, self:GetID());
+end
+
+function LLS_StatDropDown2_OnLoad(self)
+	sdd:SetWidth(self, 90);
+	sdd:JustifyText(self, "LEFT");
+end
+
+function LLS_StatDropDown2_OnClick(self)
+	sdd:SetSelectedID(LLS_StatDropDown2, self:GetID());
+end
+
+function LLS_StatDropDown3_OnLoad(self)
+	sdd:SetWidth(self, 90);
+	sdd:JustifyText(self, "LEFT");
+end
+
+function LLS_StatDropDown3_OnClick(self)
+	sdd:SetSelectedID(LLS_StatDropDown3, self:GetID());
+end
+
+function LLS_StatDropDown4_OnLoad(self)
+	sdd:SetWidth(self, 90);
+	sdd:JustifyText(self, "LEFT");
+end
+
+function LLS_StatDropDown4_OnClick(self)
+	sdd:SetSelectedID(LLS_StatDropDown4, self:GetID());
+end
+
+function LLS_StatDropDown5_OnLoad(self)
+	sdd:SetWidth(self, 90);
+	sdd:JustifyText(self, "LEFT");
+end
+
+function LLS_StatDropDown5_OnClick(self)
+	sdd:SetSelectedID(LLS_StatDropDown5, self:GetID());
 end
 
 function LootLink_AutoCompleteButton_OnClick(self)
@@ -3785,15 +3889,59 @@ function LootLinkSearch_LoadValues()
 	sdd:Initialize(LLS_LocationDropDown, LLS_LocationDropDown_Initialize);
 	sdd:SetSelectedID(LLS_LocationDropDown, sp and sp.location or 1);
 	
-	sdd:Initialize(LLS_StatDropDown, LLS_StatDropDown_Initialize);
-	sdd:SetSelectedID(LLS_StatDropDown, sp and sp.stat or 1);
+	sdd:Initialize(LLS_StatDropDown1, LLS_StatDropDown1_Initialize);
+	sdd:SetSelectedID(LLS_StatDropDown1, sp and sp.stat1 or 1);
 	
-	field = _G["LLS_MinimumStatEditBox"];
-	field:SetText(sp and sp.minStat or "");
+	sdd:Initialize(LLS_StatDropDown2, LLS_StatDropDown2_Initialize);
+	sdd:SetSelectedID(LLS_StatDropDown2, sp and sp.stat2 or 1);
+	
+	sdd:Initialize(LLS_StatDropDown3, LLS_StatDropDown3_Initialize);
+	sdd:SetSelectedID(LLS_StatDropDown3, sp and sp.stat3 or 1);
+	
+	sdd:Initialize(LLS_StatDropDown4, LLS_StatDropDown4_Initialize);
+	sdd:SetSelectedID(LLS_StatDropDown4, sp and sp.stat4 or 1);
+	
+	sdd:Initialize(LLS_StatDropDown5, LLS_StatDropDown5_Initialize);
+	sdd:SetSelectedID(LLS_StatDropDown5, sp and sp.stat5 or 1);
+	
+	field = _G["LLS_MinimumStatEditBox1"];
+	field:SetText(sp and sp.minStat1 or "");
 	tinsert(fields, field);
 
-	field = _G["LLS_MaximumStatEditBox"];
-	field:SetText(sp and sp.maxStat or "");
+	field = _G["LLS_MaximumStatEditBox1"];
+	field:SetText(sp and sp.maxStat1 or "");
+	tinsert(fields, field);
+	
+	field = _G["LLS_MinimumStatEditBox2"];
+	field:SetText(sp and sp.minStat2 or "");
+	tinsert(fields, field);
+
+	field = _G["LLS_MaximumStatEditBox2"];
+	field:SetText(sp and sp.maxStat2 or "");
+	tinsert(fields, field);
+	
+	field = _G["LLS_MinimumStatEditBox3"];
+	field:SetText(sp and sp.minStat3 or "");
+	tinsert(fields, field);
+
+	field = _G["LLS_MaximumStatEditBox3"];
+	field:SetText(sp and sp.maxStat3 or "");
+	tinsert(fields, field);
+	
+	field = _G["LLS_MinimumStatEditBox4"];
+	field:SetText(sp and sp.minStat4 or "");
+	tinsert(fields, field);
+
+	field = _G["LLS_MaximumStatEditBox4"];
+	field:SetText(sp and sp.maxStat4 or "");
+	tinsert(fields, field);
+	
+	field = _G["LLS_MinimumStatEditBox5"];
+	field:SetText(sp and sp.minStat5 or "");
+	tinsert(fields, field);
+
+	field = _G["LLS_MaximumStatEditBox5"];
+	field:SetText(sp and sp.maxStat5 or "");
 	tinsert(fields, field);
 	
 	_G["LLS_UsableCheckButton"]:SetChecked(sp and sp.usable);
@@ -3888,23 +4036,103 @@ function LootLinkSearch_SaveValues()
 		interesting = 1;
 	end
 	
-	value = sdd:GetSelectedID(LLS_StatDropDown);
+	value = sdd:GetSelectedID(LLS_StatDropDown1);
 	if( value and value ~= 1 ) then
-		sp.stat = value;
+		sp.stat1 = value;
 		interesting = 1;
 	end
 	
-	field = _G["LLS_MinimumStatEditBox"];
-	value = field:GetText();
-	if( value and LootLink_CheckNumeric(value) ) then
-		sp.minStat = tonumber(value);
+	value = sdd:GetSelectedID(LLS_StatDropDown2);
+	if( value and value ~= 1 ) then
+		sp.stat2 = value;
 		interesting = 1;
 	end
 	
-	field = _G["LLS_MaximumStatEditBox"];
+	value = sdd:GetSelectedID(LLS_StatDropDown3);
+	if( value and value ~= 1 ) then
+		sp.stat3 = value;
+		interesting = 1;
+	end
+	
+	value = sdd:GetSelectedID(LLS_StatDropDown4);
+	if( value and value ~= 1 ) then
+		sp.stat4 = value;
+		interesting = 1;
+	end
+	
+	value = sdd:GetSelectedID(LLS_StatDropDown5);
+	if( value and value ~= 1 ) then
+		sp.stat5 = value;
+		interesting = 1;
+	end
+	
+	field = _G["LLS_MinimumStatEditBox1"];
 	value = field:GetText();
 	if( value and LootLink_CheckNumeric(value) ) then
-		sp.maxStat = tonumber(value);
+		sp.minStat1 = tonumber(value);
+		interesting = 1;
+	end
+	
+	field = _G["LLS_MaximumStatEditBox1"];
+	value = field:GetText();
+	if( value and LootLink_CheckNumeric(value) ) then
+		sp.maxStat1 = tonumber(value);
+		interesting = 1;
+	end
+	
+	field = _G["LLS_MinimumStatEditBox1"];
+	value = field:GetText();
+	if( value and LootLink_CheckNumeric(value) ) then
+		sp.minStat1 = tonumber(value);
+		interesting = 1;
+	end
+	
+	field = _G["LLS_MaximumStatEditBox1"];
+	value = field:GetText();
+	if( value and LootLink_CheckNumeric(value) ) then
+		sp.maxStat1 = tonumber(value);
+		interesting = 1;
+	end
+	
+	field = _G["LLS_MinimumStatEditBox2"];
+	value = field:GetText();
+	if( value and LootLink_CheckNumeric(value) ) then
+		sp.minStat2 = tonumber(value);
+		interesting = 1;
+	end
+	
+	field = _G["LLS_MaximumStatEditBox2"];
+	value = field:GetText();
+	if( value and LootLink_CheckNumeric(value) ) then
+		sp.maxStat2 = tonumber(value);
+		interesting = 1;
+	end
+	
+	field = _G["LLS_MinimumStatEditBox3"];
+	value = field:GetText();
+	if( value and LootLink_CheckNumeric(value) ) then
+		sp.minStat3 = tonumber(value);
+		interesting = 1;
+	end
+	
+	field = _G["LLS_MaximumStatEditBox4"];
+	value = field:GetText();
+	if( value and LootLink_CheckNumeric(value) ) then
+		sp.maxStat4 = tonumber(value);
+		interesting = 1;
+	end
+	
+	field = _G["LLS_MinimumStatEditBox5"];
+	value = field:GetText();
+	if( value and LootLink_CheckNumeric(value) ) then
+		sp.minStat5 = tonumber(value);
+		interesting = 1;
+	end
+	
+	field = _G["LLS_MaximumStatEditBox5"];
+	value = field:GetText();
+	if( value and LootLink_CheckNumeric(value) ) then
+		sp.maxStat5 = tonumber(value);
 		interesting = 1;
 	end
 	
