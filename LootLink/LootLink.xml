@@ -639,7 +639,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 							</Offset>
 						</Anchor>
 					</Anchors>
-				</FontString>
+				</FontString>			
 				<FontString name="LLS_iLevelRangeLabel" inherits="GameFontNormal" justifyH="RIGHT" justifyV="BOTTOM" text="LLS_ILEVEL_RANGE">
 					<Size>
 						<AbsDimension x="134" y="14"/>
@@ -917,6 +917,31 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</OnLoad>
 				</Scripts>
 			</Button>
+			<CheckButton name="LLS_CachedCheckButton" inherits="ChatConfigCheckButtonTemplate">
+				<Size>
+					<AbsDimension x="32" y="32"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="LLS_RarityDropDown" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="-10" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString inherits="GameFontNormalSmall" text="LLS_CACHED">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+									<Offset>
+										<AbsDimension x="-2" y="0"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+			</CheckButton>			
 			<Button name="LLS_BindsDropDown" inherits="SimpleDropDownTemplate" id="1">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="LLS_BindsLabel" relativePoint="TOPRIGHT">

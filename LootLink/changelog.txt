@@ -1,3 +1,8 @@
+v1.6 06/25/2021
+- Items now cache data from GetItemStats
+- V1 of Stat Searching implemented
+- Cached check button
+--------------------------------------------------------------------------------------------------------
 v1.5 06/16/2021
 - Rebuilt Search interface
 - Fixed glyph searching

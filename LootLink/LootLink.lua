@@ -96,6 +96,7 @@ LLS_NAME = "Name:";
 LLS_RARITY = "Rarity:";
 LLS_BINDS = "Binds:";
 LLS_UNIQUE = "Is Unique?";
+LLS_CACHED = "Not Cached?";
 LLS_USABLE = "Usable?";
 LLS_LOCATION = "Equip location:";
 LLS_MINIMUM_LEVEL = "Minimum level:";
@@ -1548,7 +1549,13 @@ local function LootLink_MatchesSearch(llid, value, ud)
 				return nil;
 			end
 		end
-		
+
+		if( sp.cached ) then
+			if( GetItemInfo(LootLink_GetItemId(llid)) ) then
+				return nil;
+			end
+		end	
+
 		if( sp.usable ) then
 			local _type = LootLink_SearchData(value, "ty");
 			local subtype = LootLink_SearchData(value, "su");
@@ -3886,6 +3893,8 @@ function LootLinkSearch_LoadValues()
 
 	_G["LLS_UniqueCheckButton"]:SetChecked(sp and sp.unique);
 	
+	_G["LLS_CachedCheckButton"]:SetChecked(sp and sp.cached);
+	
 	sdd:Initialize(LLS_LocationDropDown, LLS_LocationDropDown_Initialize);
 	sdd:SetSelectedID(LLS_LocationDropDown, sp and sp.location or 1);
 	
@@ -4030,6 +4039,13 @@ function LootLinkSearch_SaveValues()
 		interesting = 1;
 	end
 	
+	field = _G["LLS_CachedCheckButton"];
+	value = field:GetChecked();
+	if( value ) then
+		sp.cached = value;
+		interesting = 1;
+	end	
+	
 	value = sdd:GetSelectedID(LLS_LocationDropDown);
 	if( value and value ~= 1 ) then
 		sp.location = value;
@@ -4112,6 +4128,20 @@ function LootLinkSearch_SaveValues()
 	value = field:GetText();
 	if( value and LootLink_CheckNumeric(value) ) then
 		sp.minStat3 = tonumber(value);
+		interesting = 1;
+	end
+	
+	field = _G["LLS_MaximumStatEditBox3"];
+	value = field:GetText();
+	if( value and LootLink_CheckNumeric(value) ) then
+		sp.maxStat3 = tonumber(value);
+		interesting = 1;
+	end	
+	
+	field = _G["LLS_MinimumStatEditBox4"];
+	value = field:GetText();
+	if( value and LootLink_CheckNumeric(value) ) then
+		sp.minStat4 = tonumber(value);
 		interesting = 1;
 	end
 	
