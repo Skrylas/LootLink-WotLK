@@ -61,7 +61,7 @@
 					LootLink_LightMode_Toggle();
 				</OnClick>
 			</Scripts>
-		</CheckButton>
+		</CheckButton>	
 		<Button name="LootLinkReset" inherits="UIPanelButtonTemplate" text="Reset Data">
 			<Size>
 				<AbsDimension x="120" y="22"/>
