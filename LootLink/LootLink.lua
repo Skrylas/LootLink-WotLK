@@ -680,11 +680,6 @@ LOOTLINK_ITEMS_SHOWN = 23;
 -- Options
 --------------------------------------------------------------------------------------------------
 
---function LootLink_DisplayHelp()
---	Text:SetPoint("TOPLEFT", scc, "TOPLEFT", 0, 0)
---	Text:SetText("test")
---end
-
 function LootLinkOptions_Init()
     --Initialise all the check boxes on the options frame
 --	LootLinkAuction:SetChecked(
@@ -2483,7 +2478,7 @@ local function LLS_RarityDropDown_Initialize()
 	local info = { };
 	for i = 1, #LLS_RARITY_LIST, 1 do
 		info.text = LLS_RARITY_LIST[i].name;
-		info.func = LLS_RarityDropDown_OnClick;
+		info.func = LLS_RarityDropDown_OnClick;	
 		if( LLS_RARITY_LIST[i].value ) then
 			info.colorCode = "|c"..LLS_RARITY_LIST[i].value;
 		end

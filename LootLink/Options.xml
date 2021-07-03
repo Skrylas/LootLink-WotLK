@@ -19,7 +19,7 @@
 					<Anchors>
 						<Anchor point="BOTTOMRIGHT" relativeTo="LootLinkOptions" relativePoint="BOTTOMRIGHT">
 							<Offset>
-								<AbsDimension x="-19" y="20"/>
+								<AbsDimension x="-20" y="20"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -27,28 +27,12 @@
 			</Layer>
 		</Layers>
 	<Frames>		
-		<CheckButton name="LootLinkAuction" inherits="OptionsCheckButtonTemplate">
-			<Anchors>
-				<Anchor point="BOTTOMLEFT" relativeTo="LootLink_OptionsTitle" relativePoint="BOTTOMLEFT">
-						<Offset>
-							<AbsDimension x="10" y="-30"/>
-						</Offset>
-				</Anchor>
-			</Anchors>
-			<Scripts>
-				<OnLoad>
-					self.alwaysShowTooltip = true
-					self.tooltipText = "Toggles automatic scanning of all items in the auction house."
-					_G[self:GetName().."Text"]:SetText("Auction scanning")
-				</OnLoad>
-				<OnClick>
-					LOOTLINK_AUCTION_TOGGLE();
-				</OnClick>
-			</Scripts>
-		</CheckButton>
 		<CheckButton name="LootLinkAutocomplete" inherits="OptionsCheckButtonTemplate">
 			<Anchors>
-				<Anchor point="TOPLEFT" relativeTo="LootLinkAuction" relativePoint="BOTTOMLEFT">
+				<Anchor point="TOPLEFT" relativeTo="LootLink_OptionsTitle" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="10" y="-10"/>
+						</Offset>
 				</Anchor>
 			</Anchors>
 			<Scripts>
@@ -78,7 +62,6 @@
 				</OnClick>
 			</Scripts>
 		</CheckButton>
-	
 		<Button name="LootLinkReset" inherits="UIPanelButtonTemplate" text="Reset Data">
 			<Size>
 				<AbsDimension x="120" y="22"/>
