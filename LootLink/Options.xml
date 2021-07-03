@@ -23,7 +23,7 @@
 							</Offset>
 						</Anchor>
 					</Anchors>
-				</FontString>
+				</FontString>				 
 			</Layer>
 		</Layers>
 	<Frames>		
@@ -78,7 +78,7 @@
 				</OnClick>
 			</Scripts>
 		</CheckButton>
-
+	
 		<Button name="LootLinkReset" inherits="UIPanelButtonTemplate" text="Reset Data">
 			<Size>
 				<AbsDimension x="120" y="22"/>
@@ -91,12 +91,6 @@
 				</Anchor>
 			</Anchors>
 			<Scripts>
-				<OnLoad>
-					self.tooltipText = "Reset Data\n\nDeletes all stored data, this cannot be undone."
-					self.alwaysShowTooltip = true
-				</OnLoad>
-				<OnEnter function="LootLink_TooltipShow"/>
-				<OnLeave function="LootLink_TooltipHide"/>
 				<OnClick>
 					StaticPopup_Show("LOOTLINK_RESET_CONFIRM")
 				</OnClick>

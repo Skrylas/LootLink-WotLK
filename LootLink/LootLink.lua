@@ -36,19 +36,12 @@ LOOTLINK_AUCTION_SCAN_DONE = "LootLink: auction scanning finished";
 LOOTLINK_SCHEDULED_AUCTION_SCAN = "LootLink: will perform a full auction scan the next time you talk to an auctioneer.";
 LOOTLINK_ITEM_RENAMED = "<item was renamed since last seen>";
 
-LOOTLINK_HELP = "help";					-- must be lowercase; command to display help
-LOOTLINK_ADVANCED = "advanced";			-- must be lowercase; command to display advanced help
 LOOTLINK_STATUS = "status";				-- must be lowercase; command to display status
 LOOTLINK_AUTOCOMPLETE = "autocomplete";	-- must be lowercase; command to toggle autocompletion support
 LOOTLINK_AUCTION = "auction";			-- must be lowercase; command to scan auctions
 LOOTLINK_SCAN = "scan";					-- must be lowercase; alias for command to scan auctions
-LOOTLINK_RESET = "reset";				-- must be lowercase; command to reset the database
-LOOTLINK_LIGHTMODE = "light";			-- must be lowercase; command to disable full-text search, using less memory
-LOOTLINK_FULLMODE = "full";				-- must be lowercase; command to enable full-text search, using more memory
-LOOTLINK_CONFIRM = "confirm";			-- must be lowercase; confirmation of RESET or LIGHT
 
 LOOTLINK_RESET_NEEDS_CONFIRM = "|cffff0000LootLink: Warning!  \n\nThis will irreversibly erase all LootLink data.";
-LOOTLINK_RESET_ABORTED = "|cff00ff00LootLink: Data erase was NOT confirmed and will not be done.|r";
 LOOTLINK_RESET_DONE = "|cffffff00LootLink: All data erased.|r";
 LOOTLINK_LIGHTMODE_NEEDS_CONFIRM = "|cffff0000LootLink: Warning!  \n\nThis will disable full-text search, losing known text for all items, but using less memory.";
 LOOTLINK_LIGHTMODE_ABORTED = "|cff00ff00LootLink: Light mode was NOT confirmed and no changes will be made.|r";
@@ -60,28 +53,6 @@ LOOTLINK_FULL_MODE = "LootLink: full mode; full-text search is enabled";
 LOOTLINK_LIGHT_MODE = "LootLink: light mode; full-text search is disabled";
 LOOTLINK_AUTOCOMPLETE_ENABLED = "LootLink: chat autocomplete is enabled";
 LOOTLINK_AUTOCOMPLETE_DISABLED = "LootLink: chat autocomplete is disabled";
-
-LOOTLINK_HELP_TEXT0 = " ";
-LOOTLINK_HELP_TEXT1 = "|cffffff00LootLink command help:|r";
-LOOTLINK_HELP_TEXT2 = "|cff00ff00Use |r|cffffffff/lootlink|r|cff00ff00 or |r|cffffffff/ll|r|cff00ff00 without any arguments to toggle the browse window open or closed.|r";
-LOOTLINK_HELP_TEXT3 = "|cff00ff00Use |r|cffffffff/lootlink <command>|r|cff00ff00 or |r|cffffffff/ll <command>|r|cff00ff00 to perform the following commands:|r";
-LOOTLINK_HELP_TEXT4 = "|cffffffff"..LOOTLINK_HELP.."|r|cff00ff00: displays this message.|r";
-LOOTLINK_HELP_TEXT5 = "|cffffffff"..LOOTLINK_ADVANCED.."|r|cff00ff00: displays more control help.|r";
-LOOTLINK_HELP_TEXT6 = "|cffffffff"..LOOTLINK_STATUS.."|r|cff00ff00: displays status information for data and current options.|r";
-LOOTLINK_HELP_TEXT7 = "|cffffffff"..LOOTLINK_AUTOCOMPLETE.."|r|cff00ff00: toggles chat autocomplete support.|r";
-LOOTLINK_HELP_TEXT8 = "|cffffffff"..LOOTLINK_AUCTION.."|r|cff00ff00 or |r|cffffffff"..LOOTLINK_SCAN.."|r|cff00ff00: starts or schedules an automatic scan of all items in the auction house.|r";
-LOOTLINK_HELP_TEXT9 = "|cffffffff"..LOOTLINK_FULLMODE.."|r|cff00ff00: enables full-text search. This is the default mode.|r";
-LOOTLINK_HELP_TEXT10 = "|cffffffff"..LOOTLINK_LIGHTMODE.."|r|cff00ff00: disables full-text search, using less memory.|r";
-LOOTLINK_HELP_TEXT11 = " ";
-LOOTLINK_HELP_TEXT12 = "|cff00ff00For example: |r|cffffffff/lootlink scan|r|cff00ff00 will start an auction house scan if the auction window is open.|r";
-
-LOOTLINK_ADVANCED_TEXT0 = " ";
-LOOTLINK_ADVANCED_TEXT1 = "|cffffff00LootLink advanced command help:|r";
-LOOTLINK_ADVANCED_TEXT2 = "|cffffffff"..LOOTLINK_RESET.."|r|cff00ff00: resets all lootlink data. THIS IS NOT REVERSIBLE.|r";
-LOOTLINK_ADVANCED_TEXT3 = "|cff00ff00Holding |r|cffffffffShift|r|cff00ff00 and |r|cffffffffCtrl|r|cff00ff00 while |r|cffffffffRight-Clicking|r|cff00ff00 an item will remove it from the database.|r";
-LOOTLINK_ADVANCED_TEXT4 = "|cff00ff00Holding |r|cffffffffShift|r|cff00ff00 while |r|cffffffffLeft-Clicking|r|cff00ff00 an item will link it.|r";
-LOOTLINK_ADVANCED_TEXT5 = "|cff00ff00Holding |r|cffffffffCtrl|r|cff00ff00 while |r|cffffffffLeft-Clicking|r|cff00ff00 an item will open the dressing room.|r";
-LOOTLINK_ADVANCED_TEXT6 = "|cff00ff00Typing |r|cffffffff[|r|cff00ff00 will bring up the ability to link an item from the database.  Ending with |r|cffffffff]|r|cff00ff00 will autocomplete the link with the highlighted item.|r";
 
 LOOTLINK_DATA_UPGRADE_HELP_TEXT0 = "|cffffff00LootLink's data format has significantly changed and your existing data could not be upgraded.|r";
 LOOTLINK_DATA_UPGRADE_HELP_TEXT1 = "|cffffff00LootLink's data format has changed; your existing data has been upgraded to the new format automatically.|r";
@@ -709,13 +680,18 @@ LOOTLINK_ITEMS_SHOWN = 23;
 -- Options
 --------------------------------------------------------------------------------------------------
 
+--function LootLink_DisplayHelp()
+--	Text:SetPoint("TOPLEFT", scc, "TOPLEFT", 0, 0)
+--	Text:SetText("test")
+--end
+
 function LootLinkOptions_Init()
     --Initialise all the check boxes on the options frame
 --	LootLinkAuction:SetChecked(
 	LootLinkAutocomplete:SetChecked(LootLinkState.AutoComplete);
     LootLinkLight:SetChecked(LootLinkState.LightMode);
-	print(LootLinkState.AutoComplete);
-	print(LootLinkState.LightMode);
+--	print(LootLinkState.AutoComplete);
+--	print(LootLinkState.LightMode);
 end
 
 function LootLink_AutoComplete_Toggle()
@@ -1591,9 +1567,7 @@ local function LootLink_MatchesSearch(llid, value, ud)
 		end
 		
 		if( sp.rarity ) then
-		print(sp.rarity)
 			if( LLS_RARITY_LIST[sp.rarity].value ~= value.c ) then
-				print(LLS_RARITY_LIST[sp.rarity].value)
 				return nil;
 			end
 		end
@@ -3764,9 +3738,6 @@ function ToggleLootLink()
 end
 
 function LootLink_SlashCommandHandler(msg)
-	local light;
-	local aborted;
-
 	if( not LL.lDisableVersionReminder ) then
 		LootLink_CheckVersionReminder();
 	end
@@ -3774,26 +3745,7 @@ function LootLink_SlashCommandHandler(msg)
 		ToggleLootLink();
 	else
 		local command = string.lower(msg);
-		if( command == LOOTLINK_HELP ) then
-			local index = 0;
-			local value = _G["LOOTLINK_HELP_TEXT"..index];
-			while( value ) do
-				DEFAULT_CHAT_FRAME:AddMessage(value);
-				index = index + 1;
-				value = _G["LOOTLINK_HELP_TEXT"..index];
-			end
-		elseif( command == LOOTLINK_ADVANCED ) then
-			local index = 0;
-			local value = _G["LOOTLINK_ADVANCED_TEXT"..index];
-			while( value ) do
-				DEFAULT_CHAT_FRAME:AddMessage(value);
-				index = index + 1;
-				value = _G["LOOTLINK_ADVANCED_TEXT"..index];
-			end	
-		elseif( command == LOOTLINK_STATUS ) then
-			LootLink_Status();
-		elseif( command == LOOTLINK_AUTOCOMPLETE ) then
-			LootLinkState.AutoComplete = not LootLinkState.AutoComplete;
+		if( command == LOOTLINK_STATUS ) then
 			LootLink_Status();
 		elseif( command == LOOTLINK_AUCTION or command == LOOTLINK_SCAN ) then
 			if( AuctionFrame and AuctionFrame:IsVisible() ) then
@@ -3802,48 +3754,7 @@ function LootLink_SlashCommandHandler(msg)
 				LL.lScanAuction = true;
 				LootLink_Status();
 			end
-		elseif( command == LOOTLINK_FULLMODE ) then
-			LootLinkState.LightMode = nil;
-			LootLink_Status();
-		else
-			local iStart;
-			local iEnd;
-			local args;
-			
-			iStart, iEnd, command, args = string.find(command, "^(%w+)%s*(.*)$");
-				
-			if( command == LOOTLINK_LIGHTMODE ) then
-				if( LL.lLightModeNeedsConfirm ) then
-					if( args == LOOTLINK_CONFIRM ) then
-						LootLink_LightMode();
-						LL.lLightModeNeedsConfirm = nil;
-						DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_LIGHTMODE_DONE);
-					end
-				else
-					light = 1;
-					LL.lLightModeNeedsConfirm = 1;
-				end
-			end
 		end
-	end
-	
-	if( not light ) then
-		if( LL.lLightModeNeedsConfirm ) then
-			LL.lLightModeNeedsConfirm = nil;
-			DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_LIGHTMODE_ABORTED);
-		end
-	end
-	
-	if( reset ) then
-		DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_RESET_NEEDS_CONFIRM);
-	end
-	
-	if( light ) then
-		DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_LIGHTMODE_NEEDS_CONFIRM);
-	end
-	
-	if( aborted and not reset ) then
-		LL.lDisableVersionReminder = nil
 	end
 end
 
