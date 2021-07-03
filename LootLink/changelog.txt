@@ -1,3 +1,6 @@
+v1.6a 07/03/2021
+- Implemented basic options page
+--------------------------------------------------------------------------------------------------------
 v1.6 06/25/2021
 - Items now cache data from GetItemStats
 - V1 of Stat Searching implemented
