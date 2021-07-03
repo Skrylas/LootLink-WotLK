@@ -47,10 +47,10 @@ LOOTLINK_LIGHTMODE = "light";			-- must be lowercase; command to disable full-te
 LOOTLINK_FULLMODE = "full";				-- must be lowercase; command to enable full-text search, using more memory
 LOOTLINK_CONFIRM = "confirm";			-- must be lowercase; confirmation of RESET or LIGHT
 
-LOOTLINK_RESET_NEEDS_CONFIRM = "|cffff0000LootLink: Warning!  This will irreversibly erase all LootLink data.  If you really want to do this, use /lootlink or /ll with the following command: "..LOOTLINK_RESET.." "..LOOTLINK_CONFIRM.."|r";
+LOOTLINK_RESET_NEEDS_CONFIRM = "|cffff0000LootLink: Warning!  \n\nThis will irreversibly erase all LootLink data.";
 LOOTLINK_RESET_ABORTED = "|cff00ff00LootLink: Data erase was NOT confirmed and will not be done.|r";
 LOOTLINK_RESET_DONE = "|cffffff00LootLink: All data erased.|r";
-LOOTLINK_LIGHTMODE_NEEDS_CONFIRM = "|cffff0000LootLink: Warning!  This will disable full-text search, losing known text for all items, but using less memory.  If you really want to do this, use /lootlink or /ll with the following command: "..LOOTLINK_LIGHTMODE.." "..LOOTLINK_CONFIRM.."|r";
+LOOTLINK_LIGHTMODE_NEEDS_CONFIRM = "|cffff0000LootLink: Warning!  \n\nThis will disable full-text search, losing known text for all items, but using less memory.";
 LOOTLINK_LIGHTMODE_ABORTED = "|cff00ff00LootLink: Light mode was NOT confirmed and no changes will be made.|r";
 LOOTLINK_LIGHTMODE_DONE = "|cffffff00LootLink: Light mode enabled.  Full-text search is disabled and memory is no longer used for item descriptions.|r";
 
@@ -693,7 +693,7 @@ local lBankBagIDs = { BANK_CONTAINER, 5, 6, 7, 8, 9, 10, };
 local LOOTLINK_AUTOCOMPLETE_BUTTON_COUNT = 10;
 
 -- Any UNIT_INVENTORY_CHANGED events after the first that happen within this time will be ignored
-local LOOTLINK_SELF_SCAN_BUFFER_TIME = 0.5;
+local LOOTLINK_SELF_SCAN_BUFFER_TIME = 5;
 
 --------------------------------------------------------------------------------------------------
 -- Global LootLink variables
@@ -704,6 +704,66 @@ LOOTLINK_CURRENT_DATA_VERSION = 201; -- version 2.01
 
 LOOTLINK_ITEM_HEIGHT = 16;
 LOOTLINK_ITEMS_SHOWN = 23;
+
+--------------------------------------------------------------------------------------------------
+-- Options
+--------------------------------------------------------------------------------------------------
+
+function LootLinkOptions_Init()
+    --Initialise all the check boxes on the options frame
+--	LootLinkAuction:SetChecked(
+	LootLinkAutocomplete:SetChecked(LootLinkState.AutoComplete);
+    LootLinkLight:SetChecked(LootLinkState.LightMode);
+	print(LootLinkState.AutoComplete);
+	print(LootLinkState.LightMode);
+end
+
+function LootLink_AutoComplete_Toggle()
+    if (LootLinkState.AutoComplete) then
+        LootLinkState.AutoComplete = false;
+    else
+        LootLinkState.AutoComplete = true;
+    end
+    LootLinkOptions_Init();
+end
+
+function LootLink_LightMode_Toggle()
+    if (LootLinkState.LightMode) then
+        LootLinkState.LightMode = false;
+    else
+        StaticPopup_Show ("LOOTLINK_LIGHTTEXT_CONFIRM")
+    end
+    LootLinkOptions_Init();
+end
+
+StaticPopupDialogs["LOOTLINK_RESET_CONFIRM"] = {
+	text = LOOTLINK_RESET_NEEDS_CONFIRM,
+	button1 = TEXT("Reset"),
+	button2 = TEXT("Cancel"),
+	OnAccept = function()
+		LootLink_Reset();
+	end,
+	timeout = 0,
+	exclusive = 0,
+	showAlert = 1,
+	whileDead = 1,
+	hideOnEscape = 1
+}
+
+StaticPopupDialogs["LOOTLINK_LIGHTTEXT_CONFIRM"] = {
+	text = LOOTLINK_LIGHTMODE_NEEDS_CONFIRM,
+	button1 = TEXT("Confirm"),
+	button2 = TEXT("Cancel"),
+	OnAccept = function()
+		LootLink_LightMode();
+		LootLinkLight:SetChecked("true");
+	end,
+	timeout = 0,
+	exclusive = 0,
+	showAlert = 1,
+	whileDead = 1,
+	hideOnEscape = 1
+}
 
 --------------------------------------------------------------------------------------------------
 -- Internal functions
@@ -1010,10 +1070,10 @@ local function LootLink_Status()
 		else
 			DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_FULL_MODE);
 		end
-		if( LootLinkState.AutoCompleteDisabled ) then
-			DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_AUTOCOMPLETE_DISABLED);
-		else
+		if( LootLinkState.AutoComplete ) then
 			DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_AUTOCOMPLETE_ENABLED);
+		else
+			DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_AUTOCOMPLETE_DISABLED);
 		end
 	else
 		DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_INFO_SHOWN);
@@ -2408,10 +2468,11 @@ local function LootLink_BuildDisplayIndices()
 	LootLink_SetTitle();
 end
 
-local function LootLink_Reset()
+function LootLink_Reset()
 	ItemLinks = { };
 
 	LootLink_SetDataVersion(LOOTLINK_CURRENT_DATA_VERSION);
+	DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_RESET_DONE);
 
 	LootLink_InitSizes(LL.lServerIndex);
 	
@@ -2421,7 +2482,7 @@ local function LootLink_Reset()
 	end
 end
 
-local function LootLink_LightMode()
+function LootLink_LightMode()
 	local index;
 	local value;
 
@@ -2875,7 +2936,7 @@ local function LootLink_ChatEdit_OnTextChanged(self, userInput)
 	
 	-- Check for cases where we don't have to do any work
 	if( not LootLinkState or
-		LootLinkState.AutoCompleteDisabled or
+		not LootLinkState.AutoComplete or
 		(frame.editBox and frame.editBox ~= self) or
 		frame.last == text )
 	then
@@ -3300,6 +3361,7 @@ local function LootLink_VariablesLoaded()
 		LootLink_UpgradeData();
 		LootLink_InitSizes(LL.lServerIndex);
 	end
+	LootLinkOptions_Init();
 end
 
 --------------------------------------------------------------------------------------------------
@@ -3361,6 +3423,11 @@ function LootLink_OnLoad(self)
 	if( DEFAULT_CHAT_FRAME ) then
 		DEFAULT_CHAT_FRAME:AddMessage("LootLink AddOn loaded");
 	end
+end
+
+function LootLink_OptionsOnLoad(self)
+	self.name = GetAddOnMetadata("LootLink", "Title")
+	InterfaceOptions_AddCategory(self)
 end
 
 function LootLink_CanSendAuctionQuery(...)
@@ -3697,7 +3764,6 @@ function ToggleLootLink()
 end
 
 function LootLink_SlashCommandHandler(msg)
-	local reset;
 	local light;
 	local aborted;
 
@@ -3727,7 +3793,7 @@ function LootLink_SlashCommandHandler(msg)
 		elseif( command == LOOTLINK_STATUS ) then
 			LootLink_Status();
 		elseif( command == LOOTLINK_AUTOCOMPLETE ) then
-			LootLinkState.AutoCompleteDisabled = not LootLinkState.AutoCompleteDisabled;
+			LootLinkState.AutoComplete = not LootLinkState.AutoComplete;
 			LootLink_Status();
 		elseif( command == LOOTLINK_AUCTION or command == LOOTLINK_SCAN ) then
 			if( AuctionFrame and AuctionFrame:IsVisible() ) then
@@ -3745,21 +3811,8 @@ function LootLink_SlashCommandHandler(msg)
 			local args;
 			
 			iStart, iEnd, command, args = string.find(command, "^(%w+)%s*(.*)$");
-	
-			if( command == LOOTLINK_RESET ) then
-				if( LL.lResetNeedsConfirm ) then
-					if( args == LOOTLINK_CONFIRM ) then
-						LootLink_Reset();
-						LL.lResetNeedsConfirm = nil;
-						LL.lDisableVersionReminder = nil
-						DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_RESET_DONE);
-					end
-				else
-					reset = 1;
-					LL.lResetNeedsConfirm = 1;
-					LL.lDisableVersionReminder = 1;
-				end
-			elseif( command == LOOTLINK_LIGHTMODE ) then
+				
+			if( command == LOOTLINK_LIGHTMODE ) then
 				if( LL.lLightModeNeedsConfirm ) then
 					if( args == LOOTLINK_CONFIRM ) then
 						LootLink_LightMode();
@@ -3771,14 +3824,6 @@ function LootLink_SlashCommandHandler(msg)
 					LL.lLightModeNeedsConfirm = 1;
 				end
 			end
-		end
-	end
-	
-	if( not reset ) then
-		if( LL.lResetNeedsConfirm ) then
-			aborted = 1;
-			LL.lResetNeedsConfirm = nil;
-			DEFAULT_CHAT_FRAME:AddMessage(LOOTLINK_RESET_ABORTED);
 		end
 	end
 	

@@ -9,3 +9,4 @@ libs\LibStub\LibStub.lua
 libs\SimpleDropDown-1.0\SimpleDropDown-1.0.xml
 
 LootLink.xml
+Options.xml
